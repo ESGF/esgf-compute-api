@@ -6,6 +6,6 @@ python:
 install:
 - pip install mock pylint coverage
 
-scripts:
+script:
 - python esgf/test/test.py
 - pylint esgf/
