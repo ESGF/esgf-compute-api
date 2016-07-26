@@ -5,7 +5,7 @@ python:
 
 install:
 - travis_retry pip install mock pylint coverage setuptools
-- travis_retry pip -r requirements.txt
+- travis_retry pip install -r requirements.txt
 - travis_retry python setup.py install
 
 script:
