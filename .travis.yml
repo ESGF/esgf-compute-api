@@ -9,5 +9,5 @@ install:
 - travis_retry python setup.py install
 
 script:
-- travis_retry python esgf/test/test.py
+- travis_retry python -m esgf/test/runtests
 - travis_retry pylint esgf/
