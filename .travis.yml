@@ -4,7 +4,7 @@ python:
 - '2.7'
 
 install:
-- travis_retry pip install mock pylint coverage setuptools
+- travis_retry pip install mock pylint coverage setuptools coveralls
 - travis_retry pip install -r requirements.txt
 - travis_retry python setup.py install
 
