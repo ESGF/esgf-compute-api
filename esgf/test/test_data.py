@@ -1,6 +1,10 @@
+"""
+Data for mock testing.
+"""
+
 from mock import Mock
 
-_IDENTIFICATION = {
+IDENTIFICATION = {
     'title': 'Server Title',
     'abstract': 'Server Abstract',
     'keywords': ['K1', 'K2'],
@@ -12,7 +16,7 @@ _IDENTIFICATION = {
     'profiles': ['P1', 'P2']
 }
 
-_CONTACT = {
+CONTACT = {
     'name': 'John Bob',
     'organization': 'DOE',
     'site': 'Labs',
@@ -30,18 +34,19 @@ _CONTACT = {
     'instructions': 'Do not crash'
 }
 
-_PROVIDER = {
+PROVIDER = {
     'name': 'llnl.gov',
-    'contact': _CONTACT,
+    'contact': CONTACT,
     'url': 'http://localhost:8000/wps'
 }
 
-_METADATA = {
-    'identification': _IDENTIFICATION,
-    'provider': _PROVIDER
+METADATA = {
+    'identification': IDENTIFICATION,
+    'provider': PROVIDER
 }
 
 def generic_mock(data):
+    """ Creates mock class """
     mock = Mock()
 
     for key, value in data.iteritems():
@@ -50,9 +55,11 @@ def generic_mock(data):
     return mock
 
 def generate_identification():
-    return generic_mock(_IDENTIFICATION)
+    """ Creates Identification mock """
+    return generic_mock(IDENTIFICATION)
 
 def generate_provider():
-    _PROVIDER['contact'] = generic_mock(_CONTACT)
+    """ Creates Provider mock """
+    PROVIDER['contact'] = generic_mock(CONTACT)
 
-    return generic_mock(_PROVIDER)
+    return generic_mock(PROVIDER)
