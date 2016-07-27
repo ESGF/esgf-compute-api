@@ -9,5 +9,9 @@ install:
 - travis_retry python setup.py install
 
 script:
-- travis_retry python -m esgf.test.runtests
-- travis_retry pylint esgf/
+- python -m esgf.test.runtests
+- coverage run --source=esgf -m esgf.test.runtests
+- pylint esgf/
+
+after_success:
+- coveralls
