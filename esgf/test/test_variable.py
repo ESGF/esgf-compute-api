@@ -10,10 +10,10 @@ class TestVariable(TestCase):
 
     def test_optional_init(self):
         """ Tests optional init. """
-        var = Variable('file:///test.nc')
+        var = Variable('file:///test.nc', 'clt')
 
         self.assertEqual(var.uri, 'file:///test.nc')
-        self.assertIsNone(var.var_name)
+        self.assertEqual(var.var_name, 'clt')
         self.assertIsNone(var.domain)
         self.assertIsNotNone(var.name)
 
@@ -21,10 +21,10 @@ class TestVariable(TestCase):
         """ Test parameterizing variable for GET request. """
         expected = {
             'uri': 'file://test.nc',
-            'id': 'tas',
+            'id': 'ta|v0',
         }
 
-        var = Variable('file://test.nc', name='tas')
+        var = Variable('file://test.nc', 'ta', name='v0')
 
         self.assertEqual(var.parameterize(), expected)
 
@@ -33,13 +33,6 @@ class TestVariable(TestCase):
 
         domain = Domain(name='glbl')
 
-        var = Variable('file://test.nc', domain=domain, name='tas')
-
-        self.assertEqual(var.parameterize(), expected)
-
-        # Update expected with variable name.
-        expected['id'] += '|var1'
-
-        var = Variable('file://test.nc', domain=domain, name='tas', var_name='var1')
+        var = Variable('file://test.nc', 'ta', domain=domain, name='v0')
 
         self.assertEqual(var.parameterize(), expected)

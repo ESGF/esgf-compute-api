@@ -15,7 +15,7 @@ class Variable(Parameter):
         var_name: Variable name in the file that will be processed.
         domain: Domain used to define which data is processed.
     """
-    def __init__(self, uri, var_name=None, domain=None, name=None):
+    def __init__(self, uri, var_name, domain=None, name=None):
         """ Variable init. """
         super(Variable, self).__init__(name)
 
@@ -42,13 +42,13 @@ class Variable(Parameter):
         """ Parameterize variable for GET request. """
         params = {
             'uri': self.uri,
-            'id': self.name,
+            'id': self.var_name,
         }
 
         if self.domain:
             params['domain'] = self.domain.name
 
         if self.var_name:
-            params['id'] += '|' + self.var_name
+            params['id'] += '|' + self.name
 
         return params
