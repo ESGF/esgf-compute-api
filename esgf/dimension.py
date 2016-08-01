@@ -1,7 +1,6 @@
 """
 Dimension module.
 """
-import json
 
 from .parameter import Parameter
 
@@ -14,6 +13,11 @@ class CRS(object):
     def __init__(self, name):
         """ CRS init. """
         self._name = name
+
+    @property
+    def name(self):
+        """ Read-only name property. """
+        return self._name
 
     def __str__(self):
         """ String representation. """
@@ -66,10 +70,10 @@ class Dimension(Parameter):
             'start': self.start,
             'end': self.end,
             'step': self.step,
-            'crs': self.crs,
+            'crs': self.crs.name,
         }
 
-        return json.dumps(params, default=lambda x: x.__str__())
+        return params
 
     def __str__(self):
         """ String representation. """
