@@ -110,7 +110,7 @@ class TestDimension(TestCase):
         param = dim.parameterize()
 
         self.assertEqual(param, \
-                     '{"start": "1", "step": 1, "end": "2", "crs": "values"}')
+                     {'start': '1', 'step': 1, 'end': '2', 'crs': 'values'})
 
     def test_str(self):
         """ Testing str. """
