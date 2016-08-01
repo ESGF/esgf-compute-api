@@ -1,6 +1,7 @@
 """
 WPS Client library imports.
 """
+from .named_parameter import NamedParameter
 from .variable import Variable
 from .domain import Domain
 from .domain import DomainError
