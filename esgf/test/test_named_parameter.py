@@ -21,4 +21,4 @@ class TestNamedParameter(TestCase):
         """ Test parameterizing NamedParameter for GET request. """
         named = NamedParameter('axis', 'x', 'y')
 
-        self.assertEqual(named.parameterize(), 'xy')
+        self.assertEqual(named.parameterize(), 'x|y')
