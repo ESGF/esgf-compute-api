@@ -18,4 +18,4 @@ class NamedParameter(Parameter):
 
     def parameterize(self):
         """ Parameterizes NamedParameter for GET request. """
-        return '|'.join(self.values)
+        return '%s: %s' % (self.name, '|'.join(self.values))
