@@ -86,6 +86,14 @@ class WPS(object):
 
         return prov_dict
 
+    def execute(self, process_id, inputs, output):
+        """ Formats data and executs WPS process. """
+        input_list = [
+            ('datainputs', ', '.join([x + '=' + y for x, y in inputs.iteritems()])),
+        ]
+
+        self._service.execute(process_id, input_list, output)
+
     def __str__(self):
         """ Returns pretty metadata. """
         data = {
