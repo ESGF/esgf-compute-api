@@ -2,6 +2,8 @@
 
 from unittest import TestCase
 
+from esgf import Domain
+from esgf import Dimension
 from esgf import NamedParameter
 
 class TestNamedParameter(TestCase):
@@ -22,3 +24,13 @@ class TestNamedParameter(TestCase):
         named = NamedParameter('axis', 'x', 'y')
 
         self.assertEqual(named.parameterize(), 'axis: x|y')
+
+    def test_parameter(self):
+        """ Test passing parameter in constructor. """
+        time = Dimension.from_single_index(2, name='time')
+
+        domain = Domain([time], name='d0')
+
+        named = NamedParameter('domain', domain)
+
+        self.assertEqual(named.parameterize(), 'domain: d0')
