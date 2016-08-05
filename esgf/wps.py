@@ -89,7 +89,7 @@ class WPS(object):
     def execute(self, process_id, inputs, output):
         """ Formats data and executs WPS process. """
         input_list = [
-            ('datainputs', ', '.join([x + '=' + y for x, y in inputs.iteritems()])),
+            (key, value) for key, value in inputs.iteritems()
         ]
 
         self._service.execute(process_id, input_list, output)

@@ -34,7 +34,7 @@ class Process(object):
                 self._operation.add_parameter(param)
 
         inputs = {
-            'domain': json.dumps([x.parameterize() for x in domains]),
+            'domains': json.dumps([x.parameterize() for x in domains]),
             'variable': json.dumps(variable.parameterize()),
             'operation': self._operation.parameterize(),
         }
