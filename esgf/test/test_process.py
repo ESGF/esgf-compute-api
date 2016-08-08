@@ -2,6 +2,8 @@
 Process Unittest.
 """
 
+import re
+
 from unittest import TestCase
 
 from mock import patch
@@ -12,8 +14,18 @@ from esgf import Variable
 from esgf import Dimension
 from esgf import Domain
 
+from . import MockPrint
+
 class TestProcess(TestCase):
     """ Process Test Case. """
+
+    def test_from_identifier(self):
+        """ Test creating Procress from identifier. """
+        wps = WPS('http://localhost:8000/wps')
+
+        process = Process.from_identifier(wps, 'OP.test')
+
+        self.assertEqual(process.name, 'OP.test')
 
     def test_from_name(self):
         """ Test creating Process from name. """
@@ -48,3 +60,26 @@ class TestProcess(TestCase):
         mock_inst.execute.assert_called_once()
 
         self.assertEqual(mock_inst.execute.call_args_list[0][0][0], 'OP.test')
+
+    def test_str(self):
+        """ Tests __str__. """
+        wps = WPS('http://localhost:8000/wps')
+
+        process = Process.from_name(wps, 'OP', 'test')
+
+        with MockPrint() as ctx:
+            print process
+
+        self.assertEqual(ctx.value, 'OP.test\n')
+
+    def test_repr(self):
+        """ Tests __repr__. """
+        wps = WPS('http://localhost:8000/wps')
+
+        process = Process.from_name(wps, 'OP', 'test')
+
+        with MockPrint() as ctx:
+            print '%r' % (process,)
+
+        self.assertIsNotNone(re.match(r'Process\(wps=.*, operation=.*\)',
+                                      ctx.value))

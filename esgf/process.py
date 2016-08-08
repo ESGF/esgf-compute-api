@@ -17,7 +17,16 @@ class Process(object):
 
     @classmethod
     def from_name(cls, wps, method, kernel):
-        """ Helper function to bypass creating operation. """
+        """ Helper crate process from method and kernel. """
+        operation = Operation(method, kernel)
+
+        return cls(wps, operation)
+
+    @classmethod
+    def from_identifier(cls, wps, identifier):
+        """ Helper create process from identifer. """
+        method, kernel = identifier.split('.')
+
         operation = Operation(method, kernel)
 
         return cls(wps, operation)
@@ -40,3 +49,9 @@ class Process(object):
         }
 
         self._wps.execute(self._operation.name, inputs, output)
+
+    def __repr__(self):
+        return 'Process(wps=%r, operation=%r)' % (self._wps, self._operation)
+
+    def __str__(self):
+        return self.name

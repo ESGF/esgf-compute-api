@@ -4,6 +4,8 @@ import json
 
 from owslib.wps import WebProcessingService
 
+from .process import Process
+
 _IDENTIFICATION = (
     'title',
     'abstract',
@@ -109,6 +111,10 @@ class WPS(object):
         ]
 
         self._service.execute(process_id, input_list, output)
+
+    def __iter__(self):
+        return (Process.from_identifier(self, proc.identifier)
+                for proc in self._service.processes)
 
     def __repr__(self):
         """ Returns representation off class. """
