@@ -40,6 +40,10 @@ _CONTACT = (
     'instructions'
 )
 
+class WPSClientError(Exception):
+    """ WPS Client-side error. """
+    pass
+
 class WPS(object):
     """ WPS client.
 
@@ -50,11 +54,13 @@ class WPS(object):
 
     def __init__(self, url, username=None, password=None):
         """ Inits WebProcessingService """
-        self._service = WebProcessingService( \
-            url, \
-            username=username, \
-            password=password, \
-            verbose=False,  \
+        self._url = url
+
+        self._service = WebProcessingService(
+            url,
+            username=username,
+            password=password,
+            verbose=False,
             skip_caps=True)
 
     def init(self):
@@ -69,6 +75,11 @@ class WPS(object):
     @property
     def identification(self):
         """ Returns identification data as JSON. """
+        if not self._service.identification:
+            raise WPSClientError(
+                'Verify %s is correct and WPS.init() was called.' %
+                (self._url,))
+
         ident = self._service.identification
 
         return dict((x, getattr(ident, x)) for x in _IDENTIFICATION)
@@ -76,6 +87,11 @@ class WPS(object):
     @property
     def provider(self):
         """ Returns provider data as JSON. """
+        if not self._service.provider:
+            raise WPSClientError(
+                'Verify %s is correct and WPS.init() was called.' %
+                (self._url,))
+
         prov = self._service.provider
 
         prov_dict = dict((x, getattr(prov, x)) for x in _PROVIDER)

@@ -7,12 +7,31 @@ from unittest import TestCase
 from mock import patch
 
 from esgf import WPS
+from esgf import WPSClientError
 
 from . import test_data
 
 class TestWPS(TestCase):
     """ Test Case for WPS class.
     """
+
+    def test_no_service(self):
+        """ Tests bad service endpoint. """
+        wps = WPS('http://localhost:9999/wps')
+
+        with self.assertRaises(WPSClientError) as ctx:
+            print wps.identification
+
+        self.assertEqual(ctx.exception.message,
+                         'Verify http://localhost:9999/wps is correct and' +
+                         ' WPS.init() was called.')
+
+        with self.assertRaises(WPSClientError) as ctx:
+            print wps.provider
+
+        self.assertEqual(ctx.exception.message,
+                         'Verify http://localhost:9999/wps is correct and' +
+                         ' WPS.init() was called.')
 
     @patch('esgf.wps.WebProcessingService')
     # pylint: disable=no-self-use
