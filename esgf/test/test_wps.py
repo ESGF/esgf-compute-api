@@ -11,13 +11,37 @@ from mock import Mock
 
 from esgf import WPS
 from esgf import WPSClientError
+from esgf import Process
 
 from . import MockPrint
 from . import test_data
 
 class TestWPS(TestCase):
-    """ Test Case for WPS class.
-    """
+    """ Test Case for WPS class. """
+
+    @patch('esgf.wps.WebProcessingService')
+    def test_get_process(self, mock_service):
+        """ Test retrieving process by name. """
+        mock_inst = mock_service.return_value
+
+        wps = WPS('http://localhost:8000/wps')
+
+        with self.assertRaises(WPSClientError) as ctx:
+            process = wps.get_process('CDS.test')
+
+        self.assertEqual(ctx.exception.message,
+                         'No process named \'CDS.test\' was found.')
+
+        mock_inst.processes = [
+            Mock(identifier='CDS.test'),
+            Mock(identifier='CDS.subset'),
+            Mock(identiifer='CDS.mean'),
+        ]
+
+        process = wps.get_process('CDS.test')
+
+        self.assertIsNotNone(process)
+        self.assertIsInstance(process, Process)
 
     @patch('esgf.wps.WebProcessingService')
     def test_iter(self, mock_service):
