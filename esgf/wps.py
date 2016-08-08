@@ -46,6 +46,10 @@ class WPSClientError(Exception):
     """ WPS Client-side error. """
     pass
 
+class WPSServerError(Exception):
+    """ WPS Server-side error. """
+    pass
+
 class WPS(object):
     """ WPS client.
 
@@ -103,6 +107,16 @@ class WPS(object):
         prov_dict['contact'] = dict((x, getattr(contact, x)) for x in _CONTACT)
 
         return prov_dict
+
+    def get_process(self, name):
+        """ Returns process from name. """
+        processes = [proc for proc in self._service.processes
+                     if proc.identifier == name]
+
+        if not len(processes):
+            raise WPSClientError('No process named \'%s\' was found.' % (name,))
+
+        return Process.from_identifier(self, processes[0].identifier)
 
     def execute(self, process_id, inputs, output):
         """ Formats data and executs WPS process. """
