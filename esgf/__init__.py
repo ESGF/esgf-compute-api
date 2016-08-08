@@ -18,3 +18,4 @@ from .dimension import Dimension
 from .parameter import Parameter
 
 from .wps import WPS
+from .wps import WPSClientError
