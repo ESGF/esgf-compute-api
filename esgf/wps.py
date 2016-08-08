@@ -110,11 +110,13 @@ class WPS(object):
 
         self._service.execute(process_id, input_list, output)
 
-    def __str__(self):
-        """ Returns pretty metadata. """
-        data = {
-            'identification': self.identification,
-            'provider': self.provider
-        }
+    def __repr__(self):
+        """ Returns representation off class. """
+        return 'WPS(url=%r, service=%r)' % (self._url, self._service)
 
-        return json.dumps(data, indent=4)
+    def __str__(self):
+        """ Returns pretty string of identification and provder. """
+        return json.dumps({
+            'identification': self.identification,
+            'provider': self.provider},
+                          indent=4)

@@ -2,6 +2,8 @@
 WPS unittest.
 """
 
+import re
+
 from unittest import TestCase
 
 from mock import patch
@@ -9,6 +11,7 @@ from mock import patch
 from esgf import WPS
 from esgf import WPSClientError
 
+from . import MockPrint
 from . import test_data
 
 class TestWPS(TestCase):
@@ -100,4 +103,23 @@ class TestWPS(TestCase):
 
         wps = WPS('http://localhost:8000/wps')
 
-        self.assertFalse(wps.__str__() == '{}')
+        with MockPrint() as ctx:
+            print wps
+
+        self.assertNotEqual(ctx.value, {})
+
+    @patch('esgf.wps.WebProcessingService')
+    def test_repr(self, mock_service):
+        """ Testing __repr__. """
+
+        mock_instance = mock_service.return_value
+        mock_instance.identification = test_data.generate_identification()
+        mock_instance.provider = test_data.generate_provider()
+
+        wps = WPS('http://localhost:8000/wps')
+
+        with MockPrint() as ctx:
+            print '%r' % wps
+
+        self.assertIsNotNone(re.match(r'WPS\(url=\'http://localhost:8000/' +
+                                      r'wps\', service=.*\)', ctx.value))
