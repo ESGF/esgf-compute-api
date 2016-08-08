@@ -7,6 +7,7 @@ import re
 from unittest import TestCase
 
 from mock import patch
+from mock import Mock
 
 from esgf import WPS
 from esgf import WPSClientError
@@ -17,6 +18,31 @@ from . import test_data
 class TestWPS(TestCase):
     """ Test Case for WPS class.
     """
+
+    @patch('esgf.wps.WebProcessingService')
+    def test_iter(self, mock_service):
+        """ Tests WPS iterator. """
+        operations = [
+            'CDS.test',
+            'CDS.subset',
+            'CDS.mean',
+        ]
+
+        mock_inst = mock_service.return_value
+        mock_inst.processes = []
+
+        for oper in operations:
+            mock_inst.processes.append(Mock(identifier=oper))
+
+        wps = WPS('http://localhost:8000/wps')
+
+        output = zip(wps, operations)
+
+        for process in output:
+            with MockPrint() as ctx:
+                print process[0]
+
+            self.assertEqual(ctx.value.replace('\n', ''), process[1])
 
     def test_no_service(self):
         """ Tests bad service endpoint. """
