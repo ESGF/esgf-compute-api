@@ -4,7 +4,8 @@ Process Module.
 
 import json
 
-from esgf import Operation
+from .wps import WPSServerError
+from .operation import Operation
 
 class Process(object):
     """ Process class.
@@ -14,6 +15,7 @@ class Process(object):
         """ Process init. """
         self._wps = wps
         self._operation = operation
+        self._result = None
 
     @classmethod
     def from_name(cls, wps, method, kernel):
@@ -36,6 +38,25 @@ class Process(object):
         """ Read-only wrapper for operation name. """
         return self._operation.name
 
+    @property
+    def status(self):
+        return self._result.status
+
+    @property
+    def message(self):
+        return self._result.statusMessage
+
+    @property
+    def progress(self):
+        return self._result.percentCompleted
+
+    def check_status(self, sleep_secs=0):
+        if not self._result.statusLocation:
+            raise WPSServerError('Process \'%s\' doesn\'t support status.' %
+                                 (self.name,))
+
+        self._result.checkStatus(sleepSecs=sleep_secs)
+
     def execute(self, variable, domains, parameters=None, output=None):
         """ Passes process parameters to WPS to execute. """
         if parameters:
@@ -48,7 +69,7 @@ class Process(object):
             'operation': self._operation.parameterize(),
         }
 
-        self._wps.execute(self._operation.name, inputs, output)
+        self._result = self._wps.execute(self._operation.name, inputs, output)
 
     def __repr__(self):
         return 'Process(wps=%r, operation=%r)' % (self._wps, self._operation)

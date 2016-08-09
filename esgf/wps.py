@@ -4,8 +4,6 @@ import json
 
 from owslib.wps import WebProcessingService
 
-from .process import Process
-
 _IDENTIFICATION = (
     'title',
     'abstract',
@@ -49,6 +47,8 @@ class WPSClientError(Exception):
 class WPSServerError(Exception):
     """ WPS Server-side error. """
     pass
+
+from .process import Process
 
 class WPS(object):
     """ WPS client.
@@ -118,13 +118,13 @@ class WPS(object):
 
         return Process.from_identifier(self, processes[0].identifier)
 
-    def execute(self, process_id, inputs, output):
+    def execute(self, process_id, inputs, output='OUTPUT'):
         """ Formats data and executs WPS process. """
         input_list = [
             (key, value) for key, value in inputs.iteritems()
         ]
 
-        self._service.execute(process_id, input_list, output)
+        return self._service.execute(process_id, input_list, output)
 
     def __iter__(self):
         return (Process.from_identifier(self, proc.identifier)
