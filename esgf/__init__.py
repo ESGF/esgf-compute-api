@@ -2,6 +2,8 @@
 WPS Client library imports.
 """
 
+from .mask import Mask
+
 from .operation import Operation
 from .operation import DuplicateParameterError
 

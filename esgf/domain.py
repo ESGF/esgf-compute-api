@@ -14,7 +14,7 @@ class Domain(Parameter):
     Domain represents a named collection of dimensions that will be used
     when during the evaluation of a process.
     """
-    def __init__(self, dimensions=None, name=None):
+    def __init__(self, dimensions=None, mask=None, name=None):
         """ Domain init. """
         super(Domain, self).__init__(name)
 
@@ -22,6 +22,7 @@ class Domain(Parameter):
             dimensions = []
 
         self._dimensions = dimensions
+        self._mask = mask
 
     @property
     def dimensions(self):
@@ -43,5 +44,8 @@ class Domain(Parameter):
 
         for dimension in self.dimensions:
             param[dimension.name] = dimension.parameterize()
+
+        if self._mask:
+            param['mask'] = self._mask.parameterize()
 
         return param

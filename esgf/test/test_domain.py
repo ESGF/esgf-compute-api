@@ -2,12 +2,38 @@
 
 from unittest import TestCase
 
+from esgf import Mask
 from esgf import Domain
 from esgf import DomainError
 from esgf import Dimension
 
 class TestDomain(TestCase):
     """ Domain Test Case """
+
+    def test_mask(self):
+        """ Pass domain a mask and parameterize. """
+        time = Dimension(1920, 1930, Dimension.values, name='time')
+
+        mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='mask0')
+
+        domain = Domain([time], mask=mask, name='d0')
+
+        expected = {
+            'id': 'd0',
+            'time': {
+                'crs': 'values',
+                'start': '1920',
+                'end': '1930',
+                'step': 1
+            },
+            'mask': {
+                'uri': 'file://test.nc',
+                'id': 'ta|mask0',
+                'operation': 'var_data>mask_data'
+            }
+        }
+
+        self.assertEqual(domain.parameterize(), expected)
 
     def test_optional_init(self):
         """ Test optional init values. """
