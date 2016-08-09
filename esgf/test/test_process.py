@@ -6,18 +6,53 @@ import re
 
 from unittest import TestCase
 
-from mock import patch
+from mock import patch, Mock
 
 from esgf import WPS
 from esgf import Process
 from esgf import Variable
 from esgf import Dimension
 from esgf import Domain
+from esgf import WPSServerError
 
 from . import MockPrint
 
 class TestProcess(TestCase):
     """ Process Test Case. """
+
+    # pylint: disable=protected-access
+    def test_status(self):
+        """ Status checking/updating. """
+        wps = WPS('http://localhost:8000/wps')
+
+        process = Process.from_identifier(wps, 'test.echo')
+
+        # Mock _result that would be set from WebProcessingService.execute
+        process._result = Mock(
+            status='Status',
+            statusMessage='Status Message',
+            percentCompleted=50.0,
+            statusLocation=None)
+
+        # Check library passes back correct values
+        self.assertEqual(process.status, 'Status')
+        self.assertEqual(process.message, 'Status Message')
+        self.assertEqual(process.progress, 50.0)
+
+        # Should throw error when _result.statusLocation is None
+        with self.assertRaises(WPSServerError) as ctx:
+            process.check_status()
+
+        self.assertEqual(ctx.exception.message,
+                         'Process \'test.echo\' doesn\'t support status.')
+
+        # Update statsLocation to check that WPSExecution.checkStatus is called.
+        process._result.statusLocation = 'http://localhost:8000/wps/status'
+        process._result.checkStatus = Mock()
+
+        process.check_status()
+
+        process._result.checkStatus.assert_called_once()
 
     def test_from_identifier(self):
         """ Test creating Procress from identifier. """
