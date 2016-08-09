@@ -4,7 +4,7 @@ Process Module.
 
 import json
 
-from .wps import WPSServerError
+from .errors import WPSServerError
 from .operation import Operation
 
 class Process(object):
@@ -40,17 +40,21 @@ class Process(object):
 
     @property
     def status(self):
+        """ Remote status property. """
         return self._result.status
 
     @property
     def message(self):
+        """ Remote message property. """
         return self._result.statusMessage
 
     @property
     def progress(self):
+        """ Remote progresss property. """
         return self._result.percentCompleted
 
     def check_status(self, sleep_secs=0):
+        """ Retrieves latest status from server. """
         if not self._result.statusLocation:
             raise WPSServerError('Process \'%s\' doesn\'t support status.' %
                                  (self.name,))

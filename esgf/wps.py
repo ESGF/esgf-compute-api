@@ -4,6 +4,9 @@ import json
 
 from owslib.wps import WebProcessingService
 
+from .errors import WPSClientError
+from .process import Process
+
 _IDENTIFICATION = (
     'title',
     'abstract',
@@ -39,16 +42,6 @@ _CONTACT = (
     'hours',
     'instructions'
 )
-
-class WPSClientError(Exception):
-    """ WPS Client-side error. """
-    pass
-
-class WPSServerError(Exception):
-    """ WPS Server-side error. """
-    pass
-
-from .process import Process
 
 class WPS(object):
     """ WPS client.
