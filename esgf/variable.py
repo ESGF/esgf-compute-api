@@ -23,7 +23,7 @@ class Variable(Parameter):
         self._uri = uri
         self._var_name = var_name
 
-        if (domains and isinstance(domains, Domain)):
+        if domains and isinstance(domains, Domain):
             domains = [domains]
 
         self._domains = domains

@@ -36,7 +36,7 @@ class TestVariable(TestCase):
             'domain': 'glbl',
         }
 
-        domain = Domain(name='glbl') 
+        domain = Domain(name='glbl')
 
         variable = Variable('file://test.nc', 'ta', name='v0', domains=domain)
 
@@ -54,9 +54,9 @@ class TestVariable(TestCase):
         domain1 = Domain(name='glbl2')
 
         variable = Variable(
-            'file://test.nc', 
-            'ta', 
-            name='v0', 
+            'file://test.nc',
+            'ta',
+            name='v0',
             domains=[
                 domain0,
                 domain1

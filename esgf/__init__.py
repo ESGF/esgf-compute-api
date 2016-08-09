@@ -1,9 +1,11 @@
 """
 WPS Client library imports.
 """
+
 from .operation import Operation
 from .operation import DuplicateParameterError
 
+from .process import Process
 
 from .named_parameter import NamedParameter
 
@@ -17,8 +19,6 @@ from .dimension import Dimension
 from .parameter import Parameter
 
 from .wps import WPS
-from .wps import WPSClientError
-from .wps import WPSServerError
 
-
-from .process import Process
+from .errors import WPSClientError
+from .errors import WPSServerError
