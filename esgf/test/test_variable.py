@@ -14,11 +14,11 @@ class TestVariable(TestCase):
 
         self.assertEqual(var.uri, 'file:///test.nc')
         self.assertEqual(var.var_name, 'clt')
-        self.assertIsNone(var.domain)
+        self.assertIsNone(var.domains)
         self.assertIsNotNone(var.name)
 
-    def test_parameterize(self):
-        """ Test parameterizing variable for GET request. """
+    def test_name(self):
+        """ Providing name argument. """
         expected = {
             'uri': 'file://test.nc',
             'id': 'ta|v0',
@@ -28,11 +28,39 @@ class TestVariable(TestCase):
 
         self.assertEqual(var.parameterize(), expected)
 
-        # Update expected with domain.
-        expected['domain'] = 'glbl'
+    def test_single_domain(self):
+        """ Passing single domain. """
+        expected = {
+            'uri': 'file://test.nc',
+            'id': 'ta|v0',
+            'domain': 'glbl',
+        }
 
-        domain = Domain(name='glbl')
+        domain = Domain(name='glbl') 
 
-        var = Variable('file://test.nc', 'ta', domain=domain, name='v0')
+        variable = Variable('file://test.nc', 'ta', name='v0', domains=domain)
 
-        self.assertEqual(var.parameterize(), expected)
+        self.assertEqual(variable.parameterize(), expected)
+
+    def test_multiple_domains(self):
+        """ Passing multiple domains. """
+        expected = {
+            'uri': 'file://test.nc',
+            'id': 'ta|v0',
+            'domain': 'glbl|glbl2',
+        }
+
+        domain0 = Domain(name='glbl')
+        domain1 = Domain(name='glbl2')
+
+        variable = Variable(
+            'file://test.nc', 
+            'ta', 
+            name='v0', 
+            domains=[
+                domain0,
+                domain1
+            ]
+        )
+
+        self.assertEqual(variable.parameterize(), expected)
