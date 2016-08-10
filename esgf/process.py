@@ -6,6 +6,7 @@ import json
 
 from .errors import WPSServerError
 from .operation import Operation
+from .variable import Variable
 
 class Process(object):
     """ Process class.
@@ -35,23 +36,32 @@ class Process(object):
 
     @property
     def name(self):
-        """ Read-only wrapper for operation name. """
+        """ Process name. """
         return self._operation.name
 
     @property
     def status(self):
-        """ Remote status property. """
+        """ Process status. """
         return self._result.status
 
     @property
     def message(self):
-        """ Remote message property. """
+        """ Process message. """
         return self._result.statusMessage
 
     @property
     def progress(self):
-        """ Remote progresss property. """
+        """ Process progress. """
         return self._result.percentCompleted
+
+    @property
+    def output(self):
+        """ Process output. """
+        if not self._result or not len(self._result.processOutputs):
+            raise WPSServerError(
+                'Process has no output, possibly process execution error.')
+
+        return Variable.from_json(self._result.processOutputs[0]['data'][0])
 
     def check_status(self, sleep_secs=0):
         """ Retrieves latest status from server. """

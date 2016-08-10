@@ -1,5 +1,7 @@
 """ Variable Unittest. """
 
+import json
+
 from unittest import TestCase
 
 from esgf import Domain
@@ -7,6 +9,24 @@ from esgf import Variable
 
 class TestVariable(TestCase):
     """ Variable Test Case. """
+
+    def test_from_json(self):
+        """ Creation from json. """
+        result_obj = {
+            'uri': 'file://test.nc',
+            'id': 'ta',
+            'domain': 'd0',
+            'mime-type': 'application/netcdf'
+        }
+
+        result_json = json.dumps(result_obj)
+
+        variable = Variable.from_json(result_json)
+
+        self.assertEqual(variable.uri, 'file://test.nc')
+        self.assertEqual(variable.var_name, 'ta')
+        self.assertIsNotNone(variable.domains)
+        self.assertEqual(variable.mime_type, 'application/netcdf')
 
     def test_optional_init(self):
         """ Tests optional init. """
@@ -16,6 +36,7 @@ class TestVariable(TestCase):
         self.assertEqual(var.var_name, 'clt')
         self.assertIsNone(var.domains)
         self.assertIsNotNone(var.name)
+        self.assertIsNone(var.mime_type)
 
     def test_name(self):
         """ Providing name argument. """

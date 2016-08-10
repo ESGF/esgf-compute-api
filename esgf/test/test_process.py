@@ -17,10 +17,41 @@ from esgf import WPSServerError
 
 from . import MockPrint
 
+# pylint: disable=protected-access
 class TestProcess(TestCase):
     """ Process Test Case. """
 
-    # pylint: disable=protected-access
+    def test_output(self):
+        """ Process output. """
+        wps = WPS('http://localhost:8000/wps')
+
+        process = Process.from_identifier(wps, 'test.echo')
+
+        process._result = Mock(processOutputs=[])
+
+        with self.assertRaises(WPSServerError):
+            print process.output
+
+        process._result.processOutputs.append(
+            {
+                'data': [
+                    "{\
+                        \"uri\": \"file://test.nc\",\
+                        \"id\": \"ta\",\
+                        \"domain\": \"d0\",\
+                        \"mime-type\": \"application/netcdf\"\
+                    }"
+                ]
+            }
+        )
+
+        output = process.output
+
+        self.assertEqual(output.uri, 'file://test.nc')
+        self.assertEqual(output.var_name, 'ta')
+        self.assertIsNotNone(output.domains)
+        self.assertEqual(output.mime_type, 'application/netcdf')
+
     def test_status(self):
         """ Status checking/updating. """
         wps = WPS('http://localhost:8000/wps')

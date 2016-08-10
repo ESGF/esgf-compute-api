@@ -2,46 +2,63 @@
 Variable module.
 """
 
+import json
+
 from .domain import Domain
 from .parameter import Parameter
 
 class Variable(Parameter):
-    """ Variable class
+    """ Variable class.
 
-    Acts as an input variable for a WPS process. The only required argument
-    is a uri.
-
-    Attributes:
-        uri: URI for the file to be used.
-        var_name: Variable name in the file that will be processed.
-        domain: Domain used to define which data is processed.
+    Generic variable that can be used to describe process input or output.
     """
-    def __init__(self, uri, var_name, domains=None, name=None):
+    def __init__(self, uri, var_name, **kwargs):
         """ Variable init. """
-        super(Variable, self).__init__(name)
+        super(Variable, self).__init__(kwargs.get('name', None))
 
         self._uri = uri
         self._var_name = var_name
+
+        domains = kwargs.get('domains', None)
 
         if domains and isinstance(domains, Domain):
             domains = [domains]
 
         self._domains = domains
+        self._mime_type = kwargs.get('mime_type', None)
+
+    @classmethod
+    def from_json(cls, json_raw):
+        """ Creates variable from json. """
+        json_obj = json.loads(json_raw)
+
+        domain = Domain(name=json_obj['domain'])
+
+        return cls(
+            json_obj['uri'],
+            json_obj['id'],
+            domains=domain,
+            mime_type=json_obj['mime-type'])
 
     @property
     def uri(self):
-        """ Read-only uri. """
+        """ Uri to file. """
         return self._uri
 
     @property
     def var_name(self):
-        """ Read-only variable name. """
+        """ Variable name in uri. """
         return self._var_name
 
     @property
     def domains(self):
-        """ Read-only domain. """
+        """ Associated domain. """
         return self._domains
+
+    @property
+    def mime_type(self):
+        """ Mime-type of uri. """
+        return self._mime_type
 
     def parameterize(self):
         """ Parameterize variable for GET request. """
