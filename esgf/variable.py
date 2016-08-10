@@ -1,9 +1,12 @@
 """
 Variable module.
 """
+from StringIO import StringIO
 
 import json
+import requests
 
+from .errors import WPSClientError
 from .domain import Domain
 from .parameter import Parameter
 
@@ -59,6 +62,36 @@ class Variable(Parameter):
     def mime_type(self):
         """ Mime-type of uri. """
         return self._mime_type
+
+    def _download_http(self, output, chunk_size):
+        """ HTTP download. """
+        if not chunk_size:
+            chunk_size = 1024
+
+        response = requests.get(self._uri, stream=True)
+
+        for chunk in response.iter_content(chunk_size):
+            output.write(chunk)
+
+    def download(self, out_path, chunk_size=None):
+        """ Factory download method. """
+        download_fn = None
+
+        if self._uri[:4] == 'http':
+            download_fn = self._download_http
+        else:
+            raise WPSClientError('Unsupported uri %s' % (self._uri,))
+
+        with open(out_path, 'wb') as out_file:
+            download_fn(out_file, chunk_size)
+
+    def download_as_str(self):
+        """ Download the contents as a string. """
+        output = StringIO()
+
+        self._download_http(output, None)
+
+        return output.getvalue()
 
     def parameterize(self):
         """ Parameterize variable for GET request. """
