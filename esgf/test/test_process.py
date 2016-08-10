@@ -32,18 +32,13 @@ class TestProcess(TestCase):
         with self.assertRaises(WPSServerError):
             print process.output
 
-        process._result.processOutputs.append(
-            {
-                'data': [
-                    "{\
-                        \"uri\": \"file://test.nc\",\
-                        \"id\": \"ta\",\
-                        \"domain\": \"d0\",\
-                        \"mime-type\": \"application/netcdf\"\
-                    }"
-                ]
-            }
-        )
+        mock_output = Mock()
+        mock_output.data = [
+            "{\"uri\": \"file://test.nc\", \"id\": \"ta\", " +
+            "\"domain\": \"d0\", \"mime-type\": " +
+            "\"application/netcdf\"}"]
+
+        process._result.processOutputs.append(mock_output)
 
         output = process.output
 
