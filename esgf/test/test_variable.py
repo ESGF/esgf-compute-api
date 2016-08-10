@@ -4,11 +4,79 @@ import json
 
 from unittest import TestCase
 
+from mock import patch, Mock
+
 from esgf import Domain
 from esgf import Variable
+from esgf import WPSClientError
+
+MOCK_DATA = ['hello', ' ', 'you', ' ', 'person']
+
+def mock_gen():
+    """ Mock generator for requests.iter_content. """
+    for item in MOCK_DATA:
+        yield item
 
 class TestVariable(TestCase):
     """ Variable Test Case. """
+
+    @patch('esgf.variable.requests')
+    def test_download_as_str(self, mock_requests):
+        """ Download output as string. """
+
+        # Mock requests.reponse.iter_content method
+        get_mock = Mock()
+        get_mock.iter_content.return_value = mock_gen()
+
+        # Mock requests.get returned response
+        mock_requests.get.return_value = get_mock
+
+        variable = Variable('file://test.nc', 'ta')
+
+        self.assertEqual(variable.download_as_str(), 'hello you person')
+
+    @patch('esgf.variable.requests')
+    @patch('esgf.variable.open')
+    def test_download(self, mock_open, mock_requests):
+        """ Download output to file. """
+        variable = Variable('file://test.nc', 'ta')
+
+        with self.assertRaises(WPSClientError):
+            variable.download('./test.json')
+
+        # Mock requests.reponse.iter_content method
+        get_mock = Mock()
+        get_mock.iter_content.return_value = mock_gen()
+
+        # Mock requests.get returned response
+        mock_requests.get.return_value = get_mock
+
+        # pylint: disable=too-few-public-methods
+        class MockFile(object):
+            """ Mock class for return value of open(). """
+            def __init__(self):
+                """ MockFile init. """
+                self.data = []
+
+            def __enter__(self):
+                """ Enter """
+                return self
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                """ Exit """
+                pass
+
+            def write(self, data):
+                """ Mock file.write method. """
+                self.data.append(data)
+
+        mock_open.return_value = MockFile()
+
+        variable = Variable('http://localhost:8000/wps/media/test.nc', 'ta')
+
+        variable.download('./test.json')
+
+        self.assertItemsEqual(mock_open.return_value.data, MOCK_DATA)
 
     def test_from_json(self):
         """ Creation from json. """
