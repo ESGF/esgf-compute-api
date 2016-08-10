@@ -120,15 +120,13 @@ class WPS(object):
         return self._service.execute(process_id, input_list, output)
 
     def __iter__(self):
-        return (Process.from_identifier(self, proc.identifier)
-                for proc in self._service.processes)
+        for proc in self._service.processes:
+            yield Process.from_identifier(self, proc.identifier)
 
     def __repr__(self):
-        """ Returns representation off class. """
         return 'WPS(url=%r, service=%r)' % (self._url, self._service)
 
     def __str__(self):
-        """ Returns pretty string of identification and provder. """
         return json.dumps({
             'identification': self.identification,
             'provider': self.provider},
