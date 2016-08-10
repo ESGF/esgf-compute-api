@@ -1,0 +1,7 @@
+.coverage
+
+**/*.pyc
+
+build/
+dist/
+esgf_compute_api.egg-info/
