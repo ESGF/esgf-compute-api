@@ -61,7 +61,7 @@ class Process(object):
             raise WPSServerError(
                 'Process has no output, possibly process execution error.')
 
-        return Variable.from_json(self._result.processOutputs[0]['data'][0])
+        return Variable.from_json(self._result.processOutputs[0].data[0])
 
     def check_status(self, sleep_secs=0):
         """ Retrieves latest status from server. """
