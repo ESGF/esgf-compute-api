@@ -2,6 +2,7 @@
 
 from unittest import TestCase
 
+from esgf import WPSAPIError
 from esgf import Mask
 from esgf import Domain
 from esgf import DomainError
@@ -9,6 +10,52 @@ from esgf import Dimension
 
 class TestDomain(TestCase):
     """ Domain Test Case """
+
+    def test_from_dict(self):
+        """ Create domain from dict representation. """
+        single_dim = {"id": "d0",
+                      "time": {"start": 1980, "end": 1982, "crs": "values"}}
+        multiple_dim = {"id": "d0",
+                        "time": {"start": 1980, "end": 1982, "crs": "values"},
+                        "longitude": {"start": 1, "end": 2, "crs": "indices"}}
+        mask = {"id": "d0",
+                "time": {"start": 1980, "end": 1982, "crs": "values"},
+                "mask": {"uri": "/test.nc", "id": "tas", "operation": "test_op"}}
+        missing_id = {"time": {"start": 1980, "end": 1982, "crs": "values"}}
+        missing_dim = {"id": "d0"}
+
+        domain = Domain.from_dict(single_dim)
+
+        self.assertEqual(domain.name, 'd0')
+        self.assertIsNone(domain.mask)
+        self.assertIsNotNone(domain.dimensions)
+        self.assertEqual(len(domain.dimensions), 1)
+
+        domain = Domain.from_dict(multiple_dim)
+
+        self.assertEqual(domain.name, 'd0')
+        self.assertIsNone(domain.mask)
+        self.assertIsNotNone(domain.dimensions)
+        self.assertEqual(len(domain.dimensions), 2)
+
+        domain = Domain.from_dict(mask)
+
+        self.assertEqual(domain.name, 'd0')
+        self.assertIsNotNone(domain.mask)
+        self.assertIsNotNone(domain.dimensions)
+        self.assertEqual(len(domain.dimensions), 1)
+
+        with self.assertRaises(WPSAPIError) as ctx:
+            domain = Domain.from_dict(missing_id)
+
+        self.assertEqual(ctx.exception.message,
+                         'Domain must provide an id.')
+
+        with self.assertRaises(WPSAPIError) as ctx:
+            domain = Domain.from_dict(missing_dim)
+
+        self.assertEqual(ctx.exception.message,
+                         'Domain must provide atleast one dimension.')
 
     def test_mask(self):
         """ Pass domain a mask and parameterize. """
@@ -22,8 +69,8 @@ class TestDomain(TestCase):
             'id': 'd0',
             'time': {
                 'crs': 'values',
-                'start': '1920',
-                'end': '1930',
+                'start': 1920,
+                'end': 1930,
                 'step': 1
             },
             'mask': {
@@ -71,14 +118,14 @@ class TestDomain(TestCase):
             'id': 'glbl',
             'longitude': {
                 'crs': 'values',
-                'start': '-180.0',
-                'end': '180.0',
+                'start': -180.0,
+                'end': 180.0,
                 'step': 1,
             },
             'time': {
                 'crs': 'values',
-                'start': '1980',
-                'end': '1982',
+                'start': 1980,
+                'end': 1982,
                 'step': 1,
             }
         }

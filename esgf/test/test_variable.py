@@ -8,6 +8,7 @@ from mock import patch, Mock
 
 from esgf import Domain
 from esgf import Variable
+from esgf import WPSAPIError
 from esgf import WPSClientError
 
 MOCK_DATA = ['hello', ' ', 'you', ' ', 'person']
@@ -19,6 +20,54 @@ def mock_gen():
 
 class TestVariable(TestCase):
     """ Variable Test Case. """
+
+    def test_from_dict(self):
+        """ Test creating variable from dict representation. """
+        single_domain = {'uri': '/test.nc', 'id': 'tas|v0', 'domains': 'd0'}
+        multiple_domain = {'uri': '/test.nc', 'id': 'tas|v0',
+                           'domains': ['d0', 'd1']}
+        missing_uri = {'id': 'tas|v0', 'domains': 'd0'}
+        missing_id = {'uri': '/test.nc', 'domains': 'd0'}
+        missing_name = {'uri': '/test.nc', 'id': 'tas'}
+        missing_domain = {'uri': '/test.nc', 'id': 'tas|v0'}
+
+        var = Variable.from_dict(single_domain)
+
+        self.assertEqual(var.uri, '/test.nc')
+        self.assertEqual(var.var_name, 'tas')
+        self.assertEqual(var.name, 'v0')
+        self.assertEqual(var.domains, 'd0')
+
+        var = Variable.from_dict(multiple_domain)
+
+        self.assertEqual(var.uri, '/test.nc')
+        self.assertEqual(var.var_name, 'tas')
+        self.assertEqual(var.name, 'v0')
+        self.assertListEqual(var.domains, ['d0', 'd1'])
+
+        with self.assertRaises(WPSAPIError) as ctx:
+            var = Variable.from_dict(missing_uri)
+
+        self.assertEqual(ctx.exception.message,
+                         'Variable must provide a uri.')
+
+        with self.assertRaises(WPSAPIError) as ctx:
+            var = Variable.from_dict(missing_id)
+
+        self.assertEqual(ctx.exception.message,
+                         'Variable must provide an id.')
+
+        with self.assertRaises(WPSAPIError) as ctx:
+            var = Variable.from_dict(missing_name)
+
+        self.assertEqual(ctx.exception.message,
+                         'Variable id must contain a variable name and id.')
+
+        with self.assertRaises(WPSAPIError) as ctx:
+            var = Variable.from_dict(missing_domain)
+
+        self.assertEqual(ctx.exception.message,
+                         'Variable must provide a domain.')
 
     @patch('esgf.variable.requests')
     def test_download_as_str(self, mock_requests):

@@ -1,0 +1,113 @@
+test_from_string (test.test_dimension.TestDimension) ... FAIL
+test_indices (test.test_dimension.TestDimension)
+Testing creating from indices. ... ok
+test_optional_init (test.test_dimension.TestDimension)
+Testing optional arguments. ... ok
+test_parameterize (test.test_dimension.TestDimension)
+Testing parameterization. ... ok
+test_single_index (test.test_dimension.TestDimension)
+Testing creating from single index. ... ok
+test_single_value (test.test_dimension.TestDimension)
+Testing creating from single value. ... ok
+test_str (test.test_dimension.TestDimension)
+Testing str. ... ok
+test_values (test.test_dimension.TestDimension)
+Testing creating from values. ... ok
+test_add_parameter (test.test_domain.TestDomain)
+Tests addding parameters. ... ok
+test_mask (test.test_domain.TestDomain)
+Pass domain a mask and parameterize. ... ok
+test_optional_init (test.test_domain.TestDomain)
+Test optional init values. ... ok
+test_parameterize (test.test_domain.TestDomain)
+Tests parameterizing a domain. ... ok
+test_domain (test.test_gridder.TestGridder)
+Passing domain as grid argument. ... ok
+test_gridder (test.test_gridder.TestGridder)
+Init and type checking. ... ok
+test_variable (test.test_gridder.TestGridder)
+Passing variable as grid argument. ... ok
+test_mask (test.test_mask.TestMask)
+Check mask parameterization. ... ok
+test_optional_init (test.test_named_parameter.TestNamedParameter)
+Tests optional init values. ... ok
+test_parameter (test.test_named_parameter.TestNamedParameter)
+Test passing parameter in constructor. ... ok
+test_parameterize (test.test_named_parameter.TestNamedParameter)
+Test parameterizing NamedParameter for GET request. ... ok
+test_add_parameter (test.test_operation.TestOperation)
+Tests adding parameters. ... ok
+test_complex_workflow (test.test_operation.TestOperation)
+Test parallel operations with deep dependencies. ... ok
+test_dependencies (test.test_operation.TestOperation)
+Tests parameterzing and operation with dependencies. ... ok
+test_operation (test.test_operation.TestOperation)
+Test parameterizing an operation containing other operations. ... ok
+test_operations_multi (test.test_operation.TestOperation)
+Test parameterizing an operation containing multiple operations. ... ok
+test_optional_init (test.test_operation.TestOperation)
+Tests optional init values. ... ok
+test_parameters (test.test_operation.TestOperation)
+Test parameterizing an operation for GET request. ... ok
+test_parameterize (test.test_parameter.TestParameter)
+Testing overriding parameterize method. ... ok
+test_execute (test.test_process.TestProcess)
+Test simple execute. ... ok
+test_from_identifier (test.test_process.TestProcess)
+Test creating Procress from identifier. ... ok
+test_from_name (test.test_process.TestProcess)
+Test creating Process from name. ... ok
+test_output (test.test_process.TestProcess)
+Process output. ... ok
+test_repr (test.test_process.TestProcess)
+Tests __repr__. ... ok
+test_status (test.test_process.TestProcess)
+Status checking/updating. ... ok
+test_str (test.test_process.TestProcess)
+Tests __str__. ... ok
+test_download (test.test_variable.TestVariable)
+Download output to file. ... ok
+test_download_as_str (test.test_variable.TestVariable)
+Download output as string. ... ok
+test_from_json (test.test_variable.TestVariable)
+Creation from json. ... ok
+test_multiple_domains (test.test_variable.TestVariable)
+Passing multiple domains. ... ok
+test_name (test.test_variable.TestVariable)
+Providing name argument. ... ok
+test_optional_init (test.test_variable.TestVariable)
+Tests optional init. ... ok
+test_single_domain (test.test_variable.TestVariable)
+Passing single domain. ... ok
+test_get_process (test.test_wps.TestWPS)
+Test retrieving process by name. ... ok
+test_identification (test.test_wps.TestWPS)
+Testing identification property. ... ok
+test_init (test.test_wps.TestWPS)
+Testing init. ... ok
+test_iter (test.test_wps.TestWPS)
+Tests WPS iterator. ... ok
+test_no_service (test.test_wps.TestWPS)
+Tests bad service endpoint. ... ok
+test_provider (test.test_wps.TestWPS)
+Testing provider property. ... ok
+test_repr (test.test_wps.TestWPS)
+Testing __repr__. ... ok
+test_str (test.test_wps.TestWPS)
+Testing __str__. ... ok
+test_wps (test.test_wps.TestWPS)
+Testing constructor. ... ok
+
+======================================================================
+FAIL: test_from_string (test.test_dimension.TestDimension)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/boutte3/devel/esgf-compute-api/esgf/test/test_dimension.py", line 24, in test_from_string
+    self.assertEqual(dim.start, 1)
+AssertionError: '1' != 1
+
+----------------------------------------------------------------------
+Ran 50 tests in 0.017s
+
+FAILED (failures=1)
+{u'start': 1, u'step': 2, u'end': 2, u'crs': u'indices'}

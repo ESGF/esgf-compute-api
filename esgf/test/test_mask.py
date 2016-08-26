@@ -9,6 +9,17 @@ from esgf import Mask
 class TestMask(TestCase):
     """ Mask Test Case. """
 
+    def test_from_dict(self):
+        """ Create Mask from dict representation. """
+        valid = {"uri": "/test.nc", "id": "tas|m0", "operation": "test_op"}
+
+        mask = Mask.from_dict(valid)
+
+        self.assertEqual(mask.uri, '/test.nc')
+        self.assertEqual(mask.name, 'm0')
+        self.assertEqual(mask.var_name, 'tas')
+        self.assertEqual(mask.operation, 'test_op')
+
     # pylint: disable=protected-access
     def test_mask(self):
         """ Check mask parameterization. """
