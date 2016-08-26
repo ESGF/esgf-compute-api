@@ -6,6 +6,7 @@ from StringIO import StringIO
 import json
 import requests
 
+from .errors import WPSAPIError
 from .errors import WPSClientError
 from .domain import Domain
 from .parameter import Parameter
@@ -29,6 +30,36 @@ class Variable(Parameter):
 
         self._domains = domains
         self._mime_type = kwargs.get('mime_type', None)
+
+    @classmethod
+    def from_dict(cls, data):
+        """ Create variable from dict representation. """
+        uri = None
+
+        if 'uri' in data:
+            uri = data['uri']
+        else:
+            raise WPSAPIError('Variable must provide a uri.')
+
+        name = None
+        var_name = None
+
+        if 'id' in data:
+            if '|' in data['id']:
+                var_name, name = data['id'].split('|')
+            else:
+                raise WPSAPIError('Variable id must contain a variable name and id.')
+        else:
+            raise WPSAPIError('Variable must provide an id.')
+
+        domains = None
+
+        if 'domains' in data:
+            domains = data['domains']
+        else:
+            raise WPSAPIError('Variable must provide a domain.')
+
+        return cls(uri, var_name, domains=domains, name=name)
 
     @classmethod
     def from_json(cls, json_raw):

@@ -23,5 +23,6 @@ from .parameter import Parameter
 
 from .wps import WPS
 
+from .errors import WPSAPIError
 from .errors import WPSClientError
 from .errors import WPSServerError

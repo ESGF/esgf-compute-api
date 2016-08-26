@@ -2,6 +2,8 @@
 Dimension module.
 """
 
+from .utils import int_or_float
+from .errors import WPSAPIError
 from .parameter import Parameter
 
 # pylint: disable=too-few-public-methods
@@ -22,6 +24,9 @@ class CRS(object):
     def __str__(self):
         """ String representation. """
         return self._name
+
+    def __eq__(self, other):
+        return self.name == other.name
 
 class Dimension(Parameter):
     """ Domain dimensions.
@@ -44,15 +49,48 @@ class Dimension(Parameter):
         """ Dimension init. """
         super(Dimension, self).__init__(kwargs.get('name', None))
 
-        self.start = str(start)
+        self.start = start
 
         if end:
-            self.end = str(end)
+            self.end = end
         else:
             self.end = None
 
         self.crs = crs
         self.step = kwargs.get('step', 1)
+
+    @classmethod
+    def from_dict(cls, name, data):
+        """ Create dimension from dict representation. """
+        if 'start' in data:
+            if isinstance(data['start'], str):
+                start = int_or_float(data['start'])
+            else:
+                start = data['start']
+        else:
+            raise WPSAPIError('Must atleast pass a start value.')
+
+        end = None
+
+        if 'end' in data:
+            if isinstance(data['end'], str):
+                end = int_or_float(data['end'])
+            else:
+                end = data['end']
+
+        if 'crs' in data:
+            crs = CRS(data['crs'])
+        else:
+            raise WPSAPIError('Must provide a CRS value.')
+
+        kwargs = {
+            'name': name,
+        }
+
+        if 'step' in data:
+            kwargs['step'] = data['step']
+
+        return cls(start, end, crs, **kwargs)
 
     @classmethod
     def from_single_index(cls, value, step=None, name=None):

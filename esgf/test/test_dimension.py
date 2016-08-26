@@ -7,11 +7,62 @@ from unittest import TestCase
 from StringIO import StringIO
 
 from esgf import Dimension
+from esgf import WPSAPIError
 
 from mock import patch
 
 class TestDimension(TestCase):
     """ Test Case for Dimension class. """
+
+    def test_from_dict(self):
+        """ Create Dimension from dict representation. """
+
+        indices = {"start": 1, "end": 2, "step": 2, "crs": "indices"}
+        values = {"start": 1980, "end": 1982, "step": 10, "crs": "values"}
+        string_values = {"start": "1980",
+                         "end": "1982",
+                         "step": 10,
+                         "crs": "values"}
+        missing_start = {"end": 1982, "crs": "values"}
+        missing_step = {"start": 1980, "end": 1982, "crs": "values"}
+        missing_crs = {"start": 1980, "end": 1982}
+
+        dim = Dimension.from_dict('time', indices)
+
+        self.assertEqual(dim.start, 1)
+        self.assertEqual(dim.end, 2)
+        self.assertEqual(dim.step, 2)
+        self.assertEqual(dim.crs, Dimension.indices)
+
+        dim = Dimension.from_dict('time', values)
+
+        self.assertEqual(dim.start, 1980)
+        self.assertEqual(dim.end, 1982)
+        self.assertEqual(dim.step, 10)
+        self.assertEqual(dim.crs, Dimension.values)
+
+        dim = Dimension.from_dict('time', string_values)
+
+        self.assertEqual(dim.start, 1980)
+        self.assertEqual(dim.end, 1982)
+        self.assertEqual(dim.step, 10)
+        self.assertEqual(dim.crs, Dimension.values)
+
+        with self.assertRaises(WPSAPIError) as ctx:
+            dim = Dimension.from_dict('time', missing_start)
+
+        dim = Dimension.from_dict('time', missing_step)
+
+        self.assertEqual(dim.start, 1980)
+        self.assertEqual(dim.end, 1982)
+        self.assertEqual(dim.step, 1)
+        self.assertEqual(dim.crs, Dimension.values)
+
+        with self.assertRaises(WPSAPIError) as ctx:
+            dim = Dimension.from_dict('time', missing_crs)
+
+        self.assertEqual(ctx.exception.message,
+                         'Must provide a CRS value.')
 
     @patch('esgf.parameter.uuid4')
     def test_optional_init(self, mock_uuid4):
@@ -23,7 +74,7 @@ class TestDimension(TestCase):
         self.assertEqual(dim.step, 1)
         self.assertIsNotNone(dim.name)
         self.assertEqual(capture_str_stdout(dim), \
-            'Dimension(1, 2, indices, step=1, name="Unique")')
+                         'Dimension(1, 2, indices, step=1, name="Unique")')
 
         dim = Dimension(1, 2, Dimension.indices, step=2)
 
@@ -37,8 +88,8 @@ class TestDimension(TestCase):
         """ Testing creating from indices. """
         dim = Dimension(1, 2, Dimension.indices)
 
-        self.assertEqual(dim.start, '1')
-        self.assertEqual(dim.end, '2')
+        self.assertEqual(dim.start, 1)
+        self.assertEqual(dim.end, 2)
         self.assertEqual(dim.crs, Dimension.indices)
 
         dim = Dimension('1', '2', Dimension.indices)
@@ -50,14 +101,14 @@ class TestDimension(TestCase):
         """ Testing creating from values. """
         dim = Dimension(-180, 180, Dimension.values)
 
-        self.assertEqual(dim.start, '-180')
-        self.assertEqual(dim.end, '180')
+        self.assertEqual(dim.start, -180)
+        self.assertEqual(dim.end, 180)
         self.assertEqual(dim.crs, Dimension.values)
 
         dim = Dimension(-180.0, 180.0, Dimension.values)
 
-        self.assertEqual(dim.start, '-180.0')
-        self.assertEqual(dim.end, '180.0')
+        self.assertEqual(dim.start, -180.0)
+        self.assertEqual(dim.end, 180.0)
 
         dim = Dimension('-180.0', '180.0', Dimension.values)
 
@@ -68,7 +119,7 @@ class TestDimension(TestCase):
         """ Testing creating from single index. """
         dim = Dimension.from_single_index(1)
 
-        self.assertEqual(dim.start, '1')
+        self.assertEqual(dim.start, 1)
         self.assertIsNone(dim.end)
         self.assertEqual(dim.crs, Dimension.indices)
         self.assertIsNone(dim.step)
@@ -83,13 +134,13 @@ class TestDimension(TestCase):
         self.assertEqual(dim.name, 'longitude')
 
         self.assertEqual(capture_str_stdout(dim), \
-            'Dimension(1, None, indices, step=None, name="longitude")')
+                         'Dimension(1, None, indices, step=None, name="longitude")')
 
     def test_single_value(self):
         """ Testing creating from single value. """
         dim = Dimension.from_single_value(-180)
 
-        self.assertEqual(dim.start, '-180')
+        self.assertEqual(dim.start, -180)
         self.assertIsNone(dim.end)
         self.assertEqual(dim.crs, Dimension.values)
         self.assertIsNone(dim.step)
@@ -110,14 +161,14 @@ class TestDimension(TestCase):
         param = dim.parameterize()
 
         self.assertEqual(param, \
-                     {'start': '1', 'step': 1, 'end': '2', 'crs': 'values'})
+                         {'start': 1, 'step': 1, 'end': 2, 'crs': 'values'})
 
     def test_str(self):
         """ Testing str. """
         dim = Dimension(1, 2, Dimension.values, step=2, name='longitude')
 
         self.assertEqual(capture_str_stdout(dim), \
-             'Dimension(1, 2, values, step=2, name="longitude")')
+                         'Dimension(1, 2, values, step=2, name="longitude")')
 
 def capture_str_stdout(obj):
     """ Helper method emulates printing to stdout. """
