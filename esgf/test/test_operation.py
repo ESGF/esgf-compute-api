@@ -14,6 +14,13 @@ from esgf import Variable
 class TestOperation(TestCase):
     """ Operation Test Case. """
 
+    def test_from_str(self):
+        """ Test creating operation from str. """
+
+        test = Operation.from_str('OP.test', 'v0, axes: t')
+
+        self.assertEqual(len(test.parameters), 2)
+
     def test_optional_init(self):
         """ Tests optional init values. """
         test = Operation('OP', 'test')

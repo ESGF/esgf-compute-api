@@ -39,6 +39,23 @@ class Operation(Parameter):
 
         self._var_name = var_name
 
+    @classmethod
+    def from_str(cls, identifier, arguments):
+        """ Create operation from identifer and arguments. """
+        parameters = []
+
+        for arg in arguments.split(', '):
+            if ':' in  arg:
+                colon = arg.index(':')
+
+                arg_values = [value for value in arg[colon+2:].split('|')]
+
+                parameters.append(NamedParameter(arg[:colon], arg_values))
+            else:
+                parameters.append(Parameter(arg))
+
+        return cls(identifier, '', parameters=parameters)
+
     @property
     def parameters(self):
         """ Read-only parameters. """
