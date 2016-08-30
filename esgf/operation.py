@@ -50,7 +50,7 @@ class Operation(Parameter):
 
                 arg_values = [value for value in arg[colon+2:].split('|')]
 
-                parameters.append(NamedParameter(arg[:colon], arg_values))
+                parameters.append(NamedParameter(arg[:colon], *arg_values))
             else:
                 parameters.append(Parameter(arg))
 
