@@ -25,3 +25,8 @@ class NamedParameter(Parameter):
             value = self.values[0].name
 
         return '%s: %s' % (self.name, value)
+
+    def __repr__(self):
+        return 'NamedParameter(%r, %r)' % (
+            self.name,
+            self.values)

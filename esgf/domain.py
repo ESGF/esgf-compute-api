@@ -85,3 +85,9 @@ class Domain(Parameter):
             param['mask'] = self._mask.parameterize()
 
         return param
+
+    def __repr__(self):
+        return 'Domain(%r, %r, %r)' % (self._dimensions, self._mask, self.name)
+
+    def __str__(self):
+        return '%s %s, %s' % (self._dimensions, self._mask, self.name)

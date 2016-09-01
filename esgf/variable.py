@@ -138,3 +138,19 @@ class Variable(Parameter):
             params['id'] += '|' + str(self.name)
 
         return params
+
+    def __repr__(self):
+        return 'Variable(%r %r %r %r %r)' % (
+            self.name,
+            self._uri,
+            self._var_name,
+            self._domains,
+            self._mime_type)
+
+    def __str__(self):
+        return '%s %s %s %s %s' % (
+            self.name,
+            self._uri,
+            self._var_name,
+            self._domains,
+            self._mime_type)

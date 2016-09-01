@@ -182,3 +182,17 @@ class Operation(Parameter):
     def filter_operations(self):
         """ Filters operation parameters only. """
         return [x for x in self._parameters if isinstance(x, Operation)]
+
+    def __repr__(self):
+        return 'Operation(%r, %r, %r, %r)' % (
+            self.name,
+            self._parameters,
+            self._var_name,
+            self._name)
+
+    def __str__(self):
+        return '%s %s %s %s' % (
+            self.name,
+            self._parameters,
+            self._var_name,
+            self._name)

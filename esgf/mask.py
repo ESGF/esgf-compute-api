@@ -77,3 +77,17 @@ class Mask(object):
             'id': param_id,
             'operation': self._operation,
         }
+
+    def __repr__(self):
+        return 'Mask(%r, %r, %r, %r)' % (
+            self._uri,
+            self._var_name,
+            self._operation,
+            self._name)
+
+    def __str__(self):
+        return '%s %s %s %s' % (
+            self._uri,
+            self._var_name,
+            self._operation,
+            self._name)

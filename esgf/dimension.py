@@ -21,12 +21,14 @@ class CRS(object):
         """ Read-only name property. """
         return self._name
 
-    def __str__(self):
-        """ String representation. """
-        return self._name
-
     def __eq__(self, other):
         return self.name == other.name
+
+    def __repr__(self):
+        return 'CRS(%r)' % (self._name,)
+
+    def __str__(self):
+        return self._name
 
 class Dimension(Parameter):
     """ Domain dimensions.
@@ -95,12 +97,19 @@ class Dimension(Parameter):
     @classmethod
     def from_single_index(cls, value, step=None, name=None):
         """ Creates dimension from single index. """
-        return cls(value, None, Dimension.indices, step=step, name=name)
+        if not step:
+            return cls(value, None, Dimension.indices, name=name)
+        else:
+            return cls(value, None, Dimension.indices, step=step, name=name)
 
     @classmethod
     def from_single_value(cls, value, step=None, name=None):
         """ Creates dimension from single value. """
-        return cls(value, None, Dimension.values, step=step, name=name)
+        
+        if not step:
+            return cls(value, None, Dimension.values, name=name)
+        else:
+            return cls(value, None, Dimension.values, step=step, name=name)
 
     def parameterize(self):
         """ Parameterizes object for get queries. """
@@ -113,10 +122,18 @@ class Dimension(Parameter):
 
         return params
 
+    def __repr__(self):
+        return 'Dimension(%r, %r, %r, %r, %r)' % (
+            self.start,
+            self.end,
+            self.step,
+            self.crs,
+            self.name)
+
     def __str__(self):
-        """ String representation. """
-        return 'Dimension(%s, %s, %s, step=%s, name="%s")' % (self.start, \
-                                                              self.end, \
-                                                              self.crs, \
-                                                              self.step, \
-                                                              self.name)
+        return '%s %s %s %s %s' % (
+            self.start, 
+            self.end, 
+            self.step, 
+            self.crs, 
+            self.name)

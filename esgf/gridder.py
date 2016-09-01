@@ -62,3 +62,17 @@ class Gridder(Parameter):
             'method': self._method,
             'grid': grid,
         }
+
+    def __repr__(self):
+        return 'Gridder(%r, %r, %r, %r)' % (
+            self._tool,
+            self._method,
+            self._grid,
+            self.name)
+
+    def __str__(self):
+        return '%s %s %s %s' % (
+            self._tool,
+            self._method,
+            self._grid,
+            self.name)
