@@ -54,8 +54,8 @@ class Variable(Parameter):
 
         domains = None
 
-        if 'domains' in data:
-            domains = data['domains']
+        if 'domain' in data:
+            domains = data['domain']
         else:
             raise WPSAPIError('Variable must provide a domain.')
 
