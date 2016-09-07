@@ -23,12 +23,12 @@ class TestVariable(TestCase):
 
     def test_from_dict(self):
         """ Test creating variable from dict representation. """
-        single_domain = {'uri': '/test.nc', 'id': 'tas|v0', 'domains': 'd0'}
+        single_domain = {'uri': '/test.nc', 'id': 'tas|v0', 'domain': 'd0'}
         multiple_domain = {'uri': '/test.nc', 'id': 'tas|v0',
-                           'domains': ['d0', 'd1']}
-        missing_uri = {'id': 'tas|v0', 'domains': 'd0'}
-        missing_id = {'uri': '/test.nc', 'domains': 'd0'}
-        missing_name = {'uri': '/test.nc', 'id': 'tas'}
+                           'domain': ['d0', 'd1']}
+        missing_uri = {'id': 'tas|v0', 'domain': 'd0'}
+        missing_id = {'uri': '/test.nc', 'domain': 'd0'}
+        missing_name = {'uri': '/test.nc', 'domain': 'd0', 'id': 'tas'}
         missing_domain = {'uri': '/test.nc', 'id': 'tas|v0'}
 
         var = Variable.from_dict(single_domain)
