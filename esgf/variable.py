@@ -72,7 +72,7 @@ class Variable(Parameter):
             json_obj['uri'],
             json_obj['id'],
             domains=domain,
-            mime_type=json_obj['mime-type'])
+            mime_type=json_obj['mime_type'])
 
     @property
     def uri(self):
@@ -136,6 +136,9 @@ class Variable(Parameter):
 
         if self.var_name:
             params['id'] += '|' + str(self.name)
+
+        if self.mime_type:
+            params['mime_type'] = self.mime_type
 
         return params
 

@@ -35,7 +35,7 @@ class TestProcess(TestCase):
         mock_output = Mock()
         mock_output.data = [
             "{\"uri\": \"file://test.nc\", \"id\": \"ta\", " +
-            "\"domain\": \"d0\", \"mime-type\": " +
+            "\"domain\": \"d0\", \"mime_type\": " +
             "\"application/netcdf\"}"]
 
         process._result.processOutputs.append(mock_output)

@@ -133,7 +133,7 @@ class TestVariable(TestCase):
             'uri': 'file://test.nc',
             'id': 'ta',
             'domain': 'd0',
-            'mime-type': 'application/netcdf'
+            'mime_type': 'application/netcdf'
         }
 
         result_json = json.dumps(result_obj)
