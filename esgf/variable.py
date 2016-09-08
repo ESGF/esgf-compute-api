@@ -32,7 +32,7 @@ class Variable(Parameter):
         self._mime_type = kwargs.get('mime_type', None)
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, domains_dict):
         """ Create variable from dict representation. """
         uri = None
 
@@ -55,7 +55,7 @@ class Variable(Parameter):
         domains = None
 
         if 'domain' in data:
-            domains = data['domain']
+            domains = domains_dict[data['domain']]
         else:
             raise WPSAPIError('Variable must provide a domain.')
 
