@@ -2,7 +2,10 @@
 
 import json
 
+from owslib.wps import WPSExecution
 from owslib.wps import WebProcessingService
+
+from lxml import etree
 
 from .errors import WPSClientError
 from .process import Process
@@ -111,13 +114,37 @@ class WPS(object):
 
         return Process.from_identifier(self, processes[0].identifier)
 
-    def execute(self, process_id, inputs, output='OUTPUT'):
+    def execute(self, process_id, inputs, store=False, status=False):
         """ Formats data and executs WPS process. """
         input_list = [
             (key, value) for key, value in inputs.iteritems()
         ]
 
-        return self._service.execute(process_id, input_list, output)
+        # Unwraps self._service.execute since we may want to store execute
+        # responses but not run async on the server side. Issue with 
+        # Pywps==3.2.6 where status=True causes executing process to fork.
+        execution = WPSExecution(version=self._service.version,
+                                 url=self._service.url,
+                                 username=self._service.username,
+                                 password=self._service.password,
+                                 verbose=self._service.verbose)
+
+        request_element = execution.buildRequest(process_id, input_list, output='output')
+
+        request_document = request_element.xpath(
+            '/wps100:Execute/wps100:ResponseForm/wps100:ResponseDocument',
+            namespaces=request_element.nsmap)[0]
+
+        request_document.set('status', str(status))
+        request_document.set('storeExecuteResponse', str(store))
+
+        execution.request = etree.tostring(request_element)
+
+        response = execution.submitRequest(execution.request) 
+
+        execution.parseResponse(response)
+
+        return execution
 
     def __iter__(self):
         for proc in self._service.processes:

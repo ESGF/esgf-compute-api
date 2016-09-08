@@ -71,7 +71,7 @@ class Process(object):
 
         self._result.checkStatus(sleepSecs=sleep_secs)
 
-    def execute(self, variable, domains, parameters=None, output=None):
+    def execute(self, variable, domains, parameters=None, store=False, status=False):
         """ Passes process parameters to WPS to execute. """
         if parameters:
             for param in parameters:
@@ -83,7 +83,10 @@ class Process(object):
             'operation': self._operation.parameterize(),
         }
 
-        self._result = self._wps.execute(self._operation.name, inputs, output)
+        self._result = self._wps.execute(self._operation.name,
+                                         inputs,
+                                         store=store,
+                                         status=status)
 
     def __repr__(self):
         return 'Process(wps=%r, operation=%r)' % (self._wps, self._operation)
