@@ -75,16 +75,10 @@ class TestWPS(TestCase):
         with self.assertRaises(WPSClientError) as ctx:
             print wps.identification
 
-        self.assertEqual(ctx.exception.message,
-                         'Verify http://localhost:9999/wps is correct and' +
-                         ' WPS.init() was called.')
-
+        wps = WPS('http://localhost:9999/wps')
+        
         with self.assertRaises(WPSClientError) as ctx:
             print wps.provider
-
-        self.assertEqual(ctx.exception.message,
-                         'Verify http://localhost:9999/wps is correct and' +
-                         ' WPS.init() was called.')
 
     @patch('esgf.wps.WebProcessingService')
     # pylint: disable=no-self-use

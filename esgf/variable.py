@@ -52,10 +52,15 @@ class Variable(Parameter):
         else:
             raise WPSAPIError('Variable must provide an id.')
 
-        domains = None
+        domains = []
 
         if 'domain' in data:
-            domains = domains_dict[data['domain']]
+            if not isinstance(data['domain'], (list, tuple)):
+                domain_data = [data['domain']]
+            else:
+                domain_data = data['domain']
+
+            domains = [domains_dict[x] for x in domain_data]
         else:
             raise WPSAPIError('Variable must provide a domain.')
 

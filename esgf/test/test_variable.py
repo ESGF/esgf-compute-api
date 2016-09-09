@@ -31,14 +31,19 @@ class TestVariable(TestCase):
         missing_name = {'uri': '/test.nc', 'domain': 'd0', 'id': 'tas'}
         missing_domain = {'uri': '/test.nc', 'id': 'tas|v0'}
 
-        var = Variable.from_dict(single_domain)
+        domains = {
+            'd0': 'd0',
+            'd1': 'd1',
+        }
+
+        var = Variable.from_dict(single_domain, domains)
 
         self.assertEqual(var.uri, '/test.nc')
         self.assertEqual(var.var_name, 'tas')
         self.assertEqual(var.name, 'v0')
-        self.assertEqual(var.domains, 'd0')
+        self.assertEqual(var.domains, ['d0'])
 
-        var = Variable.from_dict(multiple_domain)
+        var = Variable.from_dict(multiple_domain, domains)
 
         self.assertEqual(var.uri, '/test.nc')
         self.assertEqual(var.var_name, 'tas')
@@ -46,25 +51,25 @@ class TestVariable(TestCase):
         self.assertListEqual(var.domains, ['d0', 'd1'])
 
         with self.assertRaises(WPSAPIError) as ctx:
-            var = Variable.from_dict(missing_uri)
+            var = Variable.from_dict(missing_uri, domains)
 
         self.assertEqual(ctx.exception.message,
                          'Variable must provide a uri.')
 
         with self.assertRaises(WPSAPIError) as ctx:
-            var = Variable.from_dict(missing_id)
+            var = Variable.from_dict(missing_id, domains)
 
         self.assertEqual(ctx.exception.message,
                          'Variable must provide an id.')
 
         with self.assertRaises(WPSAPIError) as ctx:
-            var = Variable.from_dict(missing_name)
+            var = Variable.from_dict(missing_name, domains)
 
         self.assertEqual(ctx.exception.message,
                          'Variable id must contain a variable name and id.')
 
         with self.assertRaises(WPSAPIError) as ctx:
-            var = Variable.from_dict(missing_domain)
+            var = Variable.from_dict(missing_domain, domains)
 
         self.assertEqual(ctx.exception.message,
                          'Variable must provide a domain.')

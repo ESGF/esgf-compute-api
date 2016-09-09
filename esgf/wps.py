@@ -5,6 +5,8 @@ import json
 from owslib.wps import WPSExecution
 from owslib.wps import WebProcessingService
 
+from requests.exceptions import ConnectionError
+
 from lxml import etree
 
 from .errors import WPSClientError
@@ -65,22 +67,28 @@ class WPS(object):
             verbose=False,
             skip_caps=True)
 
-    def init(self):
+        self._init = False
+
+    def init(self, force=False):
         """ Executes WPS GetCapabilites request.
 
         Retrieves a servers description data (identification and provider)
         and its processes.
 
         """
-        self._service.getcapabilities()
+        if not self._init or force:
+            if not self._init:
+                self._init = True
+
+            try:
+                self._service.getcapabilities()
+            except ConnectionError as e:
+                raise WPSClientError(e.message)
 
     @property
     def identification(self):
         """ Returns identification data as JSON. """
-        if not self._service.identification:
-            raise WPSClientError(
-                'Verify %s is correct and WPS.init() was called.' %
-                (self._url,))
+        self.init()
 
         ident = self._service.identification
 
@@ -89,10 +97,7 @@ class WPS(object):
     @property
     def provider(self):
         """ Returns provider data as JSON. """
-        if not self._service.provider:
-            raise WPSClientError(
-                'Verify %s is correct and WPS.init() was called.' %
-                (self._url,))
+        self.init()
 
         prov = self._service.provider
 
@@ -106,6 +111,8 @@ class WPS(object):
 
     def get_process(self, name):
         """ Returns process from name. """
+        self.init()
+
         processes = [proc for proc in self._service.processes
                      if proc.identifier == name]
 

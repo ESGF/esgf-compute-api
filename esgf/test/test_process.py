@@ -3,10 +3,11 @@ Process Unittest.
 """
 
 import re
+import json
 
 from unittest import TestCase
 
-from mock import patch, Mock
+from mock import patch, Mock, call
 
 from esgf import WPS
 from esgf import Process
@@ -97,10 +98,10 @@ class TestProcess(TestCase):
         self.assertIsNotNone(process)
         self.assertEqual(process.name, 'OP.test')
 
-    @patch('esgf.wps.WebProcessingService')
-    def test_execute(self, mock_service):
+    @patch('esgf.wps.WPS')
+    def test_execute(self, mock_wps):
         """ Test simple execute. """
-        wps = WPS('http://localhost:8000/wps')
+        wps = mock_wps.return_value
 
         process = Process.from_name(wps, 'OP', 'test')
 
@@ -116,11 +117,17 @@ class TestProcess(TestCase):
 
         process.execute(variable, [domain0], [domain0])
 
-        mock_inst = mock_service.return_value
+        parameters = {
+            'variable': json.dumps(variable.parameterize()),
+            'domain': json.dumps([domain0.parameterize()]),
+            'operation': 'd0',
+        }
 
-        mock_inst.execute.assert_called_once()
+        expected = [
+            call.execute('OP.test', parameters, status=False, store=False)
+        ]
 
-        self.assertEqual(mock_inst.execute.call_args_list[0][0][0], 'OP.test')
+        self.assertEqual(wps.mock_calls, expected)
 
     def test_str(self):
         """ Tests __str__. """
