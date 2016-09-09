@@ -71,6 +71,12 @@ class Process(object):
 
         self._result.checkStatus(sleepSecs=sleep_secs)
 
+    def __nonzero__(self):
+        """ Returns true while process is still executing. """
+        self.check_status()
+
+        return True if self.status.lower() != 'processsucceeded' else False
+
     def execute(self, variable, domains, parameters=None, store=False, status=False):
         """ Passes process parameters to WPS to execute. """
         if parameters:
