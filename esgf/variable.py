@@ -66,19 +66,6 @@ class Variable(Parameter):
 
         return cls(uri, var_name, domains=domains, name=name)
 
-    @classmethod
-    def from_json(cls, json_raw):
-        """ Creates variable from json. """
-        json_obj = json.loads(json_raw)
-
-        domain = Domain(name=json_obj['domain'])
-
-        return cls(
-            json_obj['uri'],
-            json_obj['id'],
-            domains=domain,
-            mime_type=json_obj['mime_type'])
-
     @property
     def uri(self):
         """ Uri to file. """
@@ -120,14 +107,6 @@ class Variable(Parameter):
 
         with open(out_path, 'wb') as out_file:
             download_fn(out_file, chunk_size)
-
-    def download_as_str(self):
-        """ Download the contents as a string. """
-        output = StringIO()
-
-        self._download_http(output, None)
-
-        return output.getvalue()
 
     def parameterize(self):
         """ Parameterize variable for GET request. """

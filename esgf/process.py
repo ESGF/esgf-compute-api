@@ -4,6 +4,8 @@ Process Module.
 
 import json
 
+from tempfile import NamedTemporaryFile
+
 from .errors import WPSServerError
 from .operation import Operation
 from .variable import Variable
@@ -57,11 +59,20 @@ class Process(object):
     @property
     def output(self):
         """ Process output. """
-        if not self._result or not len(self._result.processOutputs):
+        if not self._result.isSucceded():
             raise WPSServerError(
                 'Process has no output, possibly process execution error.')
 
-        return Variable.from_json(self._result.processOutputs[0].data[0])
+        output = None
+
+        with NamedTemporaryFile() as temp_file:
+            self._result.getOutput(temp_file.name)
+
+            json_obj = json.load(temp_file)
+
+            output = Variable.from_dict(json_obj, self._domains)
+
+        return output
 
     def check_status(self, sleep_secs=0):
         """ Retrieves latest status from server. """
@@ -82,6 +93,8 @@ class Process(object):
         if parameters:
             for param in parameters:
                 self._operation.add_parameter(param)
+
+        self._domains = dict((x.name, x) for x in domains)
 
         inputs = {
             'domain': json.dumps([x.parameterize() for x in domains]),
