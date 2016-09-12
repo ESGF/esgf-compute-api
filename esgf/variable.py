@@ -3,6 +3,7 @@ Variable module.
 """
 from StringIO import StringIO
 
+import os
 import json
 import requests
 
@@ -107,6 +108,8 @@ class Variable(Parameter):
 
         with open(out_path, 'wb') as out_file:
             download_fn(out_file, chunk_size)
+
+        return os.path.abspath(out_path)
 
     def parameterize(self):
         """ Parameterize variable for GET request. """
