@@ -88,7 +88,7 @@ class Process(object):
 
         return True if self.status.lower() != 'processsucceeded' else False
 
-    def execute(self, variable, domains, parameters=None, store=False, status=False):
+    def execute(self, variable, domains=None, parameters=None, store=False, status=False):
         """ Passes process parameters to WPS to execute. """
         if parameters:
             for param in parameters:

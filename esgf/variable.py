@@ -62,8 +62,6 @@ class Variable(Parameter):
                 domain_data = data['domain']
 
             domains = [domains_dict[x] for x in domain_data]
-        else:
-            raise WPSAPIError('Variable must provide a domain.')
 
         return cls(uri, var_name, domains=domains, name=name)
 
