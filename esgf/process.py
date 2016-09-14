@@ -17,6 +17,7 @@ class Process(object):
     def __init__(self, wps, operation):
         """ Process init. """
         self._wps = wps
+        self._domains = []
         self._operation = operation
         self._result = None
 
@@ -94,10 +95,11 @@ class Process(object):
             for param in parameters:
                 self._operation.add_parameter(param)
 
-        self._domains = dict((x.name, x) for x in domains)
+        if domains:
+            self._domains = dict((x.name, x) for x in domains)
 
         inputs = {
-            'domain': json.dumps([x.parameterize() for x in domains]),
+            'domain': json.dumps([x.parameterize() for x in self._domains]),
             'variable': json.dumps(variable.parameterize()),
             'operation': self._operation.parameterize(),
         }
