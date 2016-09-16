@@ -63,7 +63,12 @@ class Variable(Parameter):
 
             domains = [domains_dict[x] for x in domain_data]
 
-        return cls(uri, var_name, domains=domains, name=name)
+        mime_type = None
+
+        if 'mime_type' in data:
+            mime_type = data['mime_type']
+
+        return cls(uri, var_name, domains=domains, name=name, mime_type=mime_type)
 
     @property
     def uri(self):

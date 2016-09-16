@@ -99,7 +99,8 @@ class Process(object):
             self._domains = dict((x.name, x) for x in domains)
 
         inputs = {
-            'domain': json.dumps([x.parameterize() for x in self._domains]),
+            'domain': json.dumps([dom.parameterize()
+                                 for name, dom in self._domains.iteritems()]),
             'variable': json.dumps(variable.parameterize()),
             'operation': self._operation.parameterize(),
         }

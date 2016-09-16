@@ -68,27 +68,6 @@ class TestVariable(TestCase):
         self.assertEqual(ctx.exception.message,
                          'Variable id must contain a variable name and id.')
 
-        with self.assertRaises(WPSAPIError) as ctx:
-            var = Variable.from_dict(missing_domain, domains)
-
-        self.assertEqual(ctx.exception.message,
-                         'Variable must provide a domain.')
-
-    @patch('esgf.variable.requests')
-    def test_download_as_str(self, mock_requests):
-        """ Download output as string. """
-
-        # Mock requests.reponse.iter_content method
-        get_mock = Mock()
-        get_mock.iter_content.return_value = mock_gen()
-
-        # Mock requests.get returned response
-        mock_requests.get.return_value = get_mock
-
-        variable = Variable('file://test.nc', 'ta')
-
-        self.assertEqual(variable.download_as_str(), 'hello you person')
-
     @patch('esgf.variable.requests')
     @patch('esgf.variable.open')
     def test_download(self, mock_open, mock_requests):
@@ -131,24 +110,6 @@ class TestVariable(TestCase):
         variable.download('./test.json')
 
         self.assertItemsEqual(mock_open.return_value.data, MOCK_DATA)
-
-    def test_from_json(self):
-        """ Creation from json. """
-        result_obj = {
-            'uri': 'file://test.nc',
-            'id': 'ta',
-            'domain': 'd0',
-            'mime_type': 'application/netcdf'
-        }
-
-        result_json = json.dumps(result_obj)
-
-        variable = Variable.from_json(result_json)
-
-        self.assertEqual(variable.uri, 'file://test.nc')
-        self.assertEqual(variable.var_name, 'ta')
-        self.assertIsNotNone(variable.domains)
-        self.assertEqual(variable.mime_type, 'application/netcdf')
 
     def test_optional_init(self):
         """ Tests optional init. """

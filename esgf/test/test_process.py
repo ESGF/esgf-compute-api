@@ -22,28 +22,35 @@ from . import MockPrint
 class TestProcess(TestCase):
     """ Process Test Case. """
 
+    def write_test_output(self, temp_file_path):
+        output = {
+            'uri': 'file:///test.nc',
+            'id': 'ta|v0',
+            'domain': [],
+            'mime_type': 'application/netcdf',
+        }
+
+        with open(temp_file_path, 'w') as temp_file:
+            json.dump(output, temp_file)
+
     def test_output(self):
         """ Process output. """
         wps = WPS('http://localhost:8000/wps')
 
         process = Process.from_identifier(wps, 'test.echo')
 
-        process._result = Mock(processOutputs=[])
+        process._result = Mock()
+        process._result.isSucceded.return_value = False
 
         with self.assertRaises(WPSServerError):
-            print process.output
+            output = process.output
 
-        mock_output = Mock()
-        mock_output.data = [
-            "{\"uri\": \"file://test.nc\", \"id\": \"ta\", " +
-            "\"domain\": \"d0\", \"mime_type\": " +
-            "\"application/netcdf\"}"]
-
-        process._result.processOutputs.append(mock_output)
+        process._result.isSucceded.return_value = True
+        process._result.getOutput = self.write_test_output
 
         output = process.output
 
-        self.assertEqual(output.uri, 'file://test.nc')
+        self.assertEqual(output.uri, 'file:///test.nc')
         self.assertEqual(output.var_name, 'ta')
         self.assertIsNotNone(output.domains)
         self.assertEqual(output.mime_type, 'application/netcdf')
