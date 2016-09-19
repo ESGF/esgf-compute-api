@@ -30,3 +30,6 @@ class NamedParameter(Parameter):
         return 'NamedParameter(%r, %r)' % (
             self.name,
             self.values)
+
+    def __str__(self):
+        return '%s %s' % (self.name, self.values)

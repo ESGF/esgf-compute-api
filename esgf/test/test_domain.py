@@ -11,6 +11,20 @@ from esgf import Dimension
 class TestDomain(TestCase):
     """ Domain Test Case """
 
+    def test_repr(self):
+        """ Test repr value. """
+        domain = Domain([], None, 'd0')
+
+        self.assertEqual(repr(domain),
+                         """Domain([], None, 'd0')""")
+    
+    def test_str(self):
+        """ Test str value. """
+        domain = Domain([], None, 'd0')
+
+        self.assertEqual(str(domain),
+                         """[] None, d0""")
+
     def test_from_dict(self):
         """ Create domain from dict representation. """
         single_dim = {"id": "d0",

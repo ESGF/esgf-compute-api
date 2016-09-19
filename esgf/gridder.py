@@ -11,9 +11,9 @@ class Gridder(Parameter):
 
     Defines a regridding to be performed during an operation.
     """
-    def __init__(self, tool='esmf', method='linear', grid='T85', name=None):
+    def __init__(self, tool='esmf', method='linear', grid='T85'):
         """ Gridder Init. """
-        super(Gridder, self).__init__(name)
+        super(Gridder, self).__init__('gridder')
 
         self._tool = tool
         self._method = method

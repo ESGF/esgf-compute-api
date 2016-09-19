@@ -184,15 +184,13 @@ class Operation(Parameter):
         return [x for x in self._parameters if isinstance(x, Operation)]
 
     def __repr__(self):
-        return 'Operation(%r, %r, %r, %r)' % (
+        return 'Operation(%r, %r, %r)' % (
             self.name,
             self._parameters,
-            self._var_name,
-            self._name)
+            self._var_name)
 
     def __str__(self):
-        return '%s %s %s %s' % (
+        return '%s %s %s' % (
             self.name,
             self._parameters,
-            self._var_name,
-            self._name)
+            self._var_name)

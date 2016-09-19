@@ -22,6 +22,21 @@ from . import MockPrint
 class TestProcess(TestCase):
     """ Process Test Case. """
 
+    def test_bool(self):
+        """ Test status reporting. """
+
+        wps = WPS('http://localhost:8000/wps')
+
+        process = Process.from_identifier(wps, 'test.echo')
+        process.check_status = Mock(return_value=True)
+        process._result = Mock(status='test')
+
+        self.assertEqual(bool(process), True)
+
+        process._result.status = 'processsucceeded'
+
+        self.assertEqual(bool(process), False)
+
     def write_test_output(self, temp_file_path):
         output = {
             'uri': 'file:///test.nc',

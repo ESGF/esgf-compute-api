@@ -10,6 +10,21 @@ from esgf import Variable
 
 class TestGridder(TestCase):
     """ Gridder Test Case. """
+
+    def test_repr(self):
+        """ Test repr value. """
+        gridder = Gridder('scrip', 'nearestneighbor', 'T95')
+
+        self.assertEqual(repr(gridder),
+                         """Gridder('scrip', 'nearestneighbor', 'T95', 'gridder')""")
+
+    def test_str(self):
+        """ Test str value. """
+        gridder = Gridder('scrip', 'nearestneighbor', 'T95')
+
+        self.assertEqual(str(gridder),
+                         """scrip nearestneighbor T95 gridder""")
+
     def test_gridder(self):
         """ Init and type checking. """
         gridder = Gridder('scrip', 'nearestneighbor', 'T95')

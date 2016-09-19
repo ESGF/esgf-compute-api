@@ -14,6 +14,14 @@ from esgf import Variable
 class TestOperation(TestCase):
     """ Operation Test Case. """
 
+    def test_str(self):
+        """ Test str value. """
+
+        test = Operation('OP', 'test', [], 'test')
+
+        self.assertEqual(str(test),
+                         """OP.test [] test""")
+
     def test_from_str(self):
         """ Test creating operation from str. """
 

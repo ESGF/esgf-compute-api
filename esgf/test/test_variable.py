@@ -21,6 +21,33 @@ def mock_gen():
 class TestVariable(TestCase):
     """ Variable Test Case. """
 
+    def test_repr(self):
+        """ Test repr value. """
+        var = Variable('file:///test.nc', 'tas', name='v0', mime_type='application/netcdf')
+
+        self.assertEqual(repr(var),
+                         """Variable('v0' 'file:///test.nc' 'tas' None 'application/netcdf')""")
+        
+    def test_str(self):
+        """ Test str value. """
+        var = Variable('file:///test.nc', 'tas', name='v0', mime_type='application/netcdf')
+
+        self.assertEqual(str(var),
+                         """v0 file:///test.nc tas None application/netcdf""")
+
+    def test_mime_type(self):
+        """ Tests mime_type. """
+        output = {
+            'uri': 'file:///test.nc',
+            'mime_type': 'application/netcdf',
+            'id': 'tas|v0',
+        }
+
+        var = Variable('file:///test.nc', 'tas', name='v0', mime_type='application/netcdf')
+
+        self.assertEqual(var.parameterize(),
+                         output)
+
     def test_from_dict(self):
         """ Test creating variable from dict representation. """
         single_domain = {'uri': '/test.nc', 'id': 'tas|v0', 'domain': 'd0'}

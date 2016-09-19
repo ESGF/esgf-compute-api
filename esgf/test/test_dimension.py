@@ -14,6 +14,20 @@ from mock import patch
 class TestDimension(TestCase):
     """ Test Case for Dimension class. """
 
+    def test_repr(self):
+        """ Test repr value. """
+        dim = Dimension(0, 10, Dimension.values, name='lat')
+
+        self.assertEqual(repr(dim),
+                         """Dimension(0, 10, 1, CRS('values'), 'lat')""")
+
+    def test_str(self):
+        """ Test str value. """
+        dim = Dimension(0, 10, Dimension.values, name='lat')
+
+        self.assertEqual(str(dim),
+                         """0 10 1 values lat""")
+
     def test_from_dict(self):
         """ Create Dimension from dict representation. """
 
@@ -141,11 +155,11 @@ class TestDimension(TestCase):
         self.assertEqual(dim.step, 1)
         self.assertIsNotNone(dim.name)
 
-        dim = Dimension.from_single_index(-180, step=2)
+        dim = Dimension.from_single_value(-180, step=2)
 
         self.assertEqual(dim.step, 2)
 
-        dim = Dimension.from_single_index(-180, name='longitude')
+        dim = Dimension.from_single_value(-180, name='longitude')
 
         self.assertEqual(dim.name, 'longitude')
 

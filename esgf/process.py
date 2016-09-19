@@ -17,7 +17,7 @@ class Process(object):
     def __init__(self, wps, operation):
         """ Process init. """
         self._wps = wps
-        self._domains = []
+        self._domains = {}
         self._operation = operation
         self._result = None
 

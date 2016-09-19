@@ -9,6 +9,22 @@ from esgf import Mask
 class TestMask(TestCase):
     """ Mask Test Case. """
 
+    def test_repr(self):
+        """ Test repr value. """
+
+        mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='North')
+
+        self.assertEqual(repr(mask),
+                         """Mask('file://test.nc', 'ta', 'var_data>mask_data', 'North')""")
+
+    def test_str(self):
+        """ Test str value. """
+
+        mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='North')
+
+        self.assertEqual(str(mask),
+                         """file://test.nc ta var_data>mask_data North""")
+
     def test_from_dict(self):
         """ Create Mask from dict representation. """
         valid = {"uri": "/test.nc", "id": "tas|m0", "operation": "test_op"}

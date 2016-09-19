@@ -32,3 +32,9 @@ class Parameter(object):
         can be used as a value for a GET parameter.
         """
         raise NotImplementedError
+
+    def __repr__(self):
+        return 'Parameter(%r)' % self._name
+
+    def __str__(self):
+        return '%s' % self._name

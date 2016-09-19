@@ -3,21 +3,48 @@ WPS unittest.
 """
 
 import re
+import json
 
 from unittest import TestCase
 
 from mock import patch
 from mock import Mock
+from mock import call
 
 from esgf import WPS
 from esgf import WPSClientError
 from esgf import Process
+from esgf import Variable
 
 from . import MockPrint
 from . import test_data
 
 class TestWPS(TestCase):
     """ Test Case for WPS class. """
+
+    @patch('esgf.wps.etree')
+    @patch('esgf.wps.WPSExecution')
+    def test_execute(self, mock_execution, mock_etree):
+        """ Test execute method. """
+        execution_inst = mock_execution.return_value
+
+        wps = WPS('http://localhost:8000/wps')
+
+        process = Process.from_identifier(wps, 'test.echo')
+
+        v0 = Variable('file:///test.nc', 'tas', name='v0') 
+
+        process.execute(v0)
+
+        execution_inst.buildRequest.assert_called_once()
+        self.assertEquals(execution_inst.buildRequest.call_args,
+                          call('test.echo',
+                               [
+                                   ('variable', json.dumps(v0.parameterize())),
+                                   ('domain', '[]'),
+                                   ('operation', ''),
+                               ],
+                               output='output'))
 
     @patch('esgf.wps.WebProcessingService')
     def test_get_process(self, mock_service):
