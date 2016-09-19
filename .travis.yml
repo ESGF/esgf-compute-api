@@ -18,9 +18,6 @@ install:
 - pip install -r requirements.txt
 - python setup.py install
 
-before_script:
-- pylint esgf/
-
 script:
 - coverage run --source=esgf -m esgf.test.runtests
 - python -m esgf.test.runtests
