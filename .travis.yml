@@ -13,6 +13,7 @@ install:
 - conda update -q conda
 - conda info -a
 - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION lxml
+- source activate test-environment
 - pip install mock pylint coverage setuptools coveralls
 - pip install -r requirements.txt
 - python setup.py install
