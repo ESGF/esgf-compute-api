@@ -115,7 +115,7 @@ class TestProcess(TestCase):
         """ Test creating Process from name. """
         wps = WPS('http://localhost:8000/wps')
 
-        process = Process.from_name(wps, 'OP', 'test')
+        process = Process.from_identifier(wps, 'OP.test')
 
         self.assertIsNotNone(process)
         self.assertEqual(process.name, 'OP.test')
@@ -125,7 +125,7 @@ class TestProcess(TestCase):
         """ Test simple execute. """
         wps = mock_wps.return_value
 
-        process = Process.from_name(wps, 'OP', 'test')
+        process = Process.from_identifier(wps, 'OP.test')
 
         self.assertIsNotNone(process)
 
@@ -155,7 +155,7 @@ class TestProcess(TestCase):
         """ Tests __str__. """
         wps = WPS('http://localhost:8000/wps')
 
-        process = Process.from_name(wps, 'OP', 'test')
+        process = Process.from_identifier(wps, 'OP.test')
 
         with MockPrint() as ctx:
             print process
@@ -166,7 +166,7 @@ class TestProcess(TestCase):
         """ Tests __repr__. """
         wps = WPS('http://localhost:8000/wps')
 
-        process = Process.from_name(wps, 'OP', 'test')
+        process = Process.from_identifier(wps, 'OP.test')
 
         with MockPrint() as ctx:
             print '%r' % (process,)

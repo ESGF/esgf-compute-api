@@ -22,18 +22,9 @@ class Process(object):
         self._result = None
 
     @classmethod
-    def from_name(cls, wps, method, kernel):
-        """ Helper crate process from method and kernel. """
-        operation = Operation(method, kernel)
-
-        return cls(wps, operation)
-
-    @classmethod
     def from_identifier(cls, wps, identifier):
         """ Helper create process from identifer. """
-        method, kernel = identifier.split('.')
-
-        operation = Operation(method, kernel)
+        operation = Operation(identifier)
 
         return cls(wps, operation)
 

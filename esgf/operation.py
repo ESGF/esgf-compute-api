@@ -22,9 +22,9 @@ class Operation(Parameter):
     by itself, have parallel operations as parameters, or even build a
     dependency tree of operations.
     """
-    def __init__(self, module, kernel, parameters=None, var_name=None):
+    def __init__(self, identifier, parameters=None, var_name=None):
         """ Operation init. """
-        super(Operation, self).__init__('%s.%s' % (module, kernel))
+        super(Operation, self).__init__(identifier)
 
         self.resolved = False
 
@@ -54,7 +54,7 @@ class Operation(Parameter):
             else:
                 parameters.append(Parameter(arg))
 
-        return cls(identifier, '', parameters=parameters)
+        return cls(identifier, parameters=parameters)
 
     @property
     def parameters(self):
