@@ -11,15 +11,16 @@ from .operation import Operation
 from .variable import Variable
 
 class Process(object):
-    """ Process class.
+    """ Process class. """
 
-    """
     def __init__(self, wps, operation):
         """ Process init. """
         self._wps = wps
-        self._domains = {}
-        self._operation = operation
         self._result = None
+    
+        self._variable = {}
+        self._domain = {}
+        self._operation = operation
 
     @classmethod
     def from_identifier(cls, wps, identifier):
@@ -62,7 +63,7 @@ class Process(object):
 
             json_obj = json.load(temp_file)
 
-            output = Variable.from_dict(json_obj, self._domains)
+            output = Variable.from_dict(json_obj, self._domain)
 
         return output
 
@@ -80,25 +81,34 @@ class Process(object):
 
         return True if self.status.lower() != 'processsucceeded' else False
 
-    def execute(self, variable, domains=None, parameters=None, store=False, status=False):
+    def execute(self, variable=None, domain=None, parameter=None, store=False, status=False):
         """ Passes process parameters to WPS to execute. """
-        if parameters:
-            for param in parameters:
+        if variable:
+            if not isinstance(variable, (list, tuple)):
+                variable = [variable]
+
+            for var in variable:
+                self._operation.add_input(var)
+
+        if domain:
+            self._operation.domain = domain
+
+        if parameter:
+            for param in parameter:
                 self._operation.add_parameter(param)
 
-        if domains:
-            self._domains = dict((x.name, x) for x in domains)
+        self._variable, self._domain = self._operation.gather()
 
-        inputs = {
-            'domain': [dom.parameterize() for name, dom in self._domains.iteritems()],
-            'variable': variable.parameterize(),
-            'operation': self._operation.parameterize(),
+        datainputs = {
+            'variable': [x.parameterize() for x in self._variable],
+            'domain': [x.parameterize() for x in self._domain],
+            'operation': self._operation.flatten(),
         }
 
         self._result = self._wps.execute(self._operation.identifier,
-                                         inputs,
-                                         store=store,
-                                         status=status)
+                                         datainputs,
+                                         status=status,
+                                         store=store)
 
     def __repr__(self):
         return 'Process(wps=%r, operation=%r)' % (self._wps, self._operation)

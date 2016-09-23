@@ -34,16 +34,16 @@ class TestWPS(TestCase):
 
         v0 = Variable('file:///test.nc', 'tas', name='v0') 
 
-        process.execute(v0)
+        process.execute(variable=v0)
 
         execution_inst.buildRequest.assert_called_once()
 
         self.assertEquals(execution_inst.buildRequest.call_args,
                           call('test.echo',
                                [
-                                   ('variable', json.dumps(v0.parameterize())),
+                                   ('variable', json.dumps([v0.parameterize()])),
                                    ('domain', '[]'),
-                                   ('operation', json.dumps(process._operation.parameterize())),
+                                   ('operation', json.dumps(process._operation.flatten())),
                                ],
                                output='output'))
 

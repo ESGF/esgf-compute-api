@@ -4,6 +4,7 @@ Operation Module.
 
 from uuid import uuid4
 
+from .variable import Variable
 from .parameter import Parameter
 from .named_parameter import NamedParameter
 
@@ -18,10 +19,11 @@ class Operation(Parameter):
         """ Operation init. """
         super(Operation, self).__init__(kwargs.get('name', None))
 
+        self.domain = None
+        self.input = []
+        self.parameters = []
+
         self._identifier = identifier
-        self._domain = None
-        self._input = []
-        self._parameters = []
 
     @classmethod
     def from_dict(cls, data):
@@ -54,36 +56,56 @@ class Operation(Parameter):
         """ Operation identifer. """
         return self._identifier
 
-    def _domain(self, value):
-        """ Domain setter. """
-        self._domain = value
-
-    domain = property(None, _domain)
-
     def add_input(self, input_param):
         """ Adds input to operation. """
-        self._input.append(input_param)
+        self.input.append(input_param)
 
     def add_parameter(self, param):
         """ Adds a parameter to operation. """
-        self._parameters.append(param)
+        self.parameters.append(param)
+
+    def variables(self):
+        return [x for x in self.input if isinstance(x, Variable)]
+
+    def gather(self):
+        """ Gathers variables and domains. """
+        var_dict = {}
+        dom_dict = {}
+
+        for param in self.parameters:
+            for var in param.variables():
+                var_dict[var.name] = var
+
+            dom_dict[param.domain.name] = param.domain
+
+        for var in self.variables():
+            var_dict[var.name] = var
+
+        if self.domain:
+            dom_dict[self.domain.name] = self.domain
+
+        return var_dict.values(), dom_dict.values()
+
+    def flatten(self):
+        """ Flattens operation tree. """
+        if not len(self.parameters):
+            return [self.parameterize()]
+
+        return [param.parameterize() for param in self.parameters]
 
     def parameterize(self):
         """ Parameterizes the operation. """
         params = {
             'name': self._identifier,
-            'input': [param.name for param in self._input],
+            'input': [param.name for param in self.input],
             'result': self.name,
         }
 
-        if self._domain:
-            params['domain'] = self._domain.name
+        if self.domain:
+            params['domain'] = self.domain.name
 
-        if len(self._parameters):
-            for param in self._parameters:
-                if isinstance(param, NamedParameter):
-                    params[param.name] = '|'.join(param.values)
-                else:
-                    params[param.name] = param.name
+        if len(self.parameters):
+            for param in self.parameters:
+                params[param.name] = '|'.join(param.values)
 
         return params

@@ -15,6 +15,8 @@ from esgf import Variable
 from esgf import Dimension
 from esgf import Domain
 from esgf import WPSServerError
+from esgf import NamedParameter
+from esgf import Operation
 
 from . import MockPrint
 
@@ -121,35 +123,149 @@ class TestProcess(TestCase):
         self.assertEqual(process.name, 'OP.test')
 
     @patch('esgf.wps.WPS')
-    def test_execute(self, mock_wps):
+    def test_multiple_serial_process(self, mock_wps):
+        """ Tests executing single process. """
+        wps = mock_wps.return_value
+
+        process = Process.from_identifier(wps, 'OP.workflow')
+
+        variable = Variable('file:///test.nc', 'tas', name='v0')
+
+        domain = Domain([
+            Dimension.from_single_value(1998, name='time'),
+        ], name='d0')
+
+        axes = NamedParameter('axes', 't')
+
+        op1 = Operation('CDS.timeBin', name='cycle')
+        op1.add_input(variable)
+        op1.domain = domain
+        op1.add_parameter(axes)
+        op1.add_parameter(NamedParameter('bins', 't', 'month', 'ave', 'year'))
+
+        op2 = Operation('CDS.diff2')
+        op2.add_input(variable)
+        op2.add_input(op1)
+        op2.domain = domain
+        op2.add_parameter(axes)
+
+        process.execute(parameter=[op1, op2])
+
+        expected = [
+            call.execute('OP.workflow',
+                         {
+                             'variable': [
+                                 {
+                                     'uri': 'file:///test.nc',
+                                     'id': 'tas|v0',
+                                 }
+                             ],
+                             'domain': [
+                                 {
+                                     'id': 'd0',
+                                     'time': {
+                                         'start': 1998,
+                                         'step': 1,
+                                         'end': None,
+                                         'crs': 'values',
+                                     },
+                                 }
+                             ],
+                             'operation': [
+                                 {
+                                     'name': 'CDS.timeBin',
+                                     'input': ['v0'],
+                                     'result': 'cycle',
+                                     'domain': 'd0',
+                                     'axes': 't',
+                                     'bins': 't|month|ave|year',
+                                 },
+                                 {
+                                     'name': 'CDS.diff2',
+                                     'input': ['v0', 'cycle'],
+                                     'result': op2.name,
+                                     'domain': 'd0',
+                                     'axes': 't'
+                                 }
+                             ]
+                         },
+                         status=False,
+                         store=False)
+        ]
+
+        self.assertEqual(expected, wps.mock_calls)
+
+    @patch('esgf.wps.WPS')
+    def test_single_process(self, mock_wps):
+        """ Tests executing single process. """
+        wps = mock_wps.return_value
+
+        process = Process.from_identifier(wps, 'OP.test')
+
+        variable = Variable('file:///test.nc', 'tas', name='v0')
+
+        domain = Domain([
+            Dimension.from_single_value(1998, name='time'),
+        ], name='d0')
+
+        process.execute(variable=variable, domain=domain)
+
+        expected = [
+            call.execute('OP.test',
+                         {
+                             'variable': [
+                                 {
+                                     'uri': 'file:///test.nc',
+                                     'id': 'tas|v0',
+                                 }
+                             ],
+                             'domain': [
+                                 {
+                                     'id': 'd0',
+                                     'time': {
+                                         'start': 1998,
+                                         'step': 1,
+                                         'end': None,
+                                         'crs': 'values',
+                                     },
+                                 }
+                             ],
+                             'operation': [
+                                 {
+                                     'input': ['v0'],
+                                     'domain': 'd0',
+                                     'name': 'OP.test',
+                                     'result': process._operation.name,
+                                 }
+                             ]
+                         },
+                         status=False,
+                         store=False)
+        ]
+
+        self.assertEqual(expected, wps.mock_calls)
+
+    @patch('esgf.wps.WPS')
+    def test_simple_execute(self, mock_wps):
         """ Test simple execute. """
         wps = mock_wps.return_value
 
         process = Process.from_identifier(wps, 'OP.test')
 
-        self.assertIsNotNone(process)
-
-        variable = Variable('collection://MERRA/mon/atmos', 'ta', name='v0')
-
-        lat = Dimension.from_single_value(45, name='lat')
-        lon = Dimension.from_single_value(30, name='lon')
-        lev = Dimension.from_single_value(7500, name='lev')
-
-        domain0 = Domain([lat, lon, lev], name='d0')
-
-        process.execute(variable, [domain0], [domain0])
-
-        parameters = {
-            'variable': variable.parameterize(),
-            'domain': [domain0.parameterize()],
-            'operation': process._operation.parameterize(),
-        }
+        process.execute()
 
         expected = [
-            call.execute('OP.test', parameters, status=False, store=False)
+            call.execute('OP.test',
+                         {
+                             'variable': [],
+                             'domain': [],
+                             'operation': [process._operation.parameterize()],
+                         },
+                         status=False,
+                         store=False)
         ]
 
-        self.assertEqual(wps.mock_calls, expected)
+        self.assertEqual(expected, wps.mock_calls)
 
     def test_str(self):
         """ Tests __str__. """
