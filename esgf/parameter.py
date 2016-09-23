@@ -24,7 +24,7 @@ class Parameter(object):
     @property
     def name(self):
         """ Read-only name attribute. """
-        return self._name
+        return str(self._name)
 
     def parameterize(self):
         """
@@ -34,7 +34,7 @@ class Parameter(object):
         raise NotImplementedError
 
     def __repr__(self):
-        return 'Parameter(%r)' % self._name
+        return 'Parameter(%r)' % self.name
 
     def __str__(self):
-        return '%s' % self._name
+        return '%s' % self.name

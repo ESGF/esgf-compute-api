@@ -140,9 +140,9 @@ class TestProcess(TestCase):
         process.execute(variable, [domain0], [domain0])
 
         parameters = {
-            'variable': json.dumps(variable.parameterize()),
-            'domain': json.dumps([domain0.parameterize()]),
-            'operation': 'd0',
+            'variable': variable.parameterize(),
+            'domain': [domain0.parameterize()],
+            'operation': process._operation.parameterize(),
         }
 
         expected = [

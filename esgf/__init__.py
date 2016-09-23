@@ -6,8 +6,6 @@ from .mask import Mask
 from .gridder import Gridder
 
 from .operation import Operation
-from .operation import DuplicateParameterError
-
 from .process import Process
 
 from .named_parameter import NamedParameter

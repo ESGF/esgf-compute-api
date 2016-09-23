@@ -7,156 +7,120 @@ import re
 from unittest import TestCase
 
 from esgf import Operation
-from esgf import DuplicateParameterError
 from esgf import NamedParameter
 from esgf import Variable
+from esgf import Domain
 
 class TestOperation(TestCase):
     """ Operation Test Case. """
 
-    def test_str(self):
-        """ Test str value. """
+    def test_from_dict(self):
+        """ Tests creating operation from dictionary. """
+        input_dict = {
+            'name': 'OP.test',
+            'input': ['v0', 'v1'],
+            'result': 'cycle',
+            'domain': 'd0',
+            'axes': 't',
+            'bins': 't|month|ave|year',
+        }
 
-        test = Operation('OP.test', [], 'test')
+        op = Operation.from_dict(input_dict)
 
-        self.assertEqual(str(test),
-                         """OP.test [] test""")
+        self.assertEqual(input_dict, op.parameterize())
 
-    def test_from_str(self):
-        """ Test creating operation from str. """
+    def test_multiple_argument(self):
+        """ Tests passing multipel arguments. """
+        result = {
+            'name': 'OP.test',
+            'input': [],
+            'axes': 'longitude|latitude',
+            'bins': 't|month|ave|year',
+        }
 
-        test = Operation.from_str('OP.test', 'v0, axes: t')
+        op = Operation('OP.test')
+        op.add_parameter(NamedParameter('axes', 'longitude', 'latitude'))
+        op.add_parameter(NamedParameter('bins', 't', 'month', 'ave', 'year'))
 
-        self.assertEqual(len(test.parameters), 2)
+        self.assertDictContainsSubset(result, op.parameterize())
 
-    def test_optional_init(self):
-        """ Tests optional init values. """
-        test = Operation('OP.test')
+    def test_single_argument(self):
+        """ Tests passing single argument. """
+        result = {
+            'name': 'OP.test',
+            'input': [],
+            'axes': 'longitude|latitude',
+        }
 
-        self.assertEqual(test.parameters, [])
-        self.assertIsNotNone(test.var_name)
-        self.assertEqual(test.name, 'OP.test')
+        op = Operation('OP.test')
+        op.add_parameter(NamedParameter('axes', 'longitude', 'latitude'))
 
-    def test_add_parameter(self):
-        """ Tests adding parameters. """
-        test = Operation('OP.test')
-        sub = Operation('OP.sub')
-        mean = Operation('OP.mean')
+        self.assertDictContainsSubset(result, op.parameterize())
 
-        axes = NamedParameter('axes', 't')
+    def test_domain(self):
+        """ Tests setting an operations domain. """
+        result = {
+            'name': 'OP.test',
+            'input': [],
+            'domain': 'd0',
+        }
 
-        test.add_parameter(axes)
+        domain = Domain(name='d0')
 
-        # Check adding a parameter
-        self.assertListEqual(test.parameters, [axes])
+        op = Operation('OP.test')
+        op.domain = domain
 
-        # Check adding a duplicate parameter
-        with self.assertRaises(DuplicateParameterError) as ctx:
-            test.add_parameter(axes)
+        self.assertDictContainsSubset(result, op.parameterize())
 
-        self.assertEqual(ctx.exception.message, 'Parameter already exists.')
+    def test_result(self):
+        """ Tests setting an operations result identifier. """
+        result = {
+            'name': 'OP.test',
+            'input': [],
+            'result': 'cycle',
+        }
 
-        test.add_parameter(sub)
+        op = Operation('OP.test', name='cycle')
 
-        # Check adding an operation
-        self.assertListEqual(test.parameters, [axes, sub])
+        self.assertEqual(op.parameterize(), result)
 
-        # Check adding a duplicate operation
-        with self.assertRaises(DuplicateParameterError):
-            test.add_parameter(sub)
+    def test_multiple_input(self):
+        """ Tests operation with multiple input. """
+        result = {
+            'name': 'OP.test',
+            'input': ['v0', 'v1'],
+        }
 
-        # Check circular dependency
-        with self.assertRaises(DuplicateParameterError) as ctx:
-            sub.add_parameter(test)
+        variable1 = Variable('file:///test.nc', 'tas', name='v0') 
+        variable2 = Variable('file:///test.nc', 'tas', name='v1') 
 
-        self.assertEqual(ctx.exception.message, 'Circular dependency.')
+        op = Operation('OP.test')
+        op.add_input(variable1)
+        op.add_input(variable2)
 
-        sub.add_parameter(mean)
+        self.assertDictContainsSubset(result, op.parameterize())
 
-        # Check adding additional reference of an operation
-        test.add_parameter(mean)
+    def test_single_input(self):
+        """ Tests operation with single input. """
+        result = {
+            'name': 'OP.test',
+            'input': ['v0'],
+        }
 
-        self.assertListEqual(test.parameters, [axes, sub, mean])
+        variable = Variable('file:///test.nc', 'tas', name='v0') 
 
-    def test_parameters(self):
-        """ Test parameterizing an operation for GET request. """
-        variable0 = Variable('collection://MERRA/mon/atmos', 'ta', name='v0')
+        op = Operation('OP.test')
+        op.add_input(variable)
 
-        test = Operation('OP.test', [variable0])
+        self.assertDictContainsSubset(result, op.parameterize())
 
-        expected = 'v0'
+    def test_basic(self):
+        """ Tests simple operation. """
+        result = {
+            'name': 'OP.test',
+            'input': [],
+        }
 
-        self.assertEqual(test.parameterize(), expected)
+        op = Operation('OP.test')
 
-        axes = NamedParameter('axes', 't')
-
-        test.add_parameter(axes)
-
-        expected += ', axes: t'
-
-        self.assertEqual(test.parameterize(), expected)
-
-    def test_operation(self):
-        """ Test parameterizing an operation containing other operations. """
-        variable0 = Variable('collection://MERRA/mon/atmos', 'ta', name='v0')
-
-        axes = NamedParameter('axes', 't')
-
-        mean = Operation('OP.mean', [variable0, axes])
-
-        test = Operation('OP.test', [mean])
-
-        self.assertIsNotNone(re.match(r'(.*):OP.mean\(v0, axes: t\)',
-                                      test.parameterize()))
-
-    def test_operations_multi(self):
-        """ Test parameterizing an operation containing multiple operations. """
-        variable0 = Variable('collection://MERRA/mon/atmos', 'ta', name='v0')
-
-        axes = NamedParameter('axes', 't')
-        bins = NamedParameter('bins', 't', 'month', 'ave', 'year')
-
-        anomaly = Operation('OP.anomaly', [variable0, axes])
-        binop = Operation('OP.bin', [variable0, axes, bins])
-
-        test = Operation('OP.test', [anomaly, binop])
-
-        self.assertIsNotNone(re.match(r'(.*):OP.anomaly\(v0, axes: t\), (.*)' +
-                                      r':OP.bin\(v0, axes: t, bins: t|month|' +
-                                      r'ave|year\)', test.parameterize()))
-
-    def test_dependencies(self):
-        """ Tests parameterzing and operation with dependencies. """
-        variable0 = Variable('collection://MERRA/mon/atmos', 'ta', name='v0')
-
-        axes = NamedParameter('axes', 't')
-
-        mean = Operation('OP.mean', [variable0, axes], var_name='vm')
-
-        diff = Operation('OP.diff', [variable0, mean])
-
-        test = Operation('OP.test', [mean, diff])
-
-        self.assertIsNotNone(re.match(r'vm:OP.mean\(v0, axes: t\), (.*):OP.' +
-                                      r'diff\(v0, vm\)', test.parameterize()))
-
-    def test_complex_workflow(self):
-        """ Test parallel operations with deep dependencies. """
-        mean = Operation('OP.mean')
-
-        diff = Operation('OP.diff')
-
-        anomaly = Operation('OP.anomaly', [mean, diff], var_name='anom')
-
-        bins = Operation('OP.bin', var_name='bins')
-
-        subset = Operation('OP.subset', [bins], var_name='sub')
-
-        subset2 = Operation('OP.subset', var_name='sub2')
-
-        test = Operation('OP.test', [anomaly, subset, subset2, mean])
-
-        self.assertIsNotNone(re.match(r'(.*):OP.mean\(\), (.*):OP.diff\(\), ' +
-                                      r'anom:OP.anomaly\(\1, \2\), bins:OP' +
-                                      r'.bin\(\), sub:OP.subset\(bins\), sub' +
-                                      r'2:OP.subset\(\)', test.parameterize()))
+        self.assertDictContainsSubset(result, op.parameterize())

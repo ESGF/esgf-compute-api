@@ -31,7 +31,7 @@ class Process(object):
     @property
     def name(self):
         """ Process name. """
-        return self._operation.name
+        return self._operation.identifier
 
     @property
     def status(self):
@@ -90,13 +90,12 @@ class Process(object):
             self._domains = dict((x.name, x) for x in domains)
 
         inputs = {
-            'domain': json.dumps([dom.parameterize()
-                                 for name, dom in self._domains.iteritems()]),
-            'variable': json.dumps(variable.parameterize()),
+            'domain': [dom.parameterize() for name, dom in self._domains.iteritems()],
+            'variable': variable.parameterize(),
             'operation': self._operation.parameterize(),
         }
 
-        self._result = self._wps.execute(self._operation.name,
+        self._result = self._wps.execute(self._operation.identifier,
                                          inputs,
                                          store=store,
                                          status=status)

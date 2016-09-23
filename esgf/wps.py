@@ -124,7 +124,7 @@ class WPS(object):
     def execute(self, process_id, inputs, store=False, status=False):
         """ Formats data and executs WPS process. """
         input_list = [
-            (key, value) for key, value in inputs.iteritems()
+            (key, json.dumps(value)) for key, value in inputs.iteritems()
         ]
 
         # Unwraps self._service.execute since we may want to store execute

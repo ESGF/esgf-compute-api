@@ -37,12 +37,13 @@ class TestWPS(TestCase):
         process.execute(v0)
 
         execution_inst.buildRequest.assert_called_once()
+
         self.assertEquals(execution_inst.buildRequest.call_args,
                           call('test.echo',
                                [
                                    ('variable', json.dumps(v0.parameterize())),
                                    ('domain', '[]'),
-                                   ('operation', ''),
+                                   ('operation', json.dumps(process._operation.parameterize())),
                                ],
                                output='output'))
 
