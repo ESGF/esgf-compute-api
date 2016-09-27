@@ -12,7 +12,7 @@ Installation
 ============
 ::
 
-    python setup.py
+    python setup.py install
 
 Quickstart
 ==========
