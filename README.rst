@@ -11,11 +11,13 @@ Service interface standard. The package is written on top of
 Installation
 ============
 ::
+
     python setup.py
 
 Quickstart
 ==========
 ::
+
     from esgf import WPS
     from esgf import Variable
 
