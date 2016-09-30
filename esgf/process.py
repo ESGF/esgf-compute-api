@@ -102,7 +102,7 @@ class Process(object):
         datainputs = {
             'variable': [x.parameterize() for x in self._variable],
             'domain': [x.parameterize() for x in self._domain],
-            'operation': self._operation.flatten(),
+            'operation': [self._operation.parameterize()],
         }
 
         self._result = self._wps.execute(self._operation.identifier,

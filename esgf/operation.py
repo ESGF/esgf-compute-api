@@ -42,7 +42,8 @@ class Operation(Parameter):
         for input_data in data['input']:
             obj.add_input(Parameter(input_data))
 
-        obj.domain = Parameter(data['domain'])
+        if 'domain' in data:
+            obj.domain = Parameter(data['domain'])
 
         extra_keys = [key for key in data.keys() if key not in expected]
 
@@ -73,6 +74,9 @@ class Operation(Parameter):
         dom_dict = {}
 
         for param in self.parameters:
+            if isinstance(param, NamedParameter):
+                continue
+
             for var in param.variables():
                 var_dict[var.name] = var
 
