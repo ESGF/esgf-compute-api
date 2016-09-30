@@ -48,6 +48,68 @@ _CONTACT = (
     'instructions'
 )
 
+import requests
+from owslib.util import ResponseWrapper
+
+def monkeyOpenUrl(url_base, data=None, method='Get', cookies=None, username=None, password=None, timeout=30, headers=None):
+    """ 
+    Monkey patches owslib.utils.openUrl. owslib.wps.WPSExecute only supports
+    sending POST requests. If the server is running CSRF middleware i.e. a 
+    django server, then it's expecting urlencoded POST data to pass the CSRF 
+    token back. Check if the CSRF token exists then change the data to 
+    x-www-form-urlencoded format.
+    """
+    get_url = url_base if url_base[-1] != '/' else url_base[:-1]
+
+    auth = (username, password)
+
+    session = requests.Session()
+    session.get(get_url, auth=auth)
+
+    csrf_token = session.cookies.get('csrftoken', None)
+
+    cookies = {}
+    headers = {}
+
+    if csrf_token:
+        cookies = {
+            'csrftoken': csrf_token,
+        }
+
+        headers['Content-type'] = 'application/x-www-form-urlencoded'
+        headers['User-agent'] = 'Mozilla/5.0'
+
+        data = {
+            'document': data,
+            'csrfmiddlewaretoken': csrf_token,
+        }
+
+    req = session.post(url_base, data=data, headers=headers, cookies=cookies)
+
+    if req.status_code in [400, 401]:
+        raise ServiceException(req.text)
+
+    if req.status_code in [404, 500, 502, 503, 504]:
+        req.raise_for_status()
+
+    if 'Content-Type' in req.headers and req.headers['Content-Type'] in ['text/xml', 'application/xml', 'application/vnd.ogc.se_xml']:
+        se_tree = etree.fromstring(req.content)
+
+        possible_errors = [
+            '{http://www.opengis.net/ows}Exception',
+            '{http://www.opengis.net/ows/1.1}Exception',
+            '{http://www.opengis.net/ogc}ServiceException',
+            'ServiceException'
+        ]
+
+        for possible_error in possible_errors:
+            serviceException = se_tree.find(possible_error)
+
+            if serviceException is not None:
+                raise ServiceException('\n'.join([str(t).strip() for t in serviceException.itertext() if str(t).strip()]))
+
+    return ResponseWrapper(req)
+
 class WPS(object):
     """ WPS client.
 
@@ -148,7 +210,14 @@ class WPS(object):
 
         execution.request = etree.tostring(request_element)
 
+        from owslib import wps
+
+        old_method = wps.openURL
+        wps.openURL = monkeyOpenUrl
+
         response = execution.submitRequest(execution.request) 
+
+        wps.openURL = old_method
 
         execution.parseResponse(response)
 
