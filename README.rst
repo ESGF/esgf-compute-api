@@ -16,17 +16,38 @@ Installation
 
 Quickstart
 ==========
-::
+.. testsetup:: *
 
-    from esgf import WPS
-    from esgf import Variable
+    from mock import Mock
+    from esgf import wps
 
-    tas = Variable('http://thredds/dap/test.nc', 'tas')
+    wps_mock = Mock()
+    wps.WebProcessingService = wps_mock
 
-    wps = WPS('http://0.0.0.0:8000/wps/')
+    wps_inst = wps_mock.return_value
+    wps_inst.processes = (Mock(identifier=x) for x in ['averager.mv'])
+
+    from esgf import process
+
+    process_mock = Mock()
+    process_inst = process_mock.return_value
+    process_inst.output = '63a9ffd4-e073-44f7-8fc3-33f96715224a http://0.0.0.0:8080/thredds/dodsC/test/fe74bed8-3121-444c-a904-2a3abd592404.cdf tas [] application/x-cdf'
+
+    process.Process.from_identifier = process_mock
+
+.. doctest:: quickstart
+
+    >>> from esgf import WPS
     
-    process = wps.get_process('averager.mv')
+    >>> from esgf import Variable
 
-    process.execute(variable=tas)
+    >>> tas = Variable('http://thredds/dap/test.nc', 'tas')
 
-    process.output.download('./test.nc')
+    >>> wps = WPS('http://localhost:8000/wps/')
+
+    >>> process = wps.get_process('averager.mv')
+
+    >>> process.execute(inputs=[tas]) # doctest: +SKIP
+
+    >>> process.output
+    '63a9ffd4-e073-44f7-8fc3-33f96715224a http://0.0.0.0:8080/thredds/dodsC/test/fe74bed8-3121-444c-a904-2a3abd592404.cdf tas [] application/x-cdf'
