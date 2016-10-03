@@ -111,13 +111,26 @@ def monkeyOpenUrl(url_base, data=None, method='Get', cookies=None, username=None
     return ResponseWrapper(req)
 
 class WPS(object):
-    """ WPS client.
+    """ Web Processing Service client.
 
-    A WPS client built around owslib.wps.WebProcessingService.
-    Provides access to WPS GetCapabilities and Execute requests.
+    Describes a WPS server. Processes can be retrieved from WPS and executed.
 
+    >>> wps = WPS('http://localhost/wps/')
+
+    Print information about WPS server.
+
+    >>> wps.identification
+    >>> wps.provider
+
+    Retrieve a process.
+
+    >>> averager = wps.get_process('averager.mv')
+
+    Attributes:
+        url: A String of a path to a WPS server.
+        username: A String username.
+        password: A String password.
     """
-
     def __init__(self, url, username=None, password=None):
         """ Inits WebProcessingService """
         self._url = url

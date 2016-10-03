@@ -13,9 +13,18 @@ from .domain import Domain
 from .parameter import Parameter
 
 class Variable(Parameter):
-    """ Variable class.
+    """ Variable.
+    
+    Describes a variable to be used by an Operation.
 
-    Generic variable that can be used to describe process input or output.
+    >>> tas = Variable('http://thredds/tas.nc', 'tas', name='tas')
+
+    Attributes:
+        uri: A String URI for the file containing the variable data.
+        var_name: A String name of the variable.
+        domains: List of Domain objects to constrain the variable data.
+        mime_type: A String name of the URI mime-type.
+        name: Custom name of the Variable.
     """
     def __init__(self, uri, var_name, **kwargs):
         """ Variable init. """

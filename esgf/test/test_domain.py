@@ -5,7 +5,6 @@ from unittest import TestCase
 from esgf import WPSAPIError
 from esgf import Mask
 from esgf import Domain
-from esgf import DomainError
 from esgf import Dimension
 
 class TestDomain(TestCase):
@@ -145,11 +144,3 @@ class TestDomain(TestCase):
         }
 
         self.assertEqual(domain.parameterize(), expected)
-
-        # Test for DomainError on improper number of dimensions.
-        with self.assertRaises(DomainError) as context:
-            domain = Domain(name='glbl')
-
-            domain.parameterize()
-
-        self.assertEqual(context.exception.message, 'Need atleast one dimension.')

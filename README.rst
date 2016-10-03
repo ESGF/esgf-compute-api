@@ -16,26 +16,7 @@ Installation
 
 Quickstart
 ==========
-.. testsetup:: *
-
-    from mock import Mock
-    from esgf import wps
-
-    wps_mock = Mock()
-    wps.WebProcessingService = wps_mock
-
-    wps_inst = wps_mock.return_value
-    wps_inst.processes = (Mock(identifier=x) for x in ['averager.mv'])
-
-    from esgf import process
-
-    process_mock = Mock()
-    process_inst = process_mock.return_value
-    process_inst.output = '63a9ffd4-e073-44f7-8fc3-33f96715224a http://0.0.0.0:8080/thredds/dodsC/test/fe74bed8-3121-444c-a904-2a3abd592404.cdf tas [] application/x-cdf'
-
-    process.Process.from_identifier = process_mock
-
-.. doctest:: quickstart
+::
 
     >>> from esgf import WPS
     
@@ -47,7 +28,25 @@ Quickstart
 
     >>> process = wps.get_process('averager.mv')
 
-    >>> process.execute(inputs=[tas]) # doctest: +SKIP
+    >>> process.execute(inputs=[tas], parameters=[NamedParameter('axes', 'longitude')]) # doctest: +SKIP
 
     >>> process.output
     '63a9ffd4-e073-44f7-8fc3-33f96715224a http://0.0.0.0:8080/thredds/dodsC/test/fe74bed8-3121-444c-a904-2a3abd592404.cdf tas [] application/x-cdf'
+
+Documentation
+=============
+
+The simplest way to get the documentation currently is by building it.
+The only requirement is sphinx being installed.
+
+::
+
+    pip install sphinx
+
+    git clone https://github.com/ESGF/esgf-compute-api
+
+    cd esgf-compute-api/docs
+
+    make html
+
+    open build/html/index.html

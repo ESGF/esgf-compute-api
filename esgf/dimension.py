@@ -8,9 +8,12 @@ from .parameter import Parameter
 
 # pylint: disable=too-few-public-methods
 class CRS(object):
-    """ Coordinate Reference System.
+    """ Coordinate Reference System (CRS).
 
-    Representation of the possible Coordinate Reference System values.
+    Provides information about the CRS of a dimensions values.
+
+    Attributes:
+        name: A String name of the CRS.
     """
     def __init__(self, name):
         """ CRS init. """
@@ -31,17 +34,31 @@ class CRS(object):
         return self._name
 
 class Dimension(Parameter):
-    """ Domain dimensions.
+    """ Dimension.
 
-    Represents a dimension within a domain. Most common dimensions are
-    time, latitude, longitude, level. Can be created with a start and
-    end value or just a single start value.
+    Describes a dimension of a plane. This dimension can be constrained 
+    between two points and the length between each step can be specified or
+    it will default to 1.
+
+    There are two pre-defined CRS's; indices and values.
+
+    A dimension starting at 90, ending at -90 with step width of 0.5 degrees.
+
+    >>> lat = Dimension(90, -90, Dimension.values, step=0.5)
+
+    A dimension representing a single point at 90.
+
+    >>> lat = Dimension.from_single_value(90)
+
+    A dimension with a custom name.
+
+    >>> lat = Dimension(90, -90, Dimension.values, step=0.5, name='lat')
 
     Attributes:
-        start: Index or value denoting start of the dimension.
-        end: Index or value denoting end of the dimension.
-        crs: Coordinate Reference System (Index or Value).
-        step: Step size between each value.
+        start: A (str, int, float) of the starting point.
+        end: A (str, int, float) of the ending point.
+        crs: The CRS of the start and end points.
+        step: The distance between each step between the start and end points.
     """
 
     indices = CRS('indices')

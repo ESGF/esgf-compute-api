@@ -5,10 +5,21 @@ NamedParameter Module.
 from .parameter import Parameter
 
 class NamedParameter(Parameter):
-    """ Named Parameter class
+    """ Named Parameter.
 
-    A NamedParameter is used to define a keyword argument that can be passed
-    to an Operation.
+    Describes a parameter to be passed to an Operation.
+
+    A NamedParameter with a single value.
+
+    >>> axis = NamedParameter('axis', 'time')
+
+    A NamedParameter with multiple values.
+
+    >>> axes = NamedParameter('axes', 'latitude', 'longitude')
+
+    Attributes:
+        name: Name of the parameter.
+        *args: Values of the parameter.
     """
     def __init__(self, name, *args):
         """ NamedParameter init. """

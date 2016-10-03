@@ -6,9 +6,33 @@ from uuid import uuid4
 
 # pylint: disable=too-few-public-methods
 class Mask(object):
-    """ Mask class.
+    """ Mask.
+    
+    Describes a mask to be applied to a give domain.
 
-    Defines a mask to be used with a domain on an input variable.
+    There are some resvered words.
+
+    - var_data
+    - mask_data
+    - sin
+    - cos
+    - tan
+
+    *var_data:* refers to the data in the variable that the domain is being
+        applied to.
+
+    *mask_data:* refers to the data in masks URI.
+
+    Masks out points in the domain where the mask_data of the location
+    is less than 0.5.
+
+    >>> lsm = Mask('http://thredds/clt.nc', 'clt', 'mask_data<0.5')
+
+    Attributes:
+        uri: URI of the file containing the mask.
+        var_name: Name of the variable that will be used in the operation.
+        operation: Expression that defines where the mask is activate.
+        name: Custom name for the mask.
     """
     def __init__(self, uri, var_name, operation, name=None):
         """ Mask Init. """

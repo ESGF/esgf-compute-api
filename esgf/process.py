@@ -11,8 +11,24 @@ from .operation import Operation
 from .variable import Variable
 
 class Process(object):
-    """ Process class. """
+    """ Process.
 
+    Represents the operation that will be peformed.
+
+    Can be created from the Process class but there is no checking if the 
+    process actually exists on the server.
+
+    >>> wps = WPS('http://localhost/wps/')
+    >>> averager = Process.from_identifier(wps, 'averager.mv')
+
+    To retrieve a process that is known to be on the server use WPS.
+
+    >>> averager = wps.get_process('averager.mv')
+   
+    Attributes:
+        wps: A WPS instance pointing the a WPS server.
+        operation: An Operation that will be executed by the process.
+    """
     def __init__(self, wps, operation):
         """ Process init. """
         self._wps = wps

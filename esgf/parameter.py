@@ -5,14 +5,11 @@ Parameter module.
 from uuid import uuid4
 
 class Parameter(object):
-    """ Parameter representation.
+    """ Parameter.
 
-    Represents a parameter in a GET request. The parent class must implemnt
-    parameterize which becomes the value to the parameter when use in a
-    GET request.
+    Base class for parameters. Also used as a shell when re-creating objects
+    after being passed to a WPS server.
 
-    Attributes:
-        name: Name of the parameter.
     """
     def __init__(self, name):
         """ Parameter init. """

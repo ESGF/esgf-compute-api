@@ -9,11 +9,31 @@ from .parameter import Parameter
 from .named_parameter import NamedParameter
 
 class Operation(Parameter):
-    """ Operation class.
+    """ Operation.
 
-    Represents an operation to be performed within a process. Can exists
-    by itself, have parallel operations as parameters, or even build a
-    dependency tree of operations.
+    Describes an operation supported by the WPS server.
+
+    >>> averager = Operation(
+            'averager',
+            domain = Domain([
+                Dimension(90, -90, Dimension.values, name='lat'),
+                Dimension(90, -90, Dimesnion.values, name='lon'),
+            ]),
+            inputs = [
+                Variable('http://thredds/tas.nc', 'tas', name='tas'),
+            ],
+            parameters = [
+                NamedParameter('axes', 'longitude', 'latitude'), 
+            ])
+
+    Attributes:
+        identifier: A String identifer of the operation.
+        domain: A Domain to be used by the operation.
+        inputs: A List of inputs to the operation, can be a Variable or another 
+            operation.
+        parameters: A List of additional parameters to be passed to the
+            operation.
+        name: Custom name to be referenced by other operations.
     """
     def __init__(self, identifier, **kwargs):
         """ Operation init. """

@@ -7,15 +7,28 @@ from .errors import WPSAPIError
 from .dimension import Dimension
 from .parameter import Parameter
 
-class DomainError(Exception):
-    """ Domain Error. """
-    pass
-
 class Domain(Parameter):
-    """ Domain
+    """ Domain.
 
-    Domain represents a named collection of dimensions that will be used
-    when during the evaluation of a process.
+    A domain consist of one or more dimensions. A mask can be associated with
+    a domain, further construing the domain being represented.
+
+    Simple domain.
+
+    >>> domain = Domain([Dimesnion(90, -90, Dimension.values)])
+
+    Domain with a mask.
+
+    >>> domain = Domain([
+            Dimension(90, -90, Dimension.values, name='lon'),
+            Dimension(0, 90, Dimension.values, name='lat'),
+        ],
+        mask = Mask('http://thredds/clt.nc', 'clt', 'var_data<0.5'))
+
+    Attributes:
+        dimensions: List of Dimensions.
+        mask: Mask to be applied to the domain.
+        name: Name of the domain.
     """
     def __init__(self, dimensions=None, mask=None, name=None):
         """ Domain init. """
@@ -71,9 +84,6 @@ class Domain(Parameter):
 
     def parameterize(self):
         """ Returns parameter for GET request. """
-        if len(self.dimensions) <= 0:
-            raise DomainError('Need atleast one dimension.')
-
         param = {
             'id': self.name
         }
