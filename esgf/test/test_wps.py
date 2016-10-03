@@ -34,7 +34,7 @@ class TestWPS(TestCase):
 
         v0 = Variable('file:///test.nc', 'tas', name='v0') 
 
-        process.execute(variable=v0)
+        process.execute(inputs=[v0])
 
         execution_inst.buildRequest.assert_called_once()
 

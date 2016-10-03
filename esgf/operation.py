@@ -20,7 +20,7 @@ class Operation(Parameter):
         super(Operation, self).__init__(kwargs.get('name', None))
 
         self.domain = None
-        self.input = []
+        self.inputs = []
         self.parameters = []
 
         self._identifier = identifier
@@ -59,51 +59,69 @@ class Operation(Parameter):
 
     def add_input(self, input_param):
         """ Adds input to operation. """
-        self.input.append(input_param)
+        self.inputs.append(input_param)
 
     def add_parameter(self, param):
         """ Adds a parameter to operation. """
         self.parameters.append(param)
 
+    @property
     def variables(self):
-        return [x for x in self.input if isinstance(x, Variable)]
+        return [x for x in self.inputs if isinstance(x, Variable)]
 
     def gather(self):
         """ Gathers variables and domains. """
         var_dict = {}
         dom_dict = {}
 
-        for param in self.parameters:
-            if isinstance(param, NamedParameter):
-                continue
+        for inp in self.inputs:
+            if isinstance(inp, Operation):
+                op_var, op_dom = inp.gather()
 
-            for var in param.variables():
+                for k, v in op_var.iteritems():
+                    var_dict[k] = v
+
+                for k, v in op_dom.iteritems():
+                    dom_dict[k] = v
+
+        if self.variables:
+            for var in self.variables:
                 var_dict[var.name] = var
-
-            dom_dict[param.domain.name] = param.domain
-
-        for var in self.variables():
-            var_dict[var.name] = var
 
         if self.domain:
             dom_dict[self.domain.name] = self.domain
 
-        return var_dict.values(), dom_dict.values()
+        return var_dict, dom_dict
 
-    def flatten(self):
+    def flatten(self, root=True):
         """ Flattens operation tree. """
-        if not len(self.parameters):
-            return [self.parameterize()]
+        operations = []
+        child_operation = False
 
-        return [param.parameterize() for param in self.parameters]
+        if not root:
+            operations.append(self.parameterize())
+
+        # Recursively call flatten on child operations.
+        for inp in self.inputs:
+            if isinstance(inp, Operation):
+                op_flat = inp.flatten(False)
+
+                operations.extend(op_flat)
+
+                child_operation = True
+
+        # If operation is root and no children exist assume solo operation.
+        if not child_operation and root:
+            operations.append(self.parameterize())
+
+        return operations
 
     def parameterize(self):
         """ Parameterizes the operation. """
-        params = {
-            'name': self._identifier,
-            'input': [param.name for param in self.input],
-            'result': self.name,
-        }
+        params = {}
+        params['name'] = self._identifier
+        params['input'] = [param.name for param in self.inputs]
+        params['result'] = self.name
 
         if self.domain:
             params['domain'] = self.domain.name
@@ -112,4 +130,4 @@ class Operation(Parameter):
             for param in self.parameters:
                 params[param.name] = '|'.join(param.values)
 
-        return params
+        return params        

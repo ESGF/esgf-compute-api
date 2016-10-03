@@ -149,7 +149,7 @@ class TestProcess(TestCase):
         op2.domain = domain
         op2.add_parameter(axes)
 
-        process.execute(parameter=[op1, op2])
+        process.execute(inputs=[op2])
 
         expected = [
             call.execute('OP.workflow',
@@ -173,20 +173,20 @@ class TestProcess(TestCase):
                              ],
                              'operation': [
                                  {
-                                     'name': 'CDS.timeBin',
-                                     'input': ['v0'],
-                                     'result': 'cycle',
+                                     'input': ['v0', 'cycle'],
                                      'domain': 'd0',
                                      'axes': 't',
-                                     'bins': 't|month|ave|year',
+                                     'name': 'CDS.diff2',
+                                     'result': op2.name,
                                  },
                                  {
-                                     'name': 'CDS.diff2',
-                                     'input': ['v0', 'cycle'],
-                                     'result': op2.name,
                                      'domain': 'd0',
-                                     'axes': 't'
-                                 }
+                                     'name': 'CDS.timeBin',
+                                     'axes': 't',
+                                     'result': 'cycle',
+                                     'input': ['v0'],
+                                     'bins': 't|month|ave|year',
+                                 },
                              ]
                          },
                          status=False,
@@ -208,7 +208,9 @@ class TestProcess(TestCase):
             Dimension.from_single_value(1998, name='time'),
         ], name='d0')
 
-        process.execute(variable=variable, domain=domain)
+        axes = NamedParameter('axes', 't')
+
+        process.execute(inputs=[variable], parameters=[axes], domain=domain)
 
         expected = [
             call.execute('OP.test',
@@ -234,6 +236,7 @@ class TestProcess(TestCase):
                                  {
                                      'input': ['v0'],
                                      'domain': 'd0',
+                                     'axes': 't',
                                      'name': 'OP.test',
                                      'result': process._operation.name,
                                  }
@@ -259,7 +262,7 @@ class TestProcess(TestCase):
                          {
                              'variable': [],
                              'domain': [],
-                             'operation': [process._operation.parameterize()],
+                             'operation': process._operation.flatten(),
                          },
                          status=False,
                          store=False)

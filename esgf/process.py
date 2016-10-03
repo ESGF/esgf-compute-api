@@ -81,28 +81,25 @@ class Process(object):
 
         return True if self.status.lower() != 'processsucceeded' else False
 
-    def execute(self, variable=None, domain=None, parameter=None, store=False, status=False):
+    def execute(self, inputs=None, domain=None, parameters=None, store=False, status=False):
         """ Passes process parameters to WPS to execute. """
-        if variable:
-            if not isinstance(variable, (list, tuple)):
-                variable = [variable]
-
-            for var in variable:
-                self._operation.add_input(var)
+        if inputs:
+            for inp in inputs:
+                self._operation.add_input(inp)
 
         if domain:
             self._operation.domain = domain
 
-        if parameter:
-            for param in parameter:
+        if parameters:
+            for param in parameters:
                 self._operation.add_parameter(param)
 
         self._variable, self._domain = self._operation.gather()
 
         datainputs = {
-            'variable': [x.parameterize() for x in self._variable],
-            'domain': [x.parameterize() for x in self._domain],
-            'operation': [self._operation.parameterize()],
+            'variable': [x.parameterize() for x in self._variable.values()],
+            'domain': [x.parameterize() for x in self._domain.values()],
+            'operation': self._operation.flatten(),
         }
 
         self._result = self._wps.execute(self._operation.identifier,

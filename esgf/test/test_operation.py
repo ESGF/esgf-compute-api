@@ -14,6 +14,21 @@ from esgf import Domain
 class TestOperation(TestCase):
     """ Operation Test Case. """
 
+    def test_operation_input(self):
+        """ Tests passing an operation as an input. """
+        result = {
+            'input': ['test2'],
+            'name': 'OP.test',
+            'result': 'test1',
+        }
+
+        op1 = Operation('OP.test', name='test1')
+        op2 = Operation('OP.test2', name='test2')
+
+        op1.add_input(op2)
+
+        self.assertEqual(op1.parameterize(), result)
+
     def test_from_dict(self):
         """ Tests creating operation from dictionary. """
         input_dict = {
