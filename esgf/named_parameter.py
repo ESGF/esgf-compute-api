@@ -30,7 +30,7 @@ class NamedParameter(Parameter):
     @classmethod
     def from_string(cls, name, values):
         """ Creates NamedParameter from string value. """
-        return cls(name, values.split('|'))
+        return cls(name, *values.split('|'))
 
     def parameterize(self):
         """ Parameterizes NamedParameter for GET request. """
@@ -40,7 +40,7 @@ class NamedParameter(Parameter):
               isinstance(self.values[0], Parameter)):
             value = self.values[0].name
 
-        return '%s: %s' % (self.name, value)
+        return value
 
     def __repr__(self):
         return 'NamedParameter(%r, %r)' % (

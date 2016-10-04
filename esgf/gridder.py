@@ -7,9 +7,28 @@ from .parameter import Parameter
 from .variable import Variable
 
 class Gridder(Parameter):
-    """ Gridder class.
+    """ Gridder.
+    
+    Describes the regridder and target grid for an operation.
 
-    Defines a regridding to be performed during an operation.
+    Gridder from a known target grid.
+
+    >>> Gridder('esmf', 'linear', 'T85')
+
+    Gridder from a Domain.
+
+    >>> new_grid = Domain([Dimension(90, -90, step=1)], name='lat')
+    >>> Gridder('esmf', 'linear', new_grid)
+
+    Gridder from a Variable.
+
+    >>> tas = Variable('http://thredds/tas.nc', 'tas', name='tas')
+    >>> Gridder('esmf', 'linear', tas)
+
+    Attributes:
+        tool: A String name of the regridding tool to be used.
+        method: A String method that the regridding tool will use.
+        grid: A String, Domain or Variable of the target grid.
     """
     def __init__(self, tool='esmf', method='linear', grid='T85'):
         """ Gridder Init. """
@@ -34,22 +53,8 @@ class Gridder(Parameter):
         """ Grid property. """
         return self._grid
 
-    def _check_grid(self):
-        """ Check that a grid is a string/Domain/Variable. """
-        if (not isinstance(self._grid, str) and
-                not isinstance(self._grid, Domain) and
-                not isinstance(self._grid, Variable)):
-            return False
-
-        return True
-
     def parameterize(self):
         """ Parameterizes a gridder. """
-        if not self._check_grid():
-            raise TypeError(
-                'Grid cannot be of type %s, only str, Domain or Variable.' %
-                (type(self._grid),))
-
         # Handle different types of grids
         # pylint: disable=no-member
         if isinstance(self._grid, str):

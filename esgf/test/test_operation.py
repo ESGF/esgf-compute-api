@@ -14,6 +14,22 @@ from esgf import Domain
 class TestOperation(TestCase):
     """ Operation Test Case. """
 
+    def test_repr(self):
+        """ Tests __repr__ value."""
+        result = 'Operation(\'OP.test\', [], \'test\', None, [])'
+
+        op = Operation('OP.test', name='test')
+
+        self.assertEqual(repr(op), result)
+
+    def test_str(self):
+        """ Tests __str__ value."""
+        result = 'OP.test [] test None []'
+
+        op = Operation('OP.test', name='test') 
+        
+        self.assertEquals(str(op), result)
+
     def test_operation_input(self):
         """ Tests passing an operation as an input. """
         result = {

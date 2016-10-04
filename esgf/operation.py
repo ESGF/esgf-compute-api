@@ -5,7 +5,9 @@ Operation Module.
 from uuid import uuid4
 
 from .variable import Variable
+from .domain import Domain
 from .parameter import Parameter
+from .gridder import Gridder
 from .named_parameter import NamedParameter
 
 class Operation(Parameter):
@@ -48,7 +50,7 @@ class Operation(Parameter):
     @classmethod
     def from_dict(cls, data):
         """ Creates a shell for an operation using Parameters. """
-        expected = ('name', 'input', 'result', 'domain')
+        expected = ('name', 'input', 'result', 'domain', 'gridder')
 
         identifier = data['name']
 
@@ -111,6 +113,14 @@ class Operation(Parameter):
         if self.domain:
             dom_dict[self.domain.name] = self.domain
 
+        if self.parameters:
+            for param in self.parameters:
+                if isinstance(param, Gridder):
+                    if isinstance(param.grid, Variable):
+                        var_dict[param] = param.grid
+                    elif isinstance(param.grid, Domain):
+                        dom_dict[param] = param.grid
+
         return var_dict, dom_dict
 
     def flatten(self, root=True):
@@ -148,6 +158,22 @@ class Operation(Parameter):
 
         if len(self.parameters):
             for param in self.parameters:
-                params[param.name] = '|'.join(param.values)
+                params[param.name] = param.parameterize()
 
-        return params        
+        return params
+
+    def __repr__(self):
+        return 'Operation(%r, %r, %r, %r, %r)' % (
+            self._identifier,
+            self.inputs,
+            self.name,
+            self.domain,
+            self.parameters)
+
+    def __str__(self):
+        return '%s %s %s %s %s' % (
+            self._identifier,
+            self.inputs,
+            self.name,
+            self.domain,
+            self.parameters)

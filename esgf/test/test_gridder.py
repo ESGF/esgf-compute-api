@@ -42,12 +42,6 @@ class TestGridder(TestCase):
 
         self.assertEqual(gridder.parameterize(), expected)
 
-        # Check a bad grid type
-        gridder = Gridder('scrip', 'nearestneighbor', {'test':'test'})
-
-        with self.assertRaises(TypeError):
-            gridder.parameterize()
-
     def test_domain(self):
         """ Passing domain as grid argument. """
         domain = Domain(name='d0')
