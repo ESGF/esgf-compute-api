@@ -38,6 +38,10 @@ class Gridder(Parameter):
         self._method = method
         self._grid = grid
 
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)
+
     @property
     def tool(self):
         """ Tool property. """

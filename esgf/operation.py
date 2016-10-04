@@ -50,7 +50,7 @@ class Operation(Parameter):
     @classmethod
     def from_dict(cls, data):
         """ Creates a shell for an operation using Parameters. """
-        expected = ('name', 'input', 'result', 'domain', 'gridder')
+        expected = ('name', 'input', 'result', 'domain')
 
         identifier = data['name']
 
@@ -70,7 +70,10 @@ class Operation(Parameter):
         extra_keys = [key for key in data.keys() if key not in expected]
 
         for key in extra_keys:
-            obj.add_parameter(NamedParameter.from_string(key, data[key]))
+            if 'gridder' == key:
+                obj.add_parameter(Gridder.from_dict(data[key]))
+            else:
+                obj.add_parameter(NamedParameter.from_string(key, data[key]))
 
         return obj
 
