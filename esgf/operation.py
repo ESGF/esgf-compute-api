@@ -68,7 +68,7 @@ class Operation(Parameter):
         extra_keys = [key for key in data.keys() if key not in expected]
 
         for key in extra_keys:
-            obj.add_parameter(NamedParameter(key, data[key]))
+            obj.add_parameter(NamedParameter.from_string(key, data[key]))
 
         return obj
 
