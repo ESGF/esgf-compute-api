@@ -18,16 +18,18 @@ class Parameter(object):
         if not self._name:
             self._name = uuid4()
 
+    @classmethod
+    def from_dict(cls, data):
+        """ Loads a parameter from its parameter form. """
+        raise NotImplementedError
+
     @property
     def name(self):
         """ Read-only name attribute. """
         return str(self._name)
 
     def parameterize(self):
-        """
-        Must return a string representation of the inheriting classs that
-        can be used as a value for a GET parameter.
-        """
+        """ Return a representation of this parameter. """
         raise NotImplementedError
 
     def __repr__(self):

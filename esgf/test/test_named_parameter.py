@@ -37,7 +37,7 @@ class TestNamedParameter(TestCase):
         """ Test parameterizing NamedParameter for GET request. """
         named = NamedParameter('axis', 'x', 'y')
 
-        self.assertEqual(named.parameterize(), 'axis: x|y')
+        self.assertEqual(named.parameterize(), 'x|y')
 
     def test_parameter(self):
         """ Test passing parameter in constructor. """
@@ -47,4 +47,4 @@ class TestNamedParameter(TestCase):
 
         named = NamedParameter('domain', domain)
 
-        self.assertEqual(named.parameterize(), 'domain: d0')
+        self.assertEqual(named.parameterize(), 'd0')

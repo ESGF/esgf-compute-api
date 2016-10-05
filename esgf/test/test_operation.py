@@ -47,18 +47,23 @@ class TestOperation(TestCase):
 
     def test_from_dict(self):
         """ Tests creating operation from dictionary. """
-        input_dict = {
+        data = {
             'name': 'OP.test',
             'input': ['v0', 'v1'],
             'result': 'cycle',
             'domain': 'd0',
             'axes': 't',
+            'gridder': {
+                'tool': 'esmf',
+                'method': 'conserve',
+                'grid': 'd0',
+            },
             'bins': 't|month|ave|year',
         }
 
-        op = Operation.from_dict(input_dict)
+        op = Operation.from_dict(data)
 
-        self.assertEqual(input_dict, op.parameterize())
+        self.assertDictContainsSubset(data, op.parameterize())
 
     def test_multiple_argument(self):
         """ Tests passing multipel arguments. """

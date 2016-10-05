@@ -9,6 +9,7 @@ from unittest import TestCase
 
 from mock import patch, Mock, call
 
+from esgf import Gridder
 from esgf import WPS
 from esgf import Process
 from esgf import Variable
@@ -241,6 +242,67 @@ class TestProcess(TestCase):
                                      'result': process._operation.name,
                                  }
                              ]
+                         },
+                         status=False,
+                         store=False)
+        ]
+
+        self.assertEqual(expected, wps.mock_calls)
+
+    @patch('esgf.wps.WPS')
+    def test_gridder_variable(self, mock_wps):
+        """ Test simple execute. """
+        wps = mock_wps.return_value
+
+        process = Process.from_identifier(wps, 'OP.test')
+
+        variable = Variable('file:///test.nc', 'tas', name='v0')
+
+        gridder = Gridder(grid=variable)
+
+        process.execute(parameters=[gridder])
+
+        expected = [
+            call.execute('OP.test',
+                         {
+                             'variable': [
+                                 {
+                                     'uri': 'file:///test.nc',
+                                     'id': 'tas|v0',
+                                 },
+                             ],
+                             'domain': [],
+                             'operation': process._operation.flatten(),
+                         },
+                         status=False,
+                         store=False)
+        ]
+
+        self.assertEqual(expected, wps.mock_calls)
+
+    @patch('esgf.wps.WPS')
+    def test_gridder_domain(self, mock_wps):
+        """ Test simple execute. """
+        wps = mock_wps.return_value
+
+        process = Process.from_identifier(wps, 'OP.test')
+
+        domain = Domain(name='d0')
+
+        gridder = Gridder(grid=domain)
+
+        process.execute(parameters=[gridder])
+
+        expected = [
+            call.execute('OP.test',
+                         {
+                             'variable': [],
+                             'domain': [
+                                 {
+                                     'id': 'd0',
+                                 },
+                             ],
+                             'operation': process._operation.flatten(),
                          },
                          status=False,
                          store=False)

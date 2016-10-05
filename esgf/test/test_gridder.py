@@ -16,14 +16,27 @@ class TestGridder(TestCase):
         gridder = Gridder('scrip', 'nearestneighbor', 'T95')
 
         self.assertEqual(repr(gridder),
-                         """Gridder('scrip', 'nearestneighbor', 'T95', 'gridder')""")
+                         """Gridder('scrip', 'nearestneighbor', 'T95')""")
 
     def test_str(self):
         """ Test str value. """
         gridder = Gridder('scrip', 'nearestneighbor', 'T95')
 
         self.assertEqual(str(gridder),
-                         """scrip nearestneighbor T95 gridder""")
+                         """scrip nearestneighbor T95""")
+    
+    def test_from_dict(self):
+        """ Test loading from dict. """
+        data = {
+            'tool': 'scrip',
+            'method': 'nearestneighbor',
+            'grid': 'T95',
+        }
+
+        gridder = Gridder.from_dict(data)
+        
+        self.assertEqual(repr(gridder),
+                         """Gridder('scrip', 'nearestneighbor', 'T95')""")
 
     def test_gridder(self):
         """ Init and type checking. """

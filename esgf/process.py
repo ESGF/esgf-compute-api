@@ -79,7 +79,7 @@ class Process(object):
 
             json_obj = json.load(temp_file)
 
-            output = Variable.from_dict(json_obj, self._domain)
+            output = Variable.from_dict(json_obj)
 
         return output
 

@@ -64,12 +64,6 @@ class TestDomain(TestCase):
         self.assertEqual(ctx.exception.message,
                          'Domain must provide an id.')
 
-        with self.assertRaises(WPSAPIError) as ctx:
-            domain = Domain.from_dict(missing_dim)
-
-        self.assertEqual(ctx.exception.message,
-                         'Domain must provide atleast one dimension.')
-
     def test_mask(self):
         """ Pass domain a mask and parameterize. """
         time = Dimension(1920, 1930, Dimension.values, name='time')

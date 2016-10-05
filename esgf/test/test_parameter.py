@@ -33,6 +33,11 @@ class TestParameter(TestCase):
         self.assertEqual(str(param),
                          """v0""")
 
+    def test_from_dict(self):
+        """ Test from dict. """
+        with self.assertRaises(NotImplementedError):
+            param = Parameter.from_dict('test')
+
     def test_parameterize(self):
         """ Testing overriding parameterize method. """
 
