@@ -58,9 +58,6 @@ class Domain(Parameter):
             if key not in blacklist:
                 dimensions.append(Dimension.from_dict(key, value))
 
-        if len(dimensions) < 1:
-            raise WPSAPIError('Domain must provide atleast one dimension.')
-
         mask = None
 
         if 'mask' in data:
