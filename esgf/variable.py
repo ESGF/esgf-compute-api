@@ -30,7 +30,7 @@ class Variable(Parameter):
         """ Variable init. """
         super(Variable, self).__init__(kwargs.get('name', None))
 
-        self._uri = uri
+        self.uri = uri
         self._var_name = var_name
 
         domains = kwargs.get('domains', None)
@@ -38,7 +38,7 @@ class Variable(Parameter):
         if domains and isinstance(domains, Domain):
             domains = [domains]
 
-        self._domains = domains
+        self.domains = domains
         self._mime_type = kwargs.get('mime_type', None)
 
     @classmethod
@@ -78,19 +78,9 @@ class Variable(Parameter):
         return cls(uri, var_name, domains=domains, name=name, mime_type=mime_type)
 
     @property
-    def uri(self):
-        """ Uri to file. """
-        return self._uri
-
-    @property
     def var_name(self):
         """ Variable name in uri. """
         return self._var_name
-
-    @property
-    def domains(self):
-        """ Associated domain. """
-        return self._domains
 
     @property
     def mime_type(self):
@@ -102,7 +92,7 @@ class Variable(Parameter):
         if not chunk_size:
             chunk_size = 1024
 
-        response = requests.get(self._uri, stream=True)
+        response = requests.get(self.uri, stream=True)
 
         for chunk in response.iter_content(chunk_size):
             output.write(chunk)
@@ -111,10 +101,10 @@ class Variable(Parameter):
         """ Factory download method. """
         download_fn = None
 
-        if self._uri[:4] == 'http':
+        if self.uri[:4] == 'http':
             download_fn = self._download_http
         else:
-            raise WPSClientError('Unsupported uri %s' % (self._uri,))
+            raise WPSClientError('Unsupported uri %s' % (self.uri,))
 
         with open(out_path, 'wb') as out_file:
             download_fn(out_file, chunk_size)
@@ -129,7 +119,7 @@ class Variable(Parameter):
         }
 
         if self.domains:
-            params['domain'] = '|'.join(dom.name for dom in self._domains)
+            params['domain'] = '|'.join(dom.name for dom in self.domains)
 
         if self.var_name:
             params['id'] += '|' + str(self.name)
@@ -142,15 +132,15 @@ class Variable(Parameter):
     def __repr__(self):
         return 'Variable(%r %r %r %r %r)' % (
             self.name,
-            self._uri,
+            self.uri,
             self._var_name,
-            self._domains,
+            self.domains,
             self._mime_type)
 
     def __str__(self):
         return '%s %s %s %s %s' % (
             self.name,
-            self._uri,
+            self.uri,
             self._var_name,
-            self._domains,
+            self.domains,
             self._mime_type)
