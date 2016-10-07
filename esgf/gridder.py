@@ -36,7 +36,7 @@ class Gridder(Parameter):
 
         self._tool = tool
         self._method = method
-        self._grid = grid
+        self.grid = grid
 
     @classmethod
     def from_dict(cls, data):
@@ -52,19 +52,14 @@ class Gridder(Parameter):
         """ Method property. """
         return self._method
 
-    @property
-    def grid(self):
-        """ Grid property. """
-        return self._grid
-
     def parameterize(self):
         """ Parameterizes a gridder. """
         # Handle different types of grids
         # pylint: disable=no-member
-        if isinstance(self._grid, str):
-            grid = self._grid
+        if isinstance(self.grid, str):
+            grid = self.grid
         else:
-            grid = self._grid.name
+            grid = self.grid.name
 
         return {
             'tool': self._tool,
@@ -76,10 +71,10 @@ class Gridder(Parameter):
         return 'Gridder(%r, %r, %r)' % (
             self._tool,
             self._method,
-            self._grid)
+            self.grid)
 
     def __str__(self):
         return '%s %s %s' % (
             self._tool,
             self._method,
-            self._grid)
+            self.grid)
