@@ -37,7 +37,7 @@ class Domain(Parameter):
         if not dimensions:
             dimensions = []
 
-        self._dimensions = dimensions
+        self.dimensions = dimensions
         self._mask = mask
 
     @classmethod
@@ -66,18 +66,13 @@ class Domain(Parameter):
         return cls(dimensions=dimensions, mask=mask, name=name)
 
     @property
-    def dimensions(self):
-        """ Read-only access to dimensions. """
-        return self._dimensions
-
-    @property
     def mask(self):
         """ Returns associated mask. """
         return self._mask
 
     def add_dimension(self, dimension):
         """ Add a dimension. """
-        self._dimensions.append(dimension)
+        self.dimensions.append(dimension)
 
     def parameterize(self):
         """ Returns parameter for GET request. """
@@ -94,7 +89,7 @@ class Domain(Parameter):
         return param
 
     def __repr__(self):
-        return 'Domain(%r, %r, %r)' % (self._dimensions, self._mask, self.name)
+        return 'Domain(%r, %r, %r)' % (self.dimensions, self._mask, self.name)
 
     def __str__(self):
-        return '%s %s, %s' % (self._dimensions, self._mask, self.name)
+        return '%s %s, %s' % (self.dimensions, self._mask, self.name)
