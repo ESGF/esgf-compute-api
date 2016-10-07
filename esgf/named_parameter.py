@@ -34,7 +34,7 @@ class NamedParameter(Parameter):
 
     def parameterize(self):
         """ Parameterizes NamedParameter for GET request. """
-        if all(isinstance(x, str) for x in self.values):
+        if all(isinstance(x, (str, unicode)) for x in self.values):
             value = '|'.join(self.values)
         elif (len(self.values) == 1 and
               isinstance(self.values[0], Parameter)):
