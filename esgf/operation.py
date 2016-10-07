@@ -43,7 +43,7 @@ class Operation(Parameter):
 
         self.domain = None
         self.inputs = []
-        self.parameters = []
+        self.parameters = {}
 
         self._identifier = identifier
 
@@ -88,7 +88,7 @@ class Operation(Parameter):
 
     def add_parameter(self, param):
         """ Adds a parameter to operation. """
-        self.parameters.append(param)
+        self.parameters[param.name] = param
 
     @property
     def variables(self):
@@ -117,12 +117,12 @@ class Operation(Parameter):
             dom_dict[self.domain.name] = self.domain
 
         if self.parameters:
-            for param in self.parameters:
+            for name, param in self.parameters.iteritems():
                 if isinstance(param, Gridder):
                     if isinstance(param.grid, Variable):
-                        var_dict[param] = param.grid
+                        var_dict[param.grid.name] = param.grid
                     elif isinstance(param.grid, Domain):
-                        dom_dict[param] = param.grid
+                        dom_dict[param.grid.name] = param.grid
 
         return var_dict, dom_dict
 
@@ -160,8 +160,8 @@ class Operation(Parameter):
             params['domain'] = self.domain.name
 
         if len(self.parameters):
-            for param in self.parameters:
-                params[param.name] = param.parameterize()
+            for name, param in self.parameters.iteritems():
+                params[name] = param.parameterize()
 
         return params
 
