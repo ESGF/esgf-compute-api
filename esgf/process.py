@@ -97,7 +97,7 @@ class Process(object):
 
         return True if self.status.lower() != 'processsucceeded' else False
 
-    def execute(self, inputs=None, domain=None, parameters=None, store=False, status=False):
+    def execute(self, inputs=None, domain=None, parameters=None, store=False, status=False, method='GET'):
         """ Passes process parameters to WPS to execute. """
         if inputs:
             for inp in inputs:
@@ -121,7 +121,8 @@ class Process(object):
         self._result = self._wps.execute(self._operation.identifier,
                                          datainputs,
                                          status=status,
-                                         store=store)
+                                         store=store,
+                                         method=method)
 
     def __repr__(self):
         return 'Process(wps=%r, operation=%r)' % (self._wps, self._operation)
