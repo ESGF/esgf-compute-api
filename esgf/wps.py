@@ -156,7 +156,7 @@ class _WPSRequest(object):
                                              auth=self._auth())
 
                 logger.debug('Query\n%s', urllib.unquote(response.url))
-                logger.debug('Execute response\n%s', response)
+                logger.debug('Execute response\n%s', response.text)
             elif method.lower() == 'post':
                 # Check for CSRF token
                 csrf_token = None
