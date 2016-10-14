@@ -98,6 +98,7 @@ class _WPSRequest(object):
         try:
             response = self._session.get(self._base_url,
                                          params=params,
+                                         cookies=self._session.cookies,
                                          auth=self._auth())
         except ConnectionError as e:
             raise WPSServerError('GetCapabilites Request failed, check logs.')
@@ -121,6 +122,7 @@ class _WPSRequest(object):
         try:
             response = self._session.get(self._base_url,
                                          params=params,
+                                         cookies=self._session.cookies,
                                          auth=self._auth())
         except ConnectionError as e:
             raise WPSServerError('DescribeProcess Request failed, check logs.')
