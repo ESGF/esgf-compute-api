@@ -258,7 +258,7 @@ class WPS(object):
         if kwargs.get('log'):
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
 
-            logger.setLevel(logging.INFO)
+            logger.setLevel(logging.DEBUG)
 
             std_handler = logging.StreamHandler(sys.stdout)
             std_handler.setFormatter(formatter)
