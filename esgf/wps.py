@@ -16,6 +16,11 @@ from requests.exceptions import ConnectionError
 
 from lxml import etree
 
+import sys
+import logging
+
+logger = logging.getLogger()
+
 _IDENTIFICATION = (
     'title',
     'abstract',
@@ -100,6 +105,8 @@ class _WPSRequest(object):
                                          params=params,
                                          cookies=self._session.cookies,
                                          auth=self._auth())
+
+            logger.debug('GetCapabilites\n%s', urllib.unquote(response.url))
         except ConnectionError as e:
             raise WPSServerError('GetCapabilites Request failed, check logs.')
 
@@ -124,12 +131,14 @@ class _WPSRequest(object):
                                          params=params,
                                          cookies=self._session.cookies,
                                          auth=self._auth())
+
+            logger.debug('DescribeProcess\n%s', urllib.unquote(response.url))
         except ConnectionError as e:
             raise WPSServerError('DescribeProcess Request failed, check logs.')
 
         return etree.fromstring(response.text.encode('utf-8'))
 
-    def execute(self, identifier, version='1.0.0', method='GET', **kwargs):
+    def execute(self, identifier, version='1.0.0', method='POST', **kwargs):
         """ Calls Execute endpoint. """
         params = self._base_params('Execute')
 
@@ -140,11 +149,14 @@ class _WPSRequest(object):
 
         try:
             if method.lower() == 'get':
-                params['datainputs'] = urllib.quote(data)
+                params['datainputs'] = '[%s]' % (data.replace(' ', ''),)
 
                 response = self._session.get(self._base_url,
                                              params=params,
                                              auth=self._auth())
+
+                logger.debug('Query\n%s', urllib.unquote(response.url))
+                logger.debug('Execute response\n%s', response)
             elif method.lower() == 'post':
                 # Check for CSRF token
                 csrf_token = None
@@ -155,6 +167,8 @@ class _WPSRequest(object):
 
                 # Build headers and payload for CSRF token
                 if csrf_token:
+                    logger.debug('CSRF token present')
+
                     payload = {
                         'document': data,
                         'csrfmiddlewaretoken': csrf_token,
@@ -175,13 +189,20 @@ class _WPSRequest(object):
                                               cookies=self._session.cookies,
                                               auth=self._auth())
 
+                # Grabbed from owslib to handle the execute response
                 if response.status_code in [400, 401]:
                     raise ServiceException(response.text)
 
                 if response.status_code in [404, 500, 502, 503, 504]:
                     response.raise_for_status()
 
-                if 'Content-Type' in response.headers and response.headers['Content-Type'] in ['text/xml', 'application/xml', 'application/vnd.ogc.se_xml']:
+                valid_content = [
+                    'text/xml',
+                    'application/xml',
+                    'application/vnd.ogc.se_xml',
+                ]
+
+                if 'Content-Type' in response.headers and response.headers['Content-Type'] in valid_content:
                     se_tree = etree.fromstring(response.content)
 
                     possible_errors = [
@@ -196,8 +217,12 @@ class _WPSRequest(object):
 
                         if serviceException is not None:
                             raise ServiceException('\n'.join([str(t).strip() for t in serviceException.itertext() if str(t).strip()]))
+    
+                xml_response = ResponseWrapper(response).read()
 
-                response = etree.fromstring(ResponseWrapper(response).read())
+                logger.debug('Execute server response\n%s', xml_response)
+
+                response = etree.fromstring(xml_response)
             else:
                 raise WPSClientError('HTTP %s method is not supported' % (method,))
         except ConnectionError as e:
@@ -212,7 +237,7 @@ class WPS(object):
 
     >>> wps = WPS('http://localhost/wps/')
 
-    Print information about WPS server.
+    Print debugrmation about WPS server.
 
     >>> wps.identification
     >>> wps.provider
@@ -226,9 +251,25 @@ class WPS(object):
     username: A String username.
     password: A String password.
     """
-    def __init__(self, url, username=None, password=None):
+    def __init__(self, url, username=None, password=None, **kwargs):
         """ Inits WebProcessingService """
         self._url = url
+
+        if kwargs.get('log'):
+            formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
+
+            logger.setLevel(logging.INFO)
+
+            std_handler = logging.StreamHandler(sys.stdout)
+            std_handler.setFormatter(formatter)
+            logger.addHandler(std_handler)
+
+            log_file = kwargs.get('log_file')
+
+            if log_file:
+                file_handler = logging.FileHandler(log_file)
+                file_handler.setFormatter(formatter)
+                logger.addHandler(file_handler)
 
         self._service = _WPSRequest(url, username=username, password=password)
 
@@ -249,11 +290,15 @@ class WPS(object):
             if not self._init:
                 self._init = True
 
+            logger.debug('Retrieving capabilities')
+
             capabilities = self._service.get_capabilities()
 
             wps = WebProcessingService(self._url, skip_caps=True)
 
             wps._parseCapabilitiesMetadata(capabilities)
+
+            logger.debug('Populating identifer, provider and contact debug')
 
             ident = wps.identification
 
@@ -271,6 +316,8 @@ class WPS(object):
                                              for x in _CONTACT)
 
             del self._processes[:]
+
+            logger.debug('Populating processes')
 
             for process in wps.processes:
                 self._processes.append(process.identifier)
@@ -300,6 +347,8 @@ class WPS(object):
 
     def execute(self, identifier, inputs, store=False, status=False, method='GET'):
         """ Formats data and executs WPS process. """
+        logger.debug('Executing "%s" at "%s" using HTTP %s method', identifier, self._url, method)
+
         if method.lower() == 'get':
             params = {}
 
@@ -309,6 +358,8 @@ class WPS(object):
             params_kv = ['%s=%s' % (k, v) for k, v in params.iteritems()]
 
             params_kv = ';'.join(params_kv)
+
+            logger.debug('DataInputs:\n%s', params_kv)
 
             response = self._service.execute(identifier, data=params_kv, method=method)
 
@@ -320,16 +371,24 @@ class WPS(object):
 
             params_kv = [(k, json.dumps(v)) for k, v in inputs.iteritems()]
 
-            xml_data = execution.buildRequest(identifier, params_kv, 'OUTPUT')
+            output = None
+            
+            if store and status:
+                output = 'output'
 
-            request_document = xml_data.xpath(
-                '/wps100:Execute/wps100:ResponseForm/wps100:ResponseDocument',
-                namespaces=xml_data.nsmap)[0]
-    
-            request_document.set('status', str(status))
-            request_document.set('storeExecuteResponse', str(store))
+            xml_data = execution.buildRequest(identifier, params_kv, output)
+
+            if store and stastu:
+                request_document = xml_data.xpath(
+                    '/wps100:Execute/wps100:ResponseForm/wps100:ResponseDocument',
+                    namespaces=xml_data.nsmap)[0]
+        
+                request_document.set('status', str(status))
+                request_document.set('storeExecuteResponse', str(store))
 
             xml_data = etree.tostring(xml_data)
+
+            logger.debug('HTTP body:\n%s', xml_data)
             
             response = self._service.execute(identifier, data=xml_data, method=method)
 

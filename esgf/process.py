@@ -6,9 +6,12 @@ import json
 
 from tempfile import NamedTemporaryFile
 
+from .errors import WPSClientError
 from .errors import WPSServerError
 from .operation import Operation
 from .variable import Variable
+
+import traceback
 
 class Process(object):
     """ Process.
@@ -77,7 +80,10 @@ class Process(object):
         with NamedTemporaryFile() as temp_file:
             self._result.getOutput(temp_file.name)
 
-            json_obj = json.load(temp_file)
+            try:
+                json_obj = json.load(temp_file)
+            except ValueError:
+                raise WPSClientError('Server did not return any valid output')
 
             output = Variable.from_dict(json_obj)
 
@@ -97,7 +103,7 @@ class Process(object):
 
         return True if self.status.lower() != 'processsucceeded' else False
 
-    def execute(self, inputs=None, domain=None, parameters=None, store=False, status=False, method='GET'):
+    def execute(self, inputs=None, domain=None, parameters=None, store=False, status=False, method='POST'):
         """ Passes process parameters to WPS to execute. """
         if inputs:
             for inp in inputs:
