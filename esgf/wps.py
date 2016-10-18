@@ -75,7 +75,7 @@ class _WPSRequest(object):
         """ Generates base parameters for all requests. """
         params = {
             'service': 'WPS',
-            'Request': request,
+            'request': request,
         }
 
         if self._accept_versions:
