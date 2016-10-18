@@ -108,7 +108,7 @@ class _WPSRequest(object):
 
             logger.debug('GetCapabilites\n%s', urllib.unquote(response.url))
         except ConnectionError as e:
-            raise WPSServerError('GetCapabilites Request failed, check logs.')
+            raise WPSServerError('GetCapabilities Request failed, check logs.')
 
         return etree.fromstring(response.text.encode('utf-8'))
 

@@ -167,7 +167,7 @@ class TestProcess(TestCase):
                                      'time': {
                                          'start': 1998,
                                          'step': 1,
-                                         'end': None,
+                                         'end': 1998,
                                          'crs': 'values',
                                      },
                                  }
@@ -190,6 +190,7 @@ class TestProcess(TestCase):
                                  },
                              ]
                          },
+                         method='POST',
                          status=False,
                          store=False)
         ]
@@ -228,7 +229,7 @@ class TestProcess(TestCase):
                                      'time': {
                                          'start': 1998,
                                          'step': 1,
-                                         'end': None,
+                                         'end': 1998,
                                          'crs': 'values',
                                      },
                                  }
@@ -243,6 +244,7 @@ class TestProcess(TestCase):
                                  }
                              ]
                          },
+                         method='POST',
                          status=False,
                          store=False)
         ]
@@ -274,6 +276,7 @@ class TestProcess(TestCase):
                              'domain': [],
                              'operation': process._operation.flatten(),
                          },
+                         method='POST',
                          status=False,
                          store=False)
         ]
@@ -304,6 +307,7 @@ class TestProcess(TestCase):
                              ],
                              'operation': process._operation.flatten(),
                          },
+                         method='POST',
                          status=False,
                          store=False)
         ]
@@ -326,6 +330,7 @@ class TestProcess(TestCase):
                              'domain': [],
                              'operation': process._operation.flatten(),
                          },
+                         method='POST',
                          status=False,
                          store=False)
         ]

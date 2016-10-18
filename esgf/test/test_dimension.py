@@ -132,7 +132,7 @@ class TestDimension(TestCase):
         dim = Dimension.from_single_index(1)
 
         self.assertEqual(dim.start, 1)
-        self.assertIsNone(dim.end)
+        self.assertEqual(dim.end, 1)
         self.assertEqual(dim.crs, Dimension.indices)
         self.assertEqual(dim.step, 1)
         self.assertIsNotNone(dim.name)
@@ -150,7 +150,7 @@ class TestDimension(TestCase):
         dim = Dimension.from_single_value(-180)
 
         self.assertEqual(dim.start, -180)
-        self.assertIsNone(dim.end)
+        self.assertEqual(dim.end, -180)
         self.assertEqual(dim.crs, Dimension.values)
         self.assertEqual(dim.step, 1)
         self.assertIsNotNone(dim.name)
