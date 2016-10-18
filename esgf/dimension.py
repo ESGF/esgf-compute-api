@@ -115,18 +115,18 @@ class Dimension(Parameter):
     def from_single_index(cls, value, step=None, name=None):
         """ Creates dimension from single index. """
         if not step:
-            return cls(value, None, Dimension.indices, name=name)
+            return cls(value, value, Dimension.indices, name=name)
         else:
-            return cls(value, None, Dimension.indices, step=step, name=name)
+            return cls(value, value, Dimension.indices, step=step, name=name)
 
     @classmethod
     def from_single_value(cls, value, step=None, name=None):
         """ Creates dimension from single value. """
         
         if not step:
-            return cls(value, None, Dimension.values, name=name)
+            return cls(value, value, Dimension.values, name=name)
         else:
-            return cls(value, None, Dimension.values, step=step, name=name)
+            return cls(value, value, Dimension.values, step=step, name=name)
 
     def parameterize(self):
         """ Parameterizes object for get queries. """
