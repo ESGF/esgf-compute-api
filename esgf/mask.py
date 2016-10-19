@@ -2,7 +2,7 @@
 Mask Module.
 """
 
-from uuid import uuid4
+from uuid import uuid4 as uuid
 
 # pylint: disable=too-few-public-methods
 class Mask(object):
@@ -41,7 +41,7 @@ class Mask(object):
         self._operation = operation
 
         if not name:
-            name = str(uuid4())
+            name = str(uuid())
 
         self._name = name
 
@@ -103,14 +103,14 @@ class Mask(object):
         }
 
     def __repr__(self):
-        return 'Mask(%r, %r, %r, %r)' % (
+        return 'Mask(uri=%r, var_name=%r, operation=%r, name=%r)' % (
             self._uri,
             self._var_name,
             self._operation,
             self._name)
 
     def __str__(self):
-        return '%s %s %s %s' % (
+        return 'uri=%s var_name=%s operation=%s name=%s' % (
             self._uri,
             self._var_name,
             self._operation,

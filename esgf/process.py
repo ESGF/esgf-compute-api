@@ -6,12 +6,9 @@ import json
 
 from tempfile import NamedTemporaryFile
 
-from .errors import WPSClientError
-from .errors import WPSServerError
-from .operation import Operation
-from .variable import Variable
-
-import traceback
+from esgf import errors
+from esgf import operation
+from esgf import variable
 
 class Process(object):
     """ Process.
@@ -44,9 +41,9 @@ class Process(object):
     @classmethod
     def from_identifier(cls, wps, identifier):
         """ Helper create process from identifer. """
-        operation = Operation(identifier)
+        op = operation.Operation(identifier)
 
-        return cls(wps, operation)
+        return cls(wps, op)
 
     @property
     def name(self):
@@ -72,7 +69,7 @@ class Process(object):
     def output(self):
         """ Process output. """
         if not self._result.isSucceded():
-            raise WPSServerError(
+            raise errors.WPSServerError(
                 'Process has no output, possibly process execution error.')
 
         output = None
@@ -83,17 +80,18 @@ class Process(object):
             try:
                 json_obj = json.load(temp_file)
             except ValueError:
-                raise WPSClientError('Server did not return any valid output')
+                raise errors.WPSClientError('Server did not return any '
+                                            'valid output')
 
-            output = Variable.from_dict(json_obj)
+            output = variable.Variable.from_dict(json_obj)
 
         return output
 
     def check_status(self, sleep_secs=0):
         """ Retrieves latest status from server. """
         if not self._result.statusLocation:
-            raise WPSServerError('Process \'%s\' doesn\'t support status.' %
-                                 (self.name,))
+            raise errors.WPSServerError('Process \'%s\' doesn\'t '
+                                        'support status.' % (self.name,))
 
         self._result.checkStatus(sleepSecs=sleep_secs)
 
@@ -103,7 +101,8 @@ class Process(object):
 
         return True if self.status.lower() != 'processsucceeded' else False
 
-    def execute(self, inputs=None, domain=None, parameters=None, store=False, status=False, method='POST'):
+    def execute(self, inputs=None, domain=None, parameters=None, store=False,
+                status=False, method='POST'):
         """ Passes process parameters to WPS to execute. """
         if inputs:
             for inp in inputs:

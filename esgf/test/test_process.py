@@ -15,6 +15,7 @@ from esgf import Process
 from esgf import Variable
 from esgf import Dimension
 from esgf import Domain
+from esgf import WPSClientError
 from esgf import WPSServerError
 from esgf import NamedParameter
 from esgf import Operation
@@ -51,6 +52,10 @@ class TestProcess(TestCase):
         with open(temp_file_path, 'w') as temp_file:
             json.dump(output, temp_file)
 
+    def write_bad_test_output(self, temp_file_path):
+        with open(temp_file_path, 'w') as temp_file:
+            temp_file.write('bad output')
+
     def test_output(self):
         """ Process output. """
         wps = WPS('http://localhost:8000/wps')
@@ -72,6 +77,14 @@ class TestProcess(TestCase):
         self.assertEqual(output.var_name, 'ta')
         self.assertIsNotNone(output.domains)
         self.assertEqual(output.mime_type, 'application/netcdf')
+
+        process._result.getOutput = self.write_bad_test_output
+
+        with self.assertRaises(WPSClientError) as ctx:
+            output = process.output
+
+        self.assertEqual(ctx.exception.message, 'Server did not return any '
+                         'valid output')
 
     def test_status(self):
         """ Status checking/updating. """

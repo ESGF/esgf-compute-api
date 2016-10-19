@@ -102,6 +102,7 @@ class TestWPS(TestCase):
 
             self.assertEqual(ctx.value.replace('\n', ''), process[1])
 
+    @unittest.expectedFailure
     def test_no_service(self):
         """ Tests bad service endpoint. """
         wps = WPS('http://localhost:9999/wps')

@@ -16,7 +16,8 @@ class TestOperation(TestCase):
 
     def test_repr(self):
         """ Tests __repr__ value."""
-        result = '''Operation('OP.test', [], 'test', None, {})'''
+        result = ("Operation(identifier='OP.test', inputs=[], name='test', "
+                  "domain=None, parameters={})")
 
         op = Operation('OP.test', name='test')
 
@@ -24,7 +25,8 @@ class TestOperation(TestCase):
 
     def test_str(self):
         """ Tests __str__ value."""
-        result = 'OP.test [] test None {}'
+        result = ('identifier=OP.test inputs=[] name=test domain=None '
+                  'parameters={}')
 
         op = Operation('OP.test', name='test') 
         

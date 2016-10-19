@@ -18,15 +18,14 @@ class TestDimension(TestCase):
         """ Test repr value. """
         dim = Dimension(0, 10, Dimension.values, name='lat')
 
-        self.assertEqual(repr(dim),
-                         """Dimension(0, 10, 1, CRS('values'), 'lat')""")
+        self.assertEqual(repr(dim), "Dimension(start=0, end=10, step=1, "
+                         "crs=CRS(name='values'), name='lat')")
 
     def test_str(self):
         """ Test str value. """
         dim = Dimension(0, 10, Dimension.values, name='lat')
 
-        self.assertEqual(str(dim),
-                         """0 10 1 values lat""")
+        self.assertEqual(str(dim), "start=0 end=10 step=1 crs=values name=lat")
 
     def test_from_dict(self):
         """ Create Dimension from dict representation. """
@@ -78,7 +77,7 @@ class TestDimension(TestCase):
         self.assertEqual(ctx.exception.message,
                          'Must provide a CRS value.')
 
-    @patch('esgf.parameter.uuid4')
+    @patch('esgf.parameter.uuid')
     def test_optional_init(self, mock_uuid4):
         """ Testing optional arguments. """
         mock_uuid4.return_value = 'Unique'
@@ -87,6 +86,10 @@ class TestDimension(TestCase):
 
         self.assertEqual(dim.step, 1)
         self.assertIsNotNone(dim.name)
+
+        dim = Dimension(1, None, Dimension.indices)
+
+        self.assertEqual(dim.end, None)
 
         dim = Dimension(1, 2, Dimension.indices, step=2)
 

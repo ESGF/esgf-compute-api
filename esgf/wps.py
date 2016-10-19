@@ -1,14 +1,12 @@
 """ A WPS Client """
 
-from .errors import WPSClientError
-from .errors import WPSServerError
-from .process import Process
-
 import json
+import logging
 import urllib
+import sys
 
-from owslib.wps import WPSExecution
 from owslib.wps import WebProcessingService
+from owslib.wps import WPSExecution
 from owslib.util import ResponseWrapper
 
 import requests
@@ -16,8 +14,7 @@ from requests.exceptions import ConnectionError
 
 from lxml import etree
 
-import sys
-import logging
+from esgf import errors
 
 logger = logging.getLogger()
 
@@ -108,7 +105,7 @@ class _WPSRequest(object):
 
             logger.debug('GetCapabilites\n%s', urllib.unquote(response.url))
         except ConnectionError as e:
-            raise WPSServerError('GetCapabilities Request failed, check logs.')
+            raise errors.WPSServerError('GetCapabilities Request failed, check logs.')
 
         return etree.fromstring(response.text.encode('utf-8'))
 
@@ -134,7 +131,7 @@ class _WPSRequest(object):
 
             logger.debug('DescribeProcess\n%s', urllib.unquote(response.url))
         except ConnectionError as e:
-            raise WPSServerError('DescribeProcess Request failed, check logs.')
+            raise errors.WPSServerError('DescribeProcess Request failed, check logs.')
 
         return etree.fromstring(response.text.encode('utf-8'))
 
@@ -226,7 +223,7 @@ class _WPSRequest(object):
             else:
                 raise WPSClientError('HTTP %s method is not supported' % (method,))
         except ConnectionError as e:
-            raise WPSServerError('Execute Request failed, check logs.')
+            raise errors.WPSServerError('Execute Request failed, check logs.')
 
         return response
 

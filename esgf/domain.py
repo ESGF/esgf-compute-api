@@ -2,12 +2,12 @@
 Domain Module.
 """
 
-from .mask import Mask
-from .errors import WPSAPIError
-from .dimension import Dimension
-from .parameter import Parameter
+from esgf import dimension
+from esgf import errors
+from esgf import mask
+from esgf import parameter
 
-class Domain(Parameter):
+class Domain(parameter.Parameter):
     """ Domain.
 
     A domain consist of one or more dimensions. A mask can be associated with
@@ -50,20 +50,20 @@ class Domain(Parameter):
         if 'id' in data:
             name = data['id']
         else:
-            raise WPSAPIError('Domain must provide an id.')
+            raise errors.WPSAPIError('Domain must provide an id.')
 
         dimensions = []
 
         for key, value in data.iteritems():
             if key not in blacklist:
-                dimensions.append(Dimension.from_dict(key, value))
+                dimensions.append(dimension.Dimension.from_dict(key, value))
 
-        mask = None
+        mask_data = None
 
         if 'mask' in data:
-            mask = Mask.from_dict(data['mask'])
+            mask_data = mask.Mask.from_dict(data['mask'])
 
-        return cls(dimensions=dimensions, mask=mask, name=name)
+        return cls(dimensions=dimensions, mask=mask_data, name=name)
 
     @property
     def mask(self):
@@ -89,7 +89,9 @@ class Domain(Parameter):
         return param
 
     def __repr__(self):
-        return 'Domain(%r, %r, %r)' % (self.dimensions, self._mask, self.name)
+        return ('Domain(dimensions=%r, mask=%r, name=%r)' %
+                (self.dimensions, self._mask, self.name))
 
     def __str__(self):
-        return '%s %s, %s' % (self.dimensions, self._mask, self.name)
+        return ('dimensions=%s mask=%s name=%s' %
+                (self.dimensions, self._mask, self.name))

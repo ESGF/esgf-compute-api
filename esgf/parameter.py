@@ -2,7 +2,7 @@
 Parameter module.
 """
 
-from uuid import uuid4
+from uuid import uuid4 as uuid
 
 class Parameter(object):
     """ Parameter.
@@ -16,7 +16,7 @@ class Parameter(object):
         self._name = name
 
         if not self._name:
-            self._name = uuid4()
+            self._name = str(uuid())
 
     @classmethod
     def from_dict(cls, data):
@@ -33,7 +33,7 @@ class Parameter(object):
         raise NotImplementedError
 
     def __repr__(self):
-        return 'Parameter(%r)' % self.name
+        return 'Parameter(name=%r)' % self.name
 
     def __str__(self):
-        return '%s' % self.name
+        return 'name=%s' % self.name

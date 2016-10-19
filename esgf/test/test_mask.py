@@ -15,7 +15,8 @@ class TestMask(TestCase):
         mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='North')
 
         self.assertEqual(repr(mask),
-                         """Mask('file://test.nc', 'ta', 'var_data>mask_data', 'North')""")
+                         "Mask(uri='file://test.nc', var_name='ta', "
+                         "operation='var_data>mask_data', name='North')")
 
     def test_str(self):
         """ Test str value. """
@@ -23,7 +24,8 @@ class TestMask(TestCase):
         mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='North')
 
         self.assertEqual(str(mask),
-                         """file://test.nc ta var_data>mask_data North""")
+                         "uri=file://test.nc var_name=ta "
+                         "operation=var_data>mask_data name=North")
 
     def test_from_dict(self):
         """ Create Mask from dict representation. """

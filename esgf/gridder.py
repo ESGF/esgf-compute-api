@@ -2,11 +2,9 @@
 Gridder Module.
 """
 
-from .domain import Domain
-from .parameter import Parameter
-from .variable import Variable
+from esgf import parameter
 
-class Gridder(Parameter):
+class Gridder(parameter.Parameter):
     """ Gridder.
     
     Describes the regridder and target grid for an operation.
@@ -68,13 +66,13 @@ class Gridder(Parameter):
         }
 
     def __repr__(self):
-        return 'Gridder(%r, %r, %r)' % (
+        return 'Gridder(tool=%r, method=%r, grid=%r)' % (
             self._tool,
             self._method,
             self.grid)
 
     def __str__(self):
-        return '%s %s %s' % (
+        return 'tool=%s method=%s grid=%s' % (
             self._tool,
             self._method,
             self.grid)

@@ -15,14 +15,14 @@ class TestDomain(TestCase):
         domain = Domain([], None, 'd0')
 
         self.assertEqual(repr(domain),
-                         """Domain([], None, 'd0')""")
+                         "Domain(dimensions=[], mask=None, name='d0')")
     
     def test_str(self):
         """ Test str value. """
         domain = Domain([], None, 'd0')
 
         self.assertEqual(str(domain),
-                         """[] None, d0""")
+                         "dimensions=[] mask=None name=d0")
 
     def test_from_dict(self):
         """ Create domain from dict representation. """

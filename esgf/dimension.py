@@ -2,9 +2,9 @@
 Dimension module.
 """
 
-from .utils import int_or_float
-from .errors import WPSAPIError
-from .parameter import Parameter
+from esgf import errors
+from esgf import parameter
+from esgf import utils
 
 # pylint: disable=too-few-public-methods
 class CRS(object):
@@ -28,12 +28,12 @@ class CRS(object):
         return self.name == other.name
 
     def __repr__(self):
-        return 'CRS(%r)' % (self._name,)
+        return 'CRS(name=%r)' % (self._name,)
 
     def __str__(self):
         return self._name
 
-class Dimension(Parameter):
+class Dimension(parameter.Parameter):
     """ Dimension.
 
     Describes a dimension of a plane. This dimension can be constrained 
@@ -83,24 +83,24 @@ class Dimension(Parameter):
         """ Create dimension from dict representation. """
         if 'start' in data:
             if isinstance(data['start'], str):
-                start = int_or_float(data['start'])
+                start = utils.int_or_float(data['start'])
             else:
                 start = data['start']
         else:
-            raise WPSAPIError('Must atleast pass a start value.')
+            raise errors.WPSAPIError('Must atleast pass a start value.')
 
         end = None
 
         if 'end' in data:
             if isinstance(data['end'], str):
-                end = int_or_float(data['end'])
+                end = utils.int_or_float(data['end'])
             else:
                 end = data['end']
 
         if 'crs' in data:
             crs = CRS(data['crs'])
         else:
-            raise WPSAPIError('Must provide a CRS value.')
+            raise errors.WPSAPIError('Must provide a CRS value.')
 
         kwargs = {
             'name': name,
@@ -140,7 +140,7 @@ class Dimension(Parameter):
         return params
 
     def __repr__(self):
-        return 'Dimension(%r, %r, %r, %r, %r)' % (
+        return 'Dimension(start=%r, end=%r, step=%r, crs=%r, name=%r)' % (
             self.start,
             self.end,
             self.step,
@@ -148,7 +148,7 @@ class Dimension(Parameter):
             self.name)
 
     def __str__(self):
-        return '%s %s %s %s %s' % (
+        return 'start=%s end=%s step=%s crs=%s name=%s' % (
             self.start, 
             self.end, 
             self.step, 

@@ -2,9 +2,9 @@
 NamedParameter Module.
 """
 
-from .parameter import Parameter
+from esgf import parameter
 
-class NamedParameter(Parameter):
+class NamedParameter(parameter.Parameter):
     """ Named Parameter.
 
     Describes a parameter to be passed to an Operation.
@@ -37,15 +37,15 @@ class NamedParameter(Parameter):
         if all(isinstance(x, (str, unicode)) for x in self.values):
             value = '|'.join(self.values)
         elif (len(self.values) == 1 and
-              isinstance(self.values[0], Parameter)):
+              isinstance(self.values[0], parameter.Parameter)):
             value = self.values[0].name
 
         return value
 
     def __repr__(self):
-        return 'NamedParameter(%r, %r)' % (
+        return 'NamedParameter(name=%r, values=%r)' % (
             self.name,
             self.values)
 
     def __str__(self):
-        return '%s %s' % (self.name, self.values)
+        return 'name=%s values=%s' % (self.name, self.values)

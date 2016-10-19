@@ -24,14 +24,14 @@ class TestParameter(TestCase):
         param = Parameter('v0')
 
         self.assertEqual(repr(param),
-                         """Parameter('v0')""")
+                         "Parameter(name='v0')")
 
     def test_str(self):
         """ Test str value. """
         param = Parameter('v0')
 
         self.assertEqual(str(param),
-                         """v0""")
+                         "name=v0")
 
     def test_from_dict(self):
         """ Test from dict. """

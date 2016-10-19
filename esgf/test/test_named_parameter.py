@@ -14,14 +14,14 @@ class TestNamedParameter(TestCase):
         axes = NamedParameter('axes', 'x', 'y')
 
         self.assertEqual(repr(axes),
-                         """NamedParameter('axes', ['x', 'y'])""")
+                         "NamedParameter(name='axes', values=['x', 'y'])")
 
     def test_str(self):
         """ Test str value. """
         axes = NamedParameter('axes', 'x', 'y')
 
         self.assertEqual(str(axes),
-                         """axes ['x', 'y']""")
+                         "name=axes values=['x', 'y']")
 
     def test_optional_init(self):
         """ Tests optional init values. """

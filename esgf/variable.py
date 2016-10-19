@@ -1,18 +1,18 @@
 """
 Variable module.
 """
-from StringIO import StringIO
 
 import os
 import json
 import requests
 
-from .errors import WPSAPIError
-from .errors import WPSClientError
-from .domain import Domain
-from .parameter import Parameter
+from StringIO import StringIO
 
-class Variable(Parameter):
+from esgf import domain
+from esgf import errors
+from esgf import parameter
+
+class Variable(parameter.Parameter):
     """ Variable.
     
     Describes a variable to be used by an Operation.
@@ -22,7 +22,7 @@ class Variable(Parameter):
     Attributes:
         uri: A String URI for the file containing the variable data.
         var_name: A String name of the variable.
-        domains: List of Domain objects to constrain the variable data.
+        domains: List of domain.Domain objects to constrain the variable data.
         mime_type: A String name of the URI mime-type.
         name: Custom name of the Variable.
     """
@@ -35,7 +35,7 @@ class Variable(Parameter):
 
         domains = kwargs.get('domains', None)
 
-        if domains and isinstance(domains, Domain):
+        if domains and isinstance(domains, domain.Domain):
             domains = [domains]
 
         self.domains = domains
@@ -49,7 +49,7 @@ class Variable(Parameter):
         if 'uri' in data:
             uri = data['uri']
         else:
-            raise WPSAPIError('Variable must provide a uri.')
+            raise errors.WPSAPIError('Variable must provide a uri.')
 
         name = None
         var_name = None
@@ -58,9 +58,9 @@ class Variable(Parameter):
             if '|' in data['id']:
                 var_name, name = data['id'].split('|')
             else:
-                raise WPSAPIError('Variable id must contain a variable name and id.')
+                raise errors.WPSAPIError('Variable id must contain a variable name and id.')
         else:
-            raise WPSAPIError('Variable must provide an id.')
+            raise errors.WPSAPIError('Variable must provide an id.')
 
         domains = None
 
@@ -104,7 +104,7 @@ class Variable(Parameter):
         if self.uri[:4] == 'http':
             download_fn = self._download_http
         else:
-            raise WPSClientError('Unsupported uri %s' % (self.uri,))
+            raise errors.WPSClientError('Unsupported uri %s' % (self.uri,))
 
         with open(out_path, 'wb') as out_file:
             download_fn(out_file, chunk_size)
@@ -130,17 +130,10 @@ class Variable(Parameter):
         return params
 
     def __repr__(self):
-        return 'Variable(%r %r %r %r %r)' % (
-            self.name,
-            self.uri,
-            self._var_name,
-            self.domains,
-            self._mime_type)
+        return ('Variable(name=%r, uri=%r, var_name=%r, domains=%r, '
+                'mime_type=%r)' % (self.name, self.uri, self._var_name,
+                                   self.domains, self._mime_type))
 
     def __str__(self):
-        return '%s %s %s %s %s' % (
-            self.name,
-            self.uri,
-            self._var_name,
-            self.domains,
-            self._mime_type)
+        return ('name=%s uri=%s var_name=%s domains=%s mime_type=%s' %
+                (self.name, self.uri, self._var_name, self.domains, self._mime_type))

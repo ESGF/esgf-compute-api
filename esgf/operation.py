@@ -2,15 +2,13 @@
 Operation Module.
 """
 
-from uuid import uuid4
+from esgf import domain
+from esgf import gridder
+from esgf import named_parameter
+from esgf import parameter
+from esgf import variable
 
-from .variable import Variable
-from .domain import Domain
-from .parameter import Parameter
-from .gridder import Gridder
-from .named_parameter import NamedParameter
-
-class Operation(Parameter):
+class Operation(parameter.Parameter):
     """ Operation.
 
     Describes an operation supported by the WPS server.
@@ -62,18 +60,19 @@ class Operation(Parameter):
         obj = cls(identifier, name=name)
 
         for input_data in data['input']:
-            obj.add_input(Parameter(input_data))
+            obj.add_input(parameter.Parameter(input_data))
 
         if 'domain' in data:
-            obj.domain = Parameter(data['domain'])
+            obj.domain = parameter.Parameter(data['domain'])
 
         extra_keys = [key for key in data.keys() if key not in expected]
 
         for key in extra_keys:
             if 'gridder' == key:
-                obj.add_parameter(Gridder.from_dict(data[key]))
+                obj.add_parameter(gridder.Gridder.from_dict(data[key]))
             else:
-                obj.add_parameter(NamedParameter.from_string(key, data[key]))
+                obj.add_parameter(
+                    named_parameter.NamedParameter.from_string(key, data[key]))
 
         return obj
 
@@ -92,7 +91,7 @@ class Operation(Parameter):
 
     @property
     def variables(self):
-        return [x for x in self.inputs if isinstance(x, Variable)]
+        return [x for x in self.inputs if isinstance(x, variable.Variable)]
 
     def gather(self):
         """ Gathers variables and domains. """
@@ -118,10 +117,10 @@ class Operation(Parameter):
 
         if self.parameters:
             for name, param in self.parameters.iteritems():
-                if isinstance(param, Gridder):
-                    if isinstance(param.grid, Variable):
+                if isinstance(param, gridder.Gridder):
+                    if isinstance(param.grid, variable.Variable):
                         var_dict[param.grid.name] = param.grid
-                    elif isinstance(param.grid, Domain):
+                    elif isinstance(param.grid, domain.Domain):
                         dom_dict[param.grid.name] = param.grid
 
         return var_dict, dom_dict
@@ -166,17 +165,11 @@ class Operation(Parameter):
         return params
 
     def __repr__(self):
-        return 'Operation(%r, %r, %r, %r, %r)' % (
-            self._identifier,
-            self.inputs,
-            self.name,
-            self.domain,
-            self.parameters)
+        return ('Operation(identifier=%r, inputs=%r, name=%r, domain=%r, '
+                'parameters=%r)' % (self._identifier, self.inputs, self.name, 
+                                    self.domain, self.parameters))
 
     def __str__(self):
-        return '%s %s %s %s %s' % (
-            self._identifier,
-            self.inputs,
-            self.name,
-            self.domain,
+        return 'identifier=%s inputs=%s name=%s domain=%s parameters=%s' % (
+            self._identifier, self.inputs, self.name, self.domain,
             self.parameters)
