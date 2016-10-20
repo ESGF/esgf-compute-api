@@ -112,6 +112,11 @@ class Operation(parameter.Parameter):
             for var in self.variables:
                 var_dict[var.name] = var
 
+                if var.domains:
+                    for dom in var.domains:
+                        if dom.name not in dom_dict:
+                            dom_dict[dom.name] = dom
+
         if self.domain:
             dom_dict[self.domain.name] = self.domain
 

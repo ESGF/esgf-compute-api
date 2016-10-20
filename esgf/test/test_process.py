@@ -137,6 +137,66 @@ class TestProcess(TestCase):
         self.assertEqual(process.name, 'OP.test')
 
     @patch('esgf.wps.WPS')
+    def test_multiple_domains(self, mock_wps):
+        """ Test passing multiple domains in different components. """
+        wps = mock_wps.return_value
+
+        d0 = Domain([Dimension.from_single_value(45, name='lat')], name='d0')
+        d1 = Domain([Dimension.from_single_value(7500, name='lev')], name='d1')
+
+        v0 = Variable('file:///test.nc', 'tas', name='v0', domains=[d0])
+
+        process = Process.from_identifier(wps, 'OP.workflow')
+
+        process.execute([v0], d1, None, False, False)
+
+        expected = [
+            call.execute('OP.workflow',
+                         {
+                             'variable': [
+                                 {
+                                     'domain': 'd0',
+                                     'uri': 'file:///test.nc',
+                                     'id': 'tas|v0',
+                                 }
+                             ],
+                             'domain': [
+                                 {
+                                     'lat': {
+                                         'start': 45,
+                                         'step': 1,
+                                         'end': 45,
+                                         'crs': 'values'
+                                     },
+                                     'id': 'd0',
+                                 },
+                                 {
+                                    'id': 'd1',
+                                    'lev': {
+                                        'start': 7500,
+                                        'step': 1,
+                                        'end': 7500,
+                                        'crs': 'values',
+                                    },
+                                 }
+                             ],
+                             'operation': [
+                                 {
+                                    'input': ['v0'],
+                                    'domain': 'd1',
+                                    'name': 'OP.workflow',
+                                    'result': process._operation.name,
+                                 }
+                             ],
+                         },
+                         method='POST',
+                         status=False,
+                         store=False),
+        ]
+
+        self.assertEqual(expected, wps.mock_calls)
+
+    @patch('esgf.wps.WPS')
     def test_multiple_serial_process(self, mock_wps):
         """ Tests executing single process. """
         wps = mock_wps.return_value
