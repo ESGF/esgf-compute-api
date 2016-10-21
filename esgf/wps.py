@@ -14,6 +14,7 @@ from requests.exceptions import ConnectionError
 
 from lxml import etree
 
+from esgf import process
 from esgf import errors
 
 logger = logging.getLogger()
@@ -76,7 +77,7 @@ class _WPSRequest(object):
         }
 
         if self._accept_versions:
-            params['AcceptVersions'] = self._accept_versions
+            params['acceptversions'] = self._accept_versions
 
         if self._language:
             params['language'] = self._language
@@ -92,28 +93,21 @@ class _WPSRequest(object):
 
     def get_capabilities(self, method='GET'):
         """ Calls GetCapabilities endpoint. """
-        if method.lower() == 'post':
-            raise NotImplementedError('GetCapabilities POST request is not supported.')
-
         params = self._base_params('GetCapabilities')
 
         try:
             response = self._session.get(self._base_url,
                                          params=params,
-                                         cookies=self._session.cookies,
                                          auth=self._auth())
 
             logger.debug('GetCapabilites\n%s', urllib.unquote(response.url))
         except ConnectionError as e:
             raise errors.WPSServerError('GetCapabilities Request failed, check logs.')
 
-        return etree.fromstring(response.text.encode('utf-8'))
+        return response
 
     def describe_process(self, identifier, version='1.0.0', method='GET'):
         """ Calls DescribProcess endpoint. """
-        if method.lower() == 'post':
-            raise NotImplementedError('DescribeProcess POST request is not supported.')
-
         params = self._base_params('DescribeProcess')
 
         params['version'] = version
@@ -126,26 +120,30 @@ class _WPSRequest(object):
         try:
             response = self._session.get(self._base_url,
                                          params=params,
-                                         cookies=self._session.cookies,
                                          auth=self._auth())
 
             logger.debug('DescribeProcess\n%s', urllib.unquote(response.url))
         except ConnectionError as e:
             raise errors.WPSServerError('DescribeProcess Request failed, check logs.')
 
-        return etree.fromstring(response.text.encode('utf-8'))
+        return response
 
-    def execute(self, identifier, version='1.0.0', method='POST', **kwargs):
+    def execute(self, identifier, data, version='1.0.0', method='POST', **kwargs):
         """ Calls Execute endpoint. """
         params = self._base_params('Execute')
 
         params['version'] = version
         params['Identifier'] = identifier
 
-        data = kwargs.get('data', '')
-
         try:
             if method.lower() == 'get':
+                add_params = kwargs.get('params', None)
+
+                if add_params:
+                    params.update(add_params) 
+
+                logger.debug('params=%r', params)
+
                 params['datainputs'] = '[%s]' % (data.replace(' ', ''),)
 
                 response = self._session.get(self._base_url,
@@ -183,45 +181,7 @@ class _WPSRequest(object):
                 response = self._session.post(self._base_url,
                                               data=payload,
                                               headers=headers,
-                                              cookies=self._session.cookies,
                                               auth=self._auth())
-
-                # Grabbed from owslib to handle the execute response
-                if response.status_code in [400, 401]:
-                    raise ServiceException(response.text)
-
-                if response.status_code in [404, 500, 502, 503, 504]:
-                    response.raise_for_status()
-
-                valid_content = [
-                    'text/xml',
-                    'application/xml',
-                    'application/vnd.ogc.se_xml',
-                ]
-
-                if 'Content-Type' in response.headers and response.headers['Content-Type'] in valid_content:
-                    se_tree = etree.fromstring(response.content)
-
-                    possible_errors = [
-                        '{http://www.opengis.net/ows}Exception',
-                        '{http://www.opengis.net/ows/1.1}Exception',
-                        '{http://www.opengis.net/ogc}ServiceException',
-                        'ServiceException'
-                    ]
-
-                    for possible_error in possible_errors:
-                        serviceException = se_tree.find(possible_error)
-
-                        if serviceException is not None:
-                            raise ServiceException('\n'.join([str(t).strip() for t in serviceException.itertext() if str(t).strip()]))
-    
-                xml_response = ResponseWrapper(response).read()
-
-                logger.debug('Execute server response\n%s', xml_response)
-
-                response = etree.fromstring(xml_response)
-            else:
-                raise WPSClientError('HTTP %s method is not supported' % (method,))
         except ConnectionError as e:
             raise errors.WPSServerError('Execute Request failed, check logs.')
 
@@ -268,7 +228,7 @@ class WPS(object):
                 file_handler.setFormatter(formatter)
                 logger.addHandler(file_handler)
 
-        self._service = _WPSRequest(url, username=username, password=password)
+        self._service = _WPSRequest(url, username=username, password=password, **kwargs)
 
         self._identification = None
         self._provider = None
@@ -289,7 +249,9 @@ class WPS(object):
 
             logger.debug('Retrieving capabilities')
 
-            capabilities = self._service.get_capabilities()
+            response = self._service.get_capabilities()
+
+            capabilities = etree.fromstring(response.text.encode('utf-8'))
 
             wps = WebProcessingService(self._url, skip_caps=True)
 
@@ -338,27 +300,33 @@ class WPS(object):
         self.init()
 
         if name not in self._processes:
-            raise WPSClientError('No process named \'%s\' was found.' % (name,))
+            raise errors.WPSClientError('No process named \'%s\' was found.' % (name,))
 
-        return Process.from_identifier(self, name)
+        return process.Process.from_identifier(self, name)
 
     def execute(self, identifier, inputs, store=False, status=False, method='GET'):
         """ Formats data and executs WPS process. """
         logger.debug('Executing "%s" at "%s" using HTTP %s method', identifier, self._url, method)
 
         if method.lower() == 'get':
-            params = {}
+            data = {}
 
             for k, v in inputs.iteritems():
-                params[k] = json.dumps(v)
+                data[k] = json.dumps(v)
 
-            params_kv = ['%s=%s' % (k, v) for k, v in params.iteritems()]
+            data_kv = ['%s=%s' % (k, v) for k, v in data.iteritems()]
 
-            params_kv = ';'.join(params_kv)
+            data_kv = ';'.join(data_kv)
 
-            logger.debug('DataInputs:\n%s', params_kv)
+            logger.debug('DataInputs:\n%s', data_kv)
 
-            response = self._service.execute(identifier, data=params_kv, method=method)
+            response = self._service.execute(identifier,
+                                             data_kv,
+                                             method=method,
+                                             params={
+                                                 'store': store,
+                                                 'status': status,
+                                             })
 
             execution = WPSExecution()
 
@@ -375,7 +343,7 @@ class WPS(object):
 
             xml_data = execution.buildRequest(identifier, params_kv, output)
 
-            if store and stastu:
+            if store and status:
                 request_document = xml_data.xpath(
                     '/wps100:Execute/wps100:ResponseForm/wps100:ResponseDocument',
                     namespaces=xml_data.nsmap)[0]
@@ -387,17 +355,58 @@ class WPS(object):
 
             logger.debug('HTTP body:\n%s', xml_data)
             
-            response = self._service.execute(identifier, data=xml_data, method=method)
+            response = self._service.execute(identifier, xml_data, method=method)
+
+            # Grabbed from owslib to handle the execute response
+            if response.status_code in [400, 401]:
+                raise ServiceException(response.text)
+
+            if response.status_code in [404, 500, 502, 503, 504]:
+                response.raise_for_status()
+
+            valid_content = [
+                'text/xml',
+                'application/xml',
+                'application/vnd.ogc.se_xml',
+            ]
+
+            if ('Content-Type' in response.headers and
+                    response.headers['Content-Type'] in valid_content):
+                se_tree = etree.fromstring(response.content)
+
+                possible_errors = [
+                    '{http://www.opengis.net/ows}Exception',
+                    '{http://www.opengis.net/ows/1.1}Exception',
+                    '{http://www.opengis.net/ogc}ServiceException',
+                    'ServiceException'
+                ]
+
+                for possible_error in possible_errors:
+                    serviceException = se_tree.find(possible_error)
+
+                    if serviceException is not None:
+                        raise ServiceException(
+                            '\n'.join([str(t).strip()
+                                       for t in serviceException.itertext()
+                                       if str(t).strip()]))
+
+            xml_response = ResponseWrapper(response).read()
+
+            logger.debug('Execute server response\n%s', xml_response)
+
+            response = etree.fromstring(xml_response)
 
             execution.parseResponse(response)
         else:
-            raise WPSClientError('HTTP method %s is not supported' % (method,))
+            raise errors.WPSClientError('HTTP method %s is not supported' % (method,))
 
         return execution
 
     def __iter__(self):
+        self.init()
+
         for proc in self._processes:
-            yield Process.from_identifier(self, proc)
+            yield process.Process.from_identifier(self, proc)
 
     def __repr__(self):
         return 'WPS(url=%r, service=%r)' % (self._url, self._service)

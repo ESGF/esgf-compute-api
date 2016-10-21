@@ -2,197 +2,256 @@
 WPS unittest.
 """
 
-import re
+import os
 import json
 
-import unittest
 from unittest import TestCase
 
-from mock import patch
 from mock import Mock
-from mock import call
+from mock import patch
+from mock import PropertyMock
 
+from esgf import Variable
 from esgf import WPS
 from esgf import WPSServerError
 from esgf import WPSClientError
-from esgf import Process
-from esgf import Variable
 
-from . import MockPrint
-from . import test_data
-
-# TODO fix all the expected failures.
+from esgf.test import test_data
 
 class TestWPS(TestCase):
     """ Test Case for WPS class. """
 
-    @unittest.expectedFailure
-    @patch('esgf.wps.etree')
-    @patch('esgf.wps.WPSExecution')
-    def test_execute(self, mock_execution, mock_etree):
-        """ Test execute method. """
-        execution_inst = mock_execution.return_value
+    def test_str(self):
+        """ Tests string representation. """
 
         wps = WPS('http://localhost:8000/wps')
 
-        process = Process.from_identifier(wps, 'test.echo')
+        self.assertIsNotNone(str(wps))
 
-        v0 = Variable('file:///test.nc', 'tas', name='v0') 
+    @patch('esgf.wps.requests.Session')
+    def test_iter_processes(self, mock_session):
+        """ Tests iterating processes. """
+        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
 
-        process.execute(inputs=[v0])
+        wps = WPS('http://localhost:8000/wps')
 
-        execution_inst.buildRequest.assert_called_once()
+        identifiers = []
+        expected = [
+            'averager.mv',
+            'averager.ophidia',
+            'test.echo',
+            'test.sleep'
+        ]
 
-        self.assertEquals(execution_inst.buildRequest.call_args,
-                          call('test.echo',
-                               [
-                                   ('variable', json.dumps([v0.parameterize()])),
-                                   ('domain', '[]'),
-                                   ('operation', json.dumps(process._operation.flatten())),
-                               ],
-                               output='output'))
+        for process in wps:
+            identifiers.append(process._operation.identifier)
 
-    @unittest.expectedFailure
-    @patch('esgf.wps.WebProcessingService')
-    def test_get_process(self, mock_service):
-        """ Test retrieving process by name. """
-        mock_inst = mock_service.return_value
+        self.assertListEqual(expected, identifiers)
 
+    def test_logging(self):
+        """ Tests logging. """
+        wps = WPS('http://localhost:8000/wps', log=True, log_file='test.log')
+
+        from esgf import wps as wps_ns
+
+        self.assertTrue(os.path.exists(os.path.join(os.path.curdir, 'test.log')))
+        self.assertEqual(len(wps_ns.logger.handlers), 2)
+
+    @patch('esgf.wps.requests.Session')
+    def test_authorization(self, mock_session):
+        """ Tests authorization. """
+        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+
+        wps = WPS('http://localhost:8000/wps')
+
+        self.assertIsNone(wps._service._username)
+        self.assertIsNone(wps._service._password)
+
+        wps = WPS('http://localhost:8000/wps', username='user', password='test')
+
+        self.assertEqual(wps._service._username, 'user')
+        self.assertEqual(wps._service._password, 'test')
+
+        wps.identification
+
+        self.assertEqual(
+            wps._service._session.get.mock_calls[0][2]['auth'],
+            ('user', 'test'))
+
+    @patch('esgf.wps.requests.Session')
+    def test_language(self, mock_session):
+        """ Tests language. """
+        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+
+        wps = WPS('http://localhost:8000/wps')
+
+        self.assertEqual(wps._service._language, None)
+
+        wps = WPS('http://localhost:8000/wps', language='en-US')
+
+        self.assertEqual(wps._service._language, 'en-US')
+
+        wps.identification
+
+        self.assertEqual(
+            wps._service._session.get.mock_calls[0][2]['params']['language'],
+            'en-US')
+
+    @patch('esgf.wps.requests.Session')
+    def test_accept_versions(self, mock_session):
+        """ Tests accept versions. """
+        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+
+        wps = WPS('http://localhost:8000/wps')
+
+        self.assertEquals(wps._service._accept_versions, None)
+
+        wps = WPS('http://localhost:8000/wps', accept_versions='1.0.0')
+
+        self.assertEquals(wps._service._accept_versions, '1.0.0')
+
+        wps.identification
+
+        self.assertEqual(
+            wps._service._session.get.mock_calls[0][2]['params']['acceptversions'],
+            '1.0.0')
+
+    def test_execute_unsupported(self):
+        """ Tests running execute as an unknown request. """
         wps = WPS('http://localhost:8000/wps')
 
         with self.assertRaises(WPSClientError) as ctx:
-            process = wps.get_process('CDS.test')
-
+            wps.execute('averager.mv', { }, False, False, 'UPDATE')
+    
         self.assertEqual(ctx.exception.message,
-                         'No process named \'CDS.test\' was found.')
+                         'HTTP method UPDATE is not supported')
+        
+    @patch('esgf.wps.requests.Session')
+    def test_execute_post(self, mock_session):
+        """ Tests running execute as a POST request. """
 
-        mock_inst.processes = [
-            Mock(identifier='CDS.test'),
-            Mock(identifier='CDS.subset'),
-            Mock(identiifer='CDS.mean'),
-        ]
+        inst_session = mock_session.return_value
+        inst_session.post = Mock(
+            return_value = Mock(
+                content = test_data.MOCK_EXECUTE_RESPONSE,
+                headers = {}
+            )
+        )
 
-        process = wps.get_process('CDS.test')
+        wps = WPS('http://localhost:8000/wps')
+
+        wps.execute('averager.mv', { }, True, True, 'POST')
+
+        self.assertEqual(inst_session.post.mock_calls[0][2]['data'],
+                         test_data.MOCK_EXECUTE_REQUEST.replace('\n', ''))
+
+    @patch('esgf.wps.requests.Session')
+    def test_execute_get(self, mock_session):
+        """ Tests running execute as a GET request. """
+        get_resp = self.create_get_response(mock_session,
+                                        test_data.MOCK_EXECUTE_RESPONSE)    
+
+        wps = WPS('http://localhost:8000/wps')
+
+        wps.execute('averager.mv', { }, False, False, 'GET')
+
+        self.assertEqual(get_resp.mock_calls[0][2]['params']['status'], False)
+        self.assertEqual(get_resp.mock_calls[0][2]['params']['store'], False)
+
+        wps.execute('averager.mv', { }, True, True, 'GET')
+
+        self.assertEqual(get_resp.mock_calls[1][2]['params']['status'], True)
+        self.assertEqual(get_resp.mock_calls[1][2]['params']['store'], True)
+
+        variable = Variable('file:///test.nc', 'tas')
+
+        wps.execute('averager.mv', {
+            'variable': [json.dumps(variable.parameterize())], 
+        }, False, False, 'GET')
+
+        self.assertTrue('datainputs' in get_resp.mock_calls[2][2]['params'])
+
+    def create_get_response(self, mock_session, text_data):
+        inst_session = mock_session.return_value
+        inst_session.get = Mock(
+            return_value = Mock(
+                text = text_data,
+                url = 'http://localhost:8000/wps'
+            )
+        )
+
+        return inst_session.get
+
+    @patch('esgf.wps.requests.Session')
+    def test_get_process(self, mock_session):
+        """ Tests retrieving a process. """
+        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+
+        wps = WPS('http://localhost:8000/wps')
+
+        process = wps.get_process('averager.mv')
 
         self.assertIsNotNone(process)
-        self.assertIsInstance(process, Process)
+        self.assertIsNotNone(process._operation)
+        self.assertEqual(process._operation.identifier, 'averager.mv')
 
-    @patch('esgf.wps.WebProcessingService')
-    def test_iter(self, mock_service):
-        """ Tests WPS iterator. """
-        operations = [
-            'CDS.test',
-            'CDS.subset',
-            'CDS.mean',
-        ]
-
-        mock_inst = mock_service.return_value
-        mock_inst.processes = []
-
-        for oper in operations:
-            mock_inst.processes.append(Mock(identifier=oper))
-
-        wps = WPS('http://localhost:8000/wps')
-
-        output = zip(wps, operations)
-
-        for process in output:
-            with MockPrint() as ctx:
-                print process[0]
-
-            self.assertEqual(ctx.value.replace('\n', ''), process[1])
-
-    @unittest.expectedFailure
-    def test_no_service(self):
-        """ Tests bad service endpoint. """
-        wps = WPS('http://localhost:9999/wps')
-
-        with self.assertRaises(WPSServerError) as ctx:
-            print wps.identification
+        with self.assertRaises(WPSClientError) as ctx:
+            process = wps.get_process('no.exist')
 
         self.assertEqual(ctx.exception.message,
-                         'GetCapabilities Request failed, check logs.')
+                         'No process named \'no.exist\' was found.')
 
-        wps = WPS('http://localhost:9999/wps')
-        
-        with self.assertRaises(WPSClientError) as ctx:
-            print wps.provider
-
-    @unittest.expectedFailure
-    @patch('esgf.wps.WebProcessingService.getcapabilities')
-    # pylint: disable=no-self-use
-    def test_init(self, mock_getcapabilities):
-        """ Testing init. """
-
-        wps = WPS('http://localhost:8000/wps')
-
-        wps.init()
-
-        mock_getcapabilities.assert_called_once()
-
-    @unittest.expectedFailure
-    @patch('esgf.wps.WebProcessingService')
-    def test_identification(self, mock_service):
-        """ Testing identification property. """
-
-        mock_instance = mock_service.return_value
-        mock_instance.identification = test_data.generate_identification()
-        mock_instance.provider = test_data.generate_provider()
-
-        wps = WPS('http://localhost:8000/wps')
-
-        ident = wps.identification
-
-        self.assertTrue(ident == test_data.IDENTIFICATION)
-
-    @unittest.expectedFailure
-    @patch('esgf.wps.WebProcessingService')
-    def test_provider(self, mock_service):
-        """ Testing provider property. """
-
-        mock_instance = mock_service.return_value
-        mock_instance.identification = test_data.generate_identification()
-        mock_instance.provider = test_data.generate_provider()
+    @patch('esgf.wps.requests.Session')
+    def test_provider(self, mock_session):
+        """ Tests provider processing. """
+        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
 
         wps = WPS('http://localhost:8000/wps')
 
         prov = wps.provider
 
-        # Reset the contact keys value to contact dict
-        test_data.PROVIDER['contact'] = test_data.CONTACT
+        self.assertEqual(prov['url'], 'https://esgf.llnl.gov')
 
-        self.assertTrue(prov == test_data.PROVIDER)
-
-    @unittest.expectedFailure
-    # TODO might need to move GetCapabilites etree.fromstring out of the 
-    # function to assist testing and reduce methods complexity.
-    @patch('esgf.wps.WebProcessingService')
-    def test_str(self, mock_service):
-        """ Testing __str__. """
-
-        mock_instance = mock_service.return_value
-        mock_instance.identification = test_data.generate_identification()
-        mock_instance.provider = test_data.generate_provider()
+    @patch('esgf.wps.requests.Session')
+    def test_identification(self, mock_session):
+        """ Tests identification processing. """
+        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
 
         wps = WPS('http://localhost:8000/wps')
 
-        with MockPrint() as ctx:
-            print wps
+        id = wps.identification
 
-        self.assertNotEqual(ctx.value, {})
+        self.assertEqual(id['service'], 'WPS')
 
-    @patch('esgf.wps.WebProcessingService')
-    def test_repr(self, mock_service):
-        """ Testing __repr__. """
+    def test_no_service(self):
+        """ Tests error handling with a non existent server. """
+        cap_error = 'GetCapabilities Request failed, check logs.'
 
-        mock_instance = mock_service.return_value
-        mock_instance.identification = test_data.generate_identification()
-        mock_instance.provider = test_data.generate_provider()
+        wps = WPS('http://localhost:9999/wps')
 
-        wps = WPS('http://localhost:8000/wps')
+        with self.assertRaises(WPSServerError) as ctx:
+            wps.identification
 
-        with MockPrint() as ctx:
-            print '%r' % wps
+        self.assertEqual(ctx.exception.message, cap_error)
 
-        self.assertIsNotNone(re.match(r'WPS\(url=\'http://localhost:8000/' +
-                                      r'wps\', service=.*\)', ctx.value))
+        wps = WPS('http://localhost:9999/wps')
+        
+        with self.assertRaises(WPSServerError) as ctx:
+            wps.provider
+
+        self.assertEqual(ctx.exception.message, cap_error)
+
+        wps = WPS('http://localhost:9999/wps')
+        
+        with self.assertRaises(WPSServerError) as ctx:
+            wps.get_process('averager.mv')
+
+        self.assertEqual(ctx.exception.message, cap_error)
+
+        wps = WPS('http://localhost:9999/wps')
+
+        with self.assertRaises(WPSServerError) as ctx:
+            wps.execute('identifier.mv', { }, False, False, 'GET')
+
+        self.assertEqual(ctx.exception.message,
+                         'Execute Request failed, check logs.')
