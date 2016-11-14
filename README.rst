@@ -50,3 +50,8 @@ The only requirement is sphinx being installed.
     make html
 
     open build/html/index.html
+
+Compatibility
+=============
+
+`Compatibility Document <https://github.com/ESGF/esgf-compute-api/blob/master/docs/source/esgf.compat.rst>`_
