@@ -9,6 +9,7 @@ from tempfile import NamedTemporaryFile
 from esgf import errors
 from esgf import operation
 from esgf import variable
+from esgf import named_parameter
 
 class Process(object):
     """ Process.
@@ -102,7 +103,7 @@ class Process(object):
         return True if self.status.lower() != 'processsucceeded' else False
 
     def execute(self, inputs=None, domain=None, parameters=None, store=False,
-                status=False, method='POST'):
+                status=False, method='POST',**kargs):
         """ Passes process parameters to WPS to execute. """
         if inputs:
             for inp in inputs:
@@ -114,6 +115,8 @@ class Process(object):
         if parameters:
             for param in parameters:
                 self._operation.add_parameter(param)
+        for k in kargs:
+            self._operation.add_parameter(named_parameter.NamedParameter(k,kargs[k]))
 
         self._variable, self._domain = self._operation.gather()
 
