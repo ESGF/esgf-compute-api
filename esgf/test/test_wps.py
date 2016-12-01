@@ -21,13 +21,6 @@ from esgf.test import test_data
 class TestWPS(TestCase):
     """ Test Case for WPS class. """
 
-    def test_str(self):
-        """ Tests string representation. """
-
-        wps = WPS('http://localhost:8000/wps')
-
-        self.assertIsNotNone(str(wps))
-
     @patch('esgf.wps.requests.Session')
     def test_iter_processes(self, mock_session):
         """ Tests iterating processes. """
