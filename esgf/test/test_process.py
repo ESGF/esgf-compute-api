@@ -171,21 +171,21 @@ class TestProcess(TestCase):
                                      'id': 'd0',
                                  },
                                  {
-                                    'id': 'd1',
-                                    'lev': {
-                                        'start': 7500,
-                                        'step': 1,
-                                        'end': 7500,
-                                        'crs': 'values',
-                                    },
+                                     'id': 'd1',
+                                     'lev': {
+                                         'start': 7500,
+                                         'step': 1,
+                                         'end': 7500,
+                                         'crs': 'values',
+                                     },
                                  }
                              ],
                              'operation': [
                                  {
-                                    'input': ['v0'],
-                                    'domain': 'd1',
-                                    'name': 'OP.workflow',
-                                    'result': process._operation.name,
+                                     'input': ['v0'],
+                                     'domain': 'd1',
+                                     'name': 'OP.workflow',
+                                     'result': process._operation.name,
                                  }
                              ],
                          },
@@ -386,6 +386,55 @@ class TestProcess(TestCase):
         ]
 
         self.assertEqual(expected, wps.mock_calls)
+
+    @patch('esgf.wps.WPS')
+    def test_named_parameter_as_dict(self, mock_wps):
+        """ Test passing NamedParameter as kwarg """
+        wps = mock_wps.return_value
+
+        process = Process.from_identifier(wps, 'OP.test')
+
+        process.execute(axes='longitude')
+
+        expected = call.execute('OP.test',
+                                {
+                                    'variable': [],
+                                    'domain': [],
+                                    'operation': [
+                                        {
+                                            'input': [],
+                                            'axes': 'longitude',
+                                            'name': 'OP.test',
+                                            'result': process._operation.name,
+                                        }
+                                    ],
+                                },
+                                method='POST',
+                                status=False,
+                                store=False)
+
+        self.assertEqual(expected, wps.mock_calls[0])
+
+        process.execute(axes='longitude|latitude')
+
+        expected = call.execute('OP.test',
+                                {
+                                    'variable': [],
+                                    'domain': [],
+                                    'operation': [
+                                        {
+                                            'input': [],
+                                            'axes': 'longitude|latitude',
+                                            'name': 'OP.test',
+                                            'result': process._operation.name,
+                                        }
+                                    ],
+                                },
+                                method='POST',
+                                status=False,
+                                store=False)
+
+        self.assertEqual(expected, wps.mock_calls[1])
 
     @patch('esgf.wps.WPS')
     def test_simple_execute(self, mock_wps):
