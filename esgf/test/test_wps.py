@@ -10,7 +10,9 @@ from unittest import TestCase
 from mock import Mock
 from mock import patch
 from mock import PropertyMock
+from mock import call
 
+from esgf import Operation
 from esgf import Variable
 from esgf import WPS
 from esgf import WPSServerError
@@ -20,6 +22,46 @@ from esgf.test import test_data
 
 class TestWPS(TestCase):
     """ Test Case for WPS class. """
+
+    @patch.object(WPS, 'execute')
+    def test_execute_op(self, execute):
+        wps = WPS('http://localhost:8000/wps')
+
+        tas = Variable('file:///test.nc', 'tas')
+
+        test = Operation('OP.test', inputs=[tas])
+
+        wps.execute_op(test)
+
+        self.assertEqual(execute.mock_calls[0],
+                         call(
+                             'OP.test',
+                             {
+                                 'variable': [tas.parameterize()],
+                                 'domain': [],
+                                 'operation': [test.parameterize()]
+                             },
+                             method='POST',
+                             status=False,
+                             store=False
+                         ))
+
+        test2 = Operation('OP.test2', inputs=[test])
+
+        wps.execute_op(test2)
+
+        self.assertEqual(execute.mock_calls[1],
+                         call(
+                             'OP.test2',
+                             {
+                                 'variable': [tas.parameterize()],
+                                 'domain': [],
+                                 'operation': [test.parameterize(), test2.parameterize()],
+                             },
+                             method='POST',
+                             status=False,
+                             store=False
+                         ))
 
     @patch('esgf.wps.requests.Session')
     def test_iter_processes(self, mock_session):
@@ -115,34 +157,15 @@ class TestWPS(TestCase):
 
         with self.assertRaises(WPSClientError) as ctx:
             wps.execute('averager.mv', { }, False, False, 'UPDATE')
-    
+
         self.assertEqual(ctx.exception.message,
                          'HTTP method UPDATE is not supported')
-        
-    @patch('esgf.wps.requests.Session')
-    def test_execute_post(self, mock_session):
-        """ Tests running execute as a POST request. """
-
-        inst_session = mock_session.return_value
-        inst_session.post = Mock(
-            return_value = Mock(
-                content = test_data.MOCK_EXECUTE_RESPONSE,
-                headers = {}
-            )
-        )
-
-        wps = WPS('http://localhost:8000/wps')
-
-        wps.execute('averager.mv', { }, True, True, 'POST')
-
-        self.assertEqual(inst_session.post.mock_calls[0][2]['data'],
-                         test_data.MOCK_EXECUTE_REQUEST.replace('\n', ''))
 
     @patch('esgf.wps.requests.Session')
     def test_execute_get(self, mock_session):
         """ Tests running execute as a GET request. """
         get_resp = self.create_get_response(mock_session,
-                                        test_data.MOCK_EXECUTE_RESPONSE)    
+                                            test_data.MOCK_EXECUTE_RESPONSE)    
 
         wps = WPS('http://localhost:8000/wps')
 
@@ -228,14 +251,14 @@ class TestWPS(TestCase):
         self.assertEqual(ctx.exception.message, cap_error)
 
         wps = WPS('http://localhost:9999/wps')
-        
+
         with self.assertRaises(WPSServerError) as ctx:
             wps.provider
 
         self.assertEqual(ctx.exception.message, cap_error)
 
         wps = WPS('http://localhost:9999/wps')
-        
+
         with self.assertRaises(WPSServerError) as ctx:
             wps.get_process('averager.mv')
 

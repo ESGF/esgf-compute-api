@@ -2,6 +2,9 @@
 Operation Module.
 """
 
+import json
+from tempfile import NamedTemporaryFile
+
 from esgf import domain
 from esgf import gridder
 from esgf import named_parameter
@@ -14,36 +17,50 @@ class Operation(parameter.Parameter):
     Describes an operation supported by the WPS server.
 
     >>> averager = Operation(
-            'averager',
-            domain = Domain([
-                Dimension(90, -90, Dimension.values, name='lat'),
-                Dimension(90, -90, Dimesnion.values, name='lon'),
-            ]),
-            inputs = [
-                Variable('http://thredds/tas.nc', 'tas', name='tas'),
-            ],
-            parameters = [
-                NamedParameter('axes', 'longitude', 'latitude'), 
-            ])
+    'averager',
+    domain = Domain([
+    Dimension(90, -90, Dimension.values, name='lat'),
+    Dimension(90, -90, Dimesnion.values, name='lon'),
+    ]),
+    inputs = [
+    Variable('http://thredds/tas.nc', 'tas', name='tas'),
+    ],
+    parameters = [
+    NamedParameter('axes', 'longitude', 'latitude'), 
+    ])
 
     Attributes:
-        identifier: A String identifer of the operation.
-        domain: A Domain to be used by the operation.
-        inputs: A List of inputs to the operation, can be a Variable or another 
-            operation.
-        parameters: A List of additional parameters to be passed to the
-            operation.
-        name: Custom name to be referenced by other operations.
+    identifier: A String identifer of the operation.
+    domain: A Domain to be used by the operation.
+    inputs: A List of inputs to the operation, can be a Variable or another 
+    operation.
+    parameters: A List of additional parameters to be passed to the
+    operation.
+    name: Custom name to be referenced by other operations.
     """
-    def __init__(self, identifier, **kwargs):
+    def __init__(self, identifier, inputs=None, parameters=None, domain=None, name=None, **kwargs):
         """ Operation init. """
-        super(Operation, self).__init__(kwargs.get('name', None))
+        super(Operation, self).__init__(name)
 
-        self.domain = None
-        self.inputs = []
-        self.parameters = {}
+        if not inputs:
+            inputs = []
+
+        if not parameters:
+            parameters = {}
+        # Build dict from list of NamedParamters
+        elif isinstance(parameters, (list, tuple)):
+            parameters = dict((x.name, x) for x in parameters)
+
+        # Any kwargs are treated like parameters
+        for k, w in kwargs.iteritems():
+            pararmeters[k] = esgf.NamedParameter(k, w)
+
+        self.domain = domain
+        self.inputs = inputs
+        self.parameters = parameters
 
         self._identifier = identifier
+        self._result = None
 
     @classmethod
     def from_dict(cls, data):
@@ -78,8 +95,13 @@ class Operation(parameter.Parameter):
 
     @property
     def identifier(self):
-        """ Operation identifer. """
+        """ Operation identifier """
         return self._identifier
+
+    def _set_result(self, value):
+        self._result = value
+
+    result = property(None, _set_result)
 
     def add_input(self, input_param):
         """ Adds input to operation. """
@@ -92,6 +114,28 @@ class Operation(parameter.Parameter):
     @property
     def variables(self):
         return [x for x in self.inputs if isinstance(x, variable.Variable)]
+
+    @property
+    def output(self):
+        """ Operation output. """
+        if not self._result.isSucceded():
+            raise errors.WPSServerError(
+                'Process has no output, possibly process execution error.')
+
+        output = None
+
+        with NamedTemporaryFile() as temp_file:
+            self._result.getOutput(temp_file.name)
+
+            try:
+                json_obj = json.load(temp_file)
+            except ValueError:
+                raise errors.WPSClientError('Server did not return any '
+                                            'valid output')
+
+        output = variable.Variable.from_dict(json_obj)
+
+        return output
 
     def gather(self):
         """ Gathers variables and domains. """
@@ -133,7 +177,6 @@ class Operation(parameter.Parameter):
     def flatten(self, root=True):
         """ Flattens operation tree. """
         operations = []
-        child_operation = False
 
         if not root:
             operations.append(self.parameterize())
@@ -145,10 +188,8 @@ class Operation(parameter.Parameter):
 
                 operations.extend(op_flat)
 
-                child_operation = True
-
         # If operation is root and no children exist assume solo operation.
-        if not child_operation and root:
+        if root:
             operations.append(self.parameterize())
 
         return operations

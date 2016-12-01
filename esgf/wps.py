@@ -12,6 +12,7 @@ from owslib.util import ResponseWrapper
 import requests
 from requests.exceptions import ConnectionError
 
+import lxml
 from lxml import etree
 
 from esgf import process
@@ -156,9 +157,18 @@ class _WPSRequest(object):
                 # Check for CSRF token
                 csrf_token = None
 
+                # Check for existing CSRF token
                 for cookie in self._session.cookies:
                     if 'csrf' in cookie.name.lower():
                         csrf_token = cookie.value
+
+                # Try to grab CSRF by GET request
+                if not csrf_token:
+                    self.get_capabilities()
+
+                    for cookie in self._session.cookies:
+                        if 'csrf' in cookie.name.lower():
+                            csrf_token = cookie.value
 
                 # Build headers and payload for CSRF token
                 if csrf_token:
@@ -304,6 +314,23 @@ class WPS(object):
 
         return process.Process.from_identifier(self, name)
 
+    def execute_op(self, operation, store=False, status=False, method='POST'):
+        """ Directly executes an operation. """
+
+        variable, domain = operation.gather()
+
+        data_inputs = {
+            'domain': [x.parameterize() for x in domain.values()],
+            'variable': [x.parameterize() for x in variable.values()],
+            'operation': operation.flatten(),
+        }
+
+        operation.result = self.execute(operation.identifier,
+                              data_inputs,
+                              store=store,
+                              status=status,
+                              method=method)
+
     def execute(self, identifier, inputs, store=False, status=False, method='GET'):
         """ Formats data and executs WPS process. """
         logger.debug('Executing "%s" at "%s" using HTTP %s method', identifier, self._url, method)
@@ -330,14 +357,18 @@ class WPS(object):
 
             execution = WPSExecution()
 
-            execution.parseResponse(etree.fromstring(response.text.encode('utf-8')))
+            try:
+                execution.parseResponse(etree.fromstring(response.text.encode('utf-8')))
+            except lxml.etree.XMLSyntaxError:
+                raise errors.WPSClientError('Failed to parse server response "%s"' % (response.text,))
+
         elif method.lower() == 'post':
             execution = WPSExecution()
 
             params_kv = [(k, json.dumps(v)) for k, v in inputs.iteritems()]
 
             output = None
-            
+
             if store and status:
                 output = 'output'
 
@@ -347,14 +378,14 @@ class WPS(object):
                 request_document = xml_data.xpath(
                     '/wps100:Execute/wps100:ResponseForm/wps100:ResponseDocument',
                     namespaces=xml_data.nsmap)[0]
-        
+
                 request_document.set('status', str(status))
                 request_document.set('storeExecuteResponse', str(store))
 
             xml_data = etree.tostring(xml_data)
 
             logger.debug('HTTP body:\n%s', xml_data)
-            
+
             response = self._service.execute(identifier, xml_data, method=method)
 
             # Grabbed from owslib to handle the execute response
@@ -394,7 +425,10 @@ class WPS(object):
 
             logger.debug('Execute server response\n%s', xml_response)
 
-            response = etree.fromstring(xml_response)
+            try:
+                response = etree.fromstring(xml_response)
+            except lxml.etree.XMLSyntaxError:
+                raise errors.WPSClientError('Failed to parse server response "%s"' % (xml_response,))
 
             execution.parseResponse(response)
         else:
