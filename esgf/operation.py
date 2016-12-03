@@ -53,7 +53,10 @@ class Operation(parameter.Parameter):
 
         # Any kwargs are treated like parameters
         for k, w in kwargs.iteritems():
-            pararmeters[k] = esgf.NamedParameter(k, w)
+            if isinstance(w, parameter.Parameter):
+                parameters[k] = w
+            else:
+                parameters[k] = named_parameter.NamedParameter(k, w)
 
         self.domain = domain
         self.inputs = inputs
