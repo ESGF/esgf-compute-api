@@ -64,9 +64,9 @@ class Dimension(parameter.Parameter):
     indices = CRS('indices')
     values = CRS('values')
 
-    def __init__(self, start, end, crs, **kwargs):
+    def __init__(self, name, start, end, crs=values, **kwargs):
         """ Dimension init. """
-        super(Dimension, self).__init__(kwargs.get('name', None))
+        super(Dimension, self).__init__(name)
 
         self.start = start
 
