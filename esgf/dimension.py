@@ -102,14 +102,12 @@ class Dimension(parameter.Parameter):
         else:
             raise errors.WPSAPIError('Must provide a CRS value.')
 
-        kwargs = {
-            'name': name,
-        }
+        kwargs = {}
 
         if 'step' in data:
             kwargs['step'] = data['step']
 
-        return cls(start, end, crs, **kwargs)
+        return cls(name, start, end, crs, **kwargs)
 
     @classmethod
     def from_single_index(cls, value, step=None, name=None):
