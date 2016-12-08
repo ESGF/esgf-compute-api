@@ -10,6 +10,19 @@ from esgf import Dimension
 class TestDomain(TestCase):
     """ Domain Test Case """
 
+    def test_get_dimension(self):
+        """ Tests retrieving dimension by name. """
+        lat = Dimension('lat', 1, 2)
+
+        domain = Domain([lat])
+
+        result = domain.get_dimension('lat')
+        self.assertIsNotNone(result)
+        self.assertEqual(lat, result)
+
+        result = domain.get_dimension('time')
+        self.assertIsNone(result)
+
     def test_repr(self):
         """ Test repr value. """
         domain = Domain([], None, 'd0')
