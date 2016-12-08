@@ -102,8 +102,7 @@ class Dimension(parameter.Parameter):
         else:
             raise errors.WPSAPIError('Must provide a CRS value.')
 
-        kwargs = {
-        }
+        kwargs = {}
 
         if 'step' in data:
             kwargs['step'] = data['step']

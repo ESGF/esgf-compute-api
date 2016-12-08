@@ -70,6 +70,13 @@ class Domain(parameter.Parameter):
         """ Returns associated mask. """
         return self._mask
 
+    def get_dimension(self, name):
+        for dim in self.dimensions:
+            if dim.name == name:
+                return dim
+
+        return None
+
     def add_dimension(self, dimension):
         """ Add a dimension. """
         self.dimensions.append(dimension)
