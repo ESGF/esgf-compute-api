@@ -110,21 +110,21 @@ class Dimension(parameter.Parameter):
         return cls(name, start, end, crs, **kwargs)
 
     @classmethod
-    def from_single_index(cls, value, step=None, name=None):
+    def from_single_index(cls, name, value, step=None):
         """ Creates dimension from single index. """
         if not step:
-            return cls(value, value, Dimension.indices, name=name)
+            return cls(name, value, value, Dimension.indices)
         else:
-            return cls(value, value, Dimension.indices, step=step, name=name)
+            return cls(name, value, value, Dimension.indices, step=step)
 
     @classmethod
-    def from_single_value(cls, value, step=None, name=None):
+    def from_single_value(cls, name, value, step=None):
         """ Creates dimension from single value. """
         
         if not step:
-            return cls(value, value, Dimension.values, name=name)
+            return cls(name, value, value, Dimension.values)
         else:
-            return cls(value, value, Dimension.values, step=step, name=name)
+            return cls(name, value, value, Dimension.values, step=step)
 
     def parameterize(self):
         """ Parameterizes object for get queries. """
@@ -138,17 +138,17 @@ class Dimension(parameter.Parameter):
         return params
 
     def __repr__(self):
-        return 'Dimension(start=%r, end=%r, step=%r, crs=%r, name=%r)' % (
+        return 'Dimension(name=%r, start=%r, end=%r, step=%r, crs=%r)' % (
+            self.name,
             self.start,
             self.end,
             self.step,
-            self.crs,
-            self.name)
+            self.crs)
 
     def __str__(self):
-        return 'start=%s end=%s step=%s crs=%s name=%s' % (
+        return 'name=%s start=%s end=%s step=%s crs=%s' % (
+            self.name,
             self.start, 
             self.end, 
             self.step, 
-            self.crs, 
-            self.name)
+            self.crs)

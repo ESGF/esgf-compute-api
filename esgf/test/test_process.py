@@ -141,8 +141,8 @@ class TestProcess(TestCase):
         """ Test passing multiple domains in different components. """
         wps = mock_wps.return_value
 
-        d0 = Domain([Dimension.from_single_value(45, name='lat')], name='d0')
-        d1 = Domain([Dimension.from_single_value(7500, name='lev')], name='d1')
+        d0 = Domain([Dimension.from_single_value('lat', 45)], name='d0')
+        d1 = Domain([Dimension.from_single_value('lev', 7500)], name='d1')
 
         v0 = Variable('file:///test.nc', 'tas', name='v0', domains=[d0])
 
@@ -206,7 +206,7 @@ class TestProcess(TestCase):
         variable = Variable('file:///test.nc', 'tas', name='v0')
 
         domain = Domain([
-            Dimension.from_single_value(1998, name='time'),
+            Dimension.from_single_value("time", 1998),
         ], name='d0')
 
         axes = NamedParameter('axes', 't')

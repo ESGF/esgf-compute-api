@@ -66,7 +66,7 @@ class TestDomain(TestCase):
 
     def test_mask(self):
         """ Pass domain a mask and parameterize. """
-        time = Dimension(1920, 1930, Dimension.values, name='time')
+        time = Dimension('time', 1920, 1930, Dimension.values)
 
         mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='mask0')
 
@@ -105,7 +105,7 @@ class TestDomain(TestCase):
     def test_add_parameter(self):
         """ Tests addding parameters. """
         # Test adding single parameter.
-        longitude = Dimension(-180.0, 180.0, Dimension.values, name='longitude')
+        longitude = Dimension('longitude', -180.0, 180.0, Dimension.values)
 
         single_dimension_domain = Domain()
 
@@ -116,8 +116,8 @@ class TestDomain(TestCase):
     def test_parameterize(self):
         """ Tests parameterizing a domain. """
         # Tests parameterizing with two dimensions.
-        longitude = Dimension(-180.0, 180.0, Dimension.values, name='longitude')
-        time = Dimension(1980, 1982, Dimension.values, name='time')
+        longitude = Dimension("longitude", -180.0, 180.0, Dimension.values)
+        time = Dimension("time", 1980, 1982, Dimension.values)
 
         domain = Domain([longitude, time], name='glbl')
 
