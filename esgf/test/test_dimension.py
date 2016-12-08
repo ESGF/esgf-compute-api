@@ -16,16 +16,16 @@ class TestDimension(TestCase):
 
     def test_repr(self):
         """ Test repr value. """
-        dim = Dimension(0, 10, Dimension.values, name='lat')
+        dim = Dimension("lat", 0, 10, Dimension.values)
 
-        self.assertEqual(repr(dim), "Dimension(start=0, end=10, step=1, "
-                         "crs=CRS(name='values'), name='lat')")
+        self.assertEqual(repr(dim), "Dimension(name='lat', start=0, end=10, step=1, "
+                         "crs=CRS(name='values'))")
 
     def test_str(self):
         """ Test str value. """
-        dim = Dimension(0, 10, Dimension.values, name='lat')
+        dim = Dimension("lat", 0, 10, Dimension.values)
 
-        self.assertEqual(str(dim), "start=0 end=10 step=1 crs=values name=lat")
+        self.assertEqual(str(dim), "name=lat start=0 end=10 step=1 crs=values")
 
     def test_from_dict(self):
         """ Create Dimension from dict representation. """
@@ -82,57 +82,57 @@ class TestDimension(TestCase):
         """ Testing optional arguments. """
         mock_uuid4.return_value = 'Unique'
 
-        dim = Dimension(1, 2, Dimension.indices)
+        dim = Dimension("dim", 1, 2, Dimension.indices)
 
         self.assertEqual(dim.step, 1)
         self.assertIsNotNone(dim.name)
 
-        dim = Dimension(1, None, Dimension.indices)
+        dim = Dimension("mydim", 1, None, Dimension.indices)
 
         self.assertEqual(dim.end, None)
 
-        dim = Dimension(1, 2, Dimension.indices, step=2)
+        dim = Dimension("myotherdim", 1, 2, Dimension.indices, step=2)
 
         self.assertEqual(dim.step, 2)
 
-        dim = Dimension(1, 2, Dimension.indices, name='longitude')
+        dim = Dimension("longitude", 1, 2, Dimension.indices)
 
         self.assertEqual(dim.name, 'longitude')
 
     def test_indices(self):
         """ Testing creating from indices. """
-        dim = Dimension(1, 2, Dimension.indices)
+        dim = Dimension("adim", 1, 2, Dimension.indices)
 
         self.assertEqual(dim.start, 1)
         self.assertEqual(dim.end, 2)
         self.assertEqual(dim.crs, Dimension.indices)
 
-        dim = Dimension('1', '2', Dimension.indices)
+        dim = Dimension("somedim", '1', '2', Dimension.indices)
 
         self.assertEqual(dim.start, '1')
         self.assertEqual(dim.end, '2')
 
     def test_values(self):
         """ Testing creating from values. """
-        dim = Dimension(-180, 180, Dimension.values)
+        dim = Dimension("adim", -180, 180, Dimension.values)
 
         self.assertEqual(dim.start, -180)
         self.assertEqual(dim.end, 180)
         self.assertEqual(dim.crs, Dimension.values)
 
-        dim = Dimension(-180.0, 180.0, Dimension.values)
+        dim = Dimension("another_dim", -180.0, 180.0, Dimension.values)
 
         self.assertEqual(dim.start, -180.0)
         self.assertEqual(dim.end, 180.0)
 
-        dim = Dimension('-180.0', '180.0', Dimension.values)
+        dim = Dimension("myotherdim", '-180.0', '180.0', Dimension.values)
 
         self.assertEqual(dim.start, '-180.0')
         self.assertEqual(dim.end, '180.0')
 
     def test_single_index(self):
         """ Testing creating from single index. """
-        dim = Dimension.from_single_index(1)
+        dim = Dimension.from_single_index("mydim", 1)
 
         self.assertEqual(dim.start, 1)
         self.assertEqual(dim.end, 1)
@@ -140,17 +140,17 @@ class TestDimension(TestCase):
         self.assertEqual(dim.step, 1)
         self.assertIsNotNone(dim.name)
 
-        dim = Dimension.from_single_index(1, step=2)
+        dim = Dimension.from_single_index("somedim", 1, step=2)
 
         self.assertEqual(dim.step, 2)
 
-        dim = Dimension.from_single_index(1, name='longitude')
+        dim = Dimension.from_single_index('longitude', 1)
 
         self.assertEqual(dim.name, 'longitude')
 
     def test_single_value(self):
         """ Testing creating from single value. """
-        dim = Dimension.from_single_value(-180)
+        dim = Dimension.from_single_value("mydimension", -180)
 
         self.assertEqual(dim.start, -180)
         self.assertEqual(dim.end, -180)
@@ -158,17 +158,17 @@ class TestDimension(TestCase):
         self.assertEqual(dim.step, 1)
         self.assertIsNotNone(dim.name)
 
-        dim = Dimension.from_single_value(-180, step=2)
+        dim = Dimension.from_single_value("somedim", -180, step=2)
 
         self.assertEqual(dim.step, 2)
 
-        dim = Dimension.from_single_value(-180, name='longitude')
+        dim = Dimension.from_single_value("longitude", -180)
 
         self.assertEqual(dim.name, 'longitude')
 
     def test_parameterize(self):
         """ Testing parameterization. """
-        dim = Dimension(1, 2, Dimension.values, step=1, name='longitude')
+        dim = Dimension("longitude", 1, 2, Dimension.values, step=1)
 
         param = dim.parameterize()
 

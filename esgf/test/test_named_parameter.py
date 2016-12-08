@@ -41,7 +41,7 @@ class TestNamedParameter(TestCase):
 
     def test_parameter(self):
         """ Test passing parameter in constructor. """
-        time = Dimension.from_single_index(2, name='time')
+        time = Dimension.from_single_index('time', 2)
 
         domain = Domain([time], name='d0')
 
