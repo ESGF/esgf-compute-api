@@ -79,7 +79,7 @@ class Operation(parameter.Parameter):
 
         obj = cls(identifier, name=name)
 
-        for input_data in data['input']:
+        for input_data in data.get('input', []):
             obj.add_input(parameter.Parameter(input_data))
 
         if 'domain' in data:
