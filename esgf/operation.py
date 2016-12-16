@@ -168,7 +168,7 @@ class Operation(parameter.Parameter):
         """ Flattens operation tree. """
         operations = []
 
-        if not root:
+        if root:
             operations.append(self.parameterize())
 
         # Recursively call flatten on child operations.
@@ -177,10 +177,6 @@ class Operation(parameter.Parameter):
                 op_flat = inp.flatten(False)
 
                 operations.extend(op_flat)
-
-        # If operation is root and no children exist assume solo operation.
-        if root:
-            operations.append(self.parameterize())
 
         return operations
 
