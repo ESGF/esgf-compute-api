@@ -2,21 +2,18 @@
 
 import json
 import logging
+import tempfile
 import urllib
 import sys
 
-from owslib.wps import WebProcessingService
-from owslib.wps import WPSExecution
-from owslib.util import ResponseWrapper
-
-import requests
-from requests.exceptions import ConnectionError
-
 import lxml
 from lxml import etree
+from owslib.wps import WebProcessingService
+from owslib.wps import WPSExecution
+import requests
 
-from esgf import process
 from esgf import errors
+from esgf import process
 
 logger = logging.getLogger()
 
@@ -56,173 +53,482 @@ _CONTACT = (
     'instructions'
 )
 
+class UnsupportedMethodError(Exception):
+    pass
+
+class WPSRequestError(Exception):
+    pass
+
+class WPSResponseError(Exception):
+    pass
+
 class _WPSRequest(object):
     """ _WPSRequest
 
-    Replaces owslibs http querying for get_capabilities, describe_process and
-    execute.
+    Execute WPS operations through HTTP requests. Operations are
+    GetCapabilities, DescribeProcess and Execute.
+
+    Attributes:
+        username: Username to access WPS server.
+        password: Password for Username.
+        accept_versions: Version of servers allowed to connect to.
+        language: Language required.
     """
     def __init__(self, base_url, **kwargs):
+        """ init """
         self._base_url = base_url
         self._username = kwargs.get('username', None)
         self._password = kwargs.get('password', None)
         self._accept_versions = kwargs.get('accept_versions', None)
         self._language = kwargs.get('language', None)
+
         self._session = requests.Session()
 
-    def _base_params(self, request):
-        """ Generates base parameters for all requests. """
+    def _get_params(self, request):
+        """ Returns the common required parameters for a GET request. """
         params = {
             'service': 'WPS',
-            'request': request,
+            'Request': request,
         }
-
-        if self._accept_versions:
-            params['acceptversions'] = self._accept_versions
 
         if self._language:
             params['language'] = self._language
 
         return params
 
-    def _auth(self):
-        """ Formats authentication for requests library. """
-        if self._username and self._password:
-            return (self._username, self._password)
+    def _get_auth(self):
+        """ Returns the authentication header. """
+        auth = None
 
-        return None
+        if self._username and self._password:
+            auth = requests.auth.HTTPBasicAuth(self._username,
+                                               self._password)
+
+        return auth
+
+    def _get_request(self, params):
+        try:
+            response = self._session.get(self._base_url,
+                                         params=params,
+                                         auth=self._get_auth())
+        except requests.RequestException as e:
+            logger.exception('Get request failed with parameters:\n%s',
+                             params)
+
+            raise WPSRequestError('Get request failed: %s' % (e.message,))
+
+        logger.debug('Get request success\n%s', response.url)
+
+        if response.status_code != 200:
+            raise WPSResponseError('Get status code %s: %s' %
+                                   (response.status_code,
+                                    response.reason))
+
+        logger.debug('Get response\n%s', response.text)
+
+        return response
+
+    def _post_request(self, data):
+        try:
+            response = self._session.post(self._base_url,
+                                          data=data,
+                                          auth=self._get_auth())
+        except requests.RequestException as e:
+            logger.exception('Post request failed with data:\n%s',
+                             data)
+
+            raise WPSRequestError('Post request failed: %s' % (e.message,))
+
+        logger.debug('Post request success\n%s', data)
+
+        if response.status_code != 200:
+            raise WPSResponseError('Post status code %s: %s' %
+                                   (response.status_code,
+                                    response.reason))
+
+        logger.debug('Post response\n%s', response.text)
+
+        return response
 
     def get_capabilities(self, method='GET'):
-        """ Calls GetCapabilities endpoint. """
-        params = self._base_params('GetCapabilities')
+        """ GetCapabilities request.
 
-        try:
-            response = self._session.get(self._base_url,
-                                         params=params,
-                                         auth=self._auth())
+        Sends a GetCapabilites request to a WPS server. The response is parsed
+        and returned.
 
-            logger.debug('GetCapabilites\n%s', urllib.unquote(response.url))
-        except ConnectionError as e:
-            raise errors.WPSServerError('GetCapabilities Request failed, check logs.')
+        Args:
+            method: HTTP method used to make the request.
 
-        return response
+        Returns:
+            A _WPSGetCapabilitiesResponse object wrapping the return XML response.
+
+        Raises:
+            UnsupportedMethodError: An unsupported HTTP method was used.
+            WPSRequestError: An error occurred during the request.
+            WPSResponseError: An error occurred during the response handling.
+        """
+        method_sel = method.lower()
+
+        if method_sel == 'get':
+            params = self._get_params('GetCapabilities')
+
+            # Optional parameter
+            if self._accept_versions:
+                params['AcceptedVersions'] = self._accept_versions
+
+            response = self._get_request(params)
+        else:
+            # Handle unsupported methods
+            raise UnsupportedMethodError('GetCapabilities does not support "%s"' % (method,))
+
+        return _WPSGetCapabilitiesResponse.from_response(response.text)
 
     def describe_process(self, identifier, version='1.0.0', method='GET'):
-        """ Calls DescribProcess endpoint. """
-        params = self._base_params('DescribeProcess')
+        """ DescribeProcess request.
 
-        params['version'] = version
+        Sends a DescribeProcess request to a WPS server. The response is 
+        parsed and returned.
 
-        if isinstance(identifier, (list, tuple)):
-            params['Identifier'] = ','.join(identifier)
-        else:
+        Args:
+            identifier: The identifier of the process to describe.
+            version: Version of the process of interest.
+            method: HTTP method used to perform the request.
+
+        Returns:
+            A _WPSDescribeProcessResponse object wrapping the server XML
+            response.
+
+        Raises:
+            UnsupportedMethodError: An unsupported HTTP method was used.
+            WPSRequestError: An error occurred during the request.
+            WPSResponseError: An error occurred during the response handling.
+        """
+        method_sel = method.lower()
+
+        if method_sel == 'get':
+            params = self._get_params('DescribeProcess')
+
+            # Add the required parameters
             params['Identifier'] = identifier
 
+            params['version'] = version
+
+            response = self._get_request(params)
+        else:
+            raise UnsupportedMethodError('DescribeProcess does not support "%s"' % (method,))
+
+        return _WPSDescribeProcessResponse.from_response(response.text)
+
+    def execute(self, identifier, inputs, version='1.0.0', method='POST', **kwargs):
+        """ Execute request.
+
+        Sends an Execute request to a WPS server. The response is parsed and
+        returned.
+
+        Args:
+            identifier: Process identifier to be executed.
+            inputs: Dictionary of Process inputs.
+            version: Version of the Process that will be executed.
+            method: HTTP method used to perform request.
+
+        Returns:
+            A _WPSExecuteResponse object containing the server response.
+
+        Raises:
+            UnsupportedMethodError: An unsupported HTTP method was used.
+            WPSRequestError: An error occurred during the request.
+            WPSResponseError: An error occurred during the response handling.
+        """
+        method_sel = method.lower()
+
+        status = kwargs.get('status', False)
+        store = kwargs.get('store', False)
+
+        if method_sel == 'get':
+            params = self._get_params('Execute')
+
+            # Add our required parameters
+            params['version'] = version
+            params['Identifier'] = identifier
+            params['status'] = status
+            params['storeExecuteResponse'] = store
+
+            # Format the dictionary to list of k=v strings
+            data_inputs = ['%s=%s' % (k, json.dumps(v))
+                           for k, v in inputs.iteritems()]
+
+            data_inputs = ';'.join(data_inputs)
+
+            # Set datainputs parameter, remove spaces for server side.
+            params['DataInputs'] = '[%s]' % (data_inputs.replace(' ', ''),)
+
+            response = self._get_request(params)
+        elif method_sel == 'post':
+            data = [(k, json.dumps(v)) for k, v in inputs.iteritems()]
+
+            # Build the XML execute document
+            xml_payload = self._build_request(identifier,
+                                              data,
+                                              status,
+                                              store)
+
+            response = self._post_request(xml_payload)
+        else:
+            raise UnsupportedMethodError('Execute does not support "%s"' % (method,))
+
+        ex_res =  _WPSExecuteResponse.from_response(response.text)
+
+        # Check if the process failed, raise an Exception to warn user
+        if ex_res.status == 'ProcessFailed':
+            errors = [self._error_to_json(x) for x in ex_res.errors]
+
+            raise WPSResponseError(errors)
+
+        return ex_res
+
+    def _error_to_json(self, error):
+        """ Helper method to format errors. """
+        return {
+            'code': error.code,
+            'locator': error.locator,
+            'text': error.text,
+        }
+
+    def _build_request(self, identifier, data, status, store):
+        """ Build Execute XML document. """
+        execution = WPSExecution()
+
+        xml = execution.buildRequest(identifier, data, 'output')
+
+        # Set the status and store flags independently of eachother
+        request_document = xml.xpath(
+            '/wps100:Execute/wps100:ResponseForm/wps100:ResponseDocument',
+            namespaces=xml.nsmap)[0]
+
+        request_document.set('status', str(status))
+        request_document.set('storeExecuteResponse', str(store))
+
+        # Serialize the XML tree
         try:
-            response = self._session.get(self._base_url,
-                                         params=params,
-                                         auth=self._auth())
+            xml_payload = etree.tostring(xml)
+        except lxml.etree.XMLSyntaxError as e: # pragma: no cover
+            logger.exception(e.message) 
 
-            logger.debug('DescribeProcess\n%s', urllib.unquote(response.url))
-        except ConnectionError as e:
-            raise errors.WPSServerError('DescribeProcess Request failed, check logs.')
+            raise WPSRequestError('Failed to create WPS XML document.')
 
-        return response
+        return xml_payload
 
-    def execute(self, identifier, data, version='1.0.0', method='POST', **kwargs):
-        """ Calls Execute endpoint. """
-        params = self._base_params('Execute')
-
-        params['version'] = version
-        params['Identifier'] = identifier
-
+class _WPSResponse(object):
+    def load_xml(self, response):
         try:
-            if method.lower() == 'get':
-                add_params = kwargs.get('params', None)
+            xml = etree.fromstring(response.encode('utf-8'))
+        except (AttributeError, lxml.etree.XMLSyntaxError):
+            logger.exception('Could not parse server response')
+            logger.debug(response)
 
-                if add_params:
-                    params.update(add_params) 
+            raise WPSResponseError('Failed to parse server response')
+        else:
+            return xml
 
-                logger.debug('params=%r', params)
+class _WPSExecuteResponse(_WPSResponse):
+    """ Execute Response wrapper. """
+    def __init__(self):
+        self._data = None
 
-                params['datainputs'] = '[%s]' % (data.replace(' ', ''),)
+    @classmethod
+    def from_response(cls, response):
+        """ Create WPSExecuteResponse from XML. """
+        x = cls()
 
-                response = self._session.get(self._base_url,
-                                             params=params,
-                                             auth=self._auth())
+        x.parse(response)
 
-                logger.debug('Query\n%s', urllib.unquote(response.url))
-                logger.debug('Execute response\n%s', response.text)
-            elif method.lower() == 'post':
-                # Check for CSRF token
-                csrf_token = None
+        return x
 
-                # Check for existing CSRF token
-                for cookie in self._session.cookies:
-                    if 'csrf' in cookie.name.lower():
-                        csrf_token = cookie.value
+    @property
+    def status(self):
+        """ Process status. """
+        return self._data.status
 
-                # Try to grab CSRF by GET request
-                if not csrf_token:
-                    self.get_capabilities()
+    @property
+    def status_location(self):
+        """ Status location if status flag is set. """
+        return self._data.statusLocation
 
-                    for cookie in self._session.cookies:
-                        if 'csrf' in cookie.name.lower():
-                            csrf_token = cookie.value
+    @property
+    def percent(self):
+        """ Process percentage. """
+        return self._data.percentCompleted
 
-                # Build headers and payload for CSRF token
-                if csrf_token:
-                    logger.debug('CSRF token present')
+    @property
+    def message(self):
+        """ Process message. """
+        return self._data.statusMessage
 
-                    payload = {
-                        'document': data,
-                        'csrfmiddlewaretoken': csrf_token,
-                    }
+    @property
+    def output(self):
+        """ Process output. """
+        with tempfile.NamedTemporaryFile() as temp:
+            try:
+                self._data.getOutput(temp.name)
+            except requests.RequestException:
+                logger.exception('Failed to retrieve process outputs')
 
-                    headers = {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'User-Agent': 'Mozilla/5.0',
-                    }
-                else:
-                    payload = data
+                for o in self._data.processOutputs:
+                    logger.debug(o.reference)
+                
+                raise errors.WPSClientError('Failed to retrieve process output')
 
-                    headers = { }
+            output = temp.read() # pragma: no cover
 
-                response = self._session.post(self._base_url,
-                                              data=payload,
-                                              headers=headers,
-                                              auth=self._auth())
-        except ConnectionError as e:
-            raise errors.WPSServerError('Execute Request failed, check logs.')
+        return output # pragma: no cover
 
-        return response
+    @property
+    def errors(self):
+        """ List of process errors. """
+        return self._data.errors
+
+    def parse(self, response):
+        """ Parses XML response document. """
+        xml = self.load_xml(response)
+
+        self._data = WPSExecution()
+
+        self._data.parseResponse(xml)
+
+    def check_status(self, timeout): # pragma: no cover
+        """ Wait timeout then check Process status. """
+        self._data.checkStatus(timeout)
+
+class _WPSDescribeProcessResponse(_WPSResponse):
+    """ Describe Process response wrapper. """
+    def __init__(self):
+        self._data = None
+        self._process = None
+
+    @classmethod
+    def from_response(cls, response):
+        """ Create DescribeProcess from XML. """
+        x = cls()
+
+        x.parse(response)
+
+        return x
+
+    @property
+    def version(self):
+        """ Version of the process. """
+        return self._process.processVersion
+
+    @property
+    def status(self):
+        """ Status supported. """
+        return self._process.statusSupported
+
+    @property
+    def store(self):
+        """ Store supported. """
+        return self._process.storeSupported
+
+    @property
+    def abstract(self):
+        """ Process abstract. """
+        return self._process.abstract
+
+    @property
+    def identifier(self):
+        """ Process identifier. """
+        return self._process.identifier
+
+    @property
+    def title(self):
+        """ Process title. """
+        return self._process.title
+
+    def parse(self, response):
+        """ Parse response XML. """
+        xml = self.load_xml(response)
+
+        self._data = WebProcessingService('', skip_caps=True)
+
+        self._process = self._data._parseProcessMetadata(xml)
+
+class _WPSGetCapabilitiesResponse(_WPSResponse):
+    """ Get Capabilities response wrapper. """
+    def __init__(self):
+        self._data = None
+
+    @classmethod
+    def from_response(cls, response):
+        """ Create GetCapabilities from XML. """
+        x = cls()
+
+        x.parse(response)
+
+        return x
+
+    @property
+    def identification(self):
+        """ Server identification. """
+        return dict((x, getattr(self._data.identification, x))
+                    for x in _IDENTIFICATION)
+
+    @property
+    def provider(self):
+        """ Provider information. """
+        prov = dict((x, getattr(self._data.provider, x))
+                    for x in _PROVIDER)
+
+        if 'contact' in prov:
+            prov['contact'] = dict((x, getattr(prov['contact'], x))
+                                   for x in _CONTACT)
+
+        return prov
+
+    @property
+    def processes(self):
+        """ List of process identifiers. """
+        return [x.identifier for x in self._data.processes]
+
+    def parse(self, response):
+        """ Parse response XML. """
+        xml = self.load_xml(response)
+
+        self._data = WebProcessingService('', skip_caps=True)
+
+        self._data._parseCapabilitiesMetadata(xml)
 
 class WPS(object):
     """ Web Processing Service client.
 
-    Describes a WPS server. Processes can be retrieved from WPS and executed.
+    Client is used to query WPS operations; GetCapabilities, DescribeProcess,
+    and Execute.
 
-    >>> wps = WPS('http://localhost/wps/')
+    >>> import esgf
+    >>> wps = esgf.WPS('http://wps_instance/wps')
 
-    Print debugrmation about WPS server.
+    Print available operations on the WPS server.
 
-    >>> wps.identification
-    >>> wps.provider
+    >>> for proc in wps:
+    >>>     print proc
 
-    Retrieve a process.
+    Execute an operation.
 
-    >>> averager = wps.get_process('averager.mv')
+    >>> avg = esgf.Operation(inputs=[tas], axes='latitude')
+    >>> wps.execute_op(avg)
 
     Attributes:
-    url: A String of a path to a WPS server.
-    username: A String username.
-    password: A String password.
+    url: String WPS uri.
+    username: String username for WPS server.
+    password: String password for username.
+    log: Boolean flag to enable logging.
+    log_file: String path to log file.
+
     """
     def __init__(self, url, username=None, password=None, **kwargs):
         """ Inits WebProcessingService """
         self._url = url
 
-        if kwargs.get('log'):
+        if kwargs.get('log') is not None:
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
 
             logger.setLevel(logging.DEBUG)
@@ -233,18 +539,14 @@ class WPS(object):
 
             log_file = kwargs.get('log_file')
 
-            if log_file:
+            if log_file is not None:
                 file_handler = logging.FileHandler(log_file)
                 file_handler.setFormatter(formatter)
                 logger.addHandler(file_handler)
 
         self._service = _WPSRequest(url, username=username, password=password, **kwargs)
 
-        self._identification = None
-        self._provider = None
-        self._processes = []
-
-        self._init = False
+        self._capabilities = None
 
     def init(self, force=False):
         """ Executes WPS GetCapabilites request.
@@ -253,63 +555,30 @@ class WPS(object):
         and its processes.
 
         """
-        if not self._init or force:
-            if not self._init:
-                self._init = True
-
+        if not self._capabilities or force:
             logger.debug('Retrieving capabilities')
 
-            response = self._service.get_capabilities()
-
-            capabilities = etree.fromstring(response.text.encode('utf-8'))
-
-            wps = WebProcessingService(self._url, skip_caps=True)
-
-            wps._parseCapabilitiesMetadata(capabilities)
-
-            logger.debug('Populating identifer, provider and contact debug')
-
-            ident = wps.identification
-
-            self._identification = dict((x, getattr(ident, x))
-                                        for x in _IDENTIFICATION)
-
-            prov = wps.provider
-
-            self._provider = dict((x, getattr(prov, x))
-                                  for x in _PROVIDER)
-
-            cont = self._provider['contact']
-
-            self._provider['contact'] = dict((x, getattr(cont, x))
-                                             for x in _CONTACT)
-
-            del self._processes[:]
-
-            logger.debug('Populating processes')
-
-            for process in wps.processes:
-                self._processes.append(process.identifier)
+            self._capabilities = self._service.get_capabilities()
 
     @property
     def identification(self):
         """ Returns identification data as JSON. """
         self.init()
 
-        return self._identification
+        return self._capabilities.identification
 
     @property
     def provider(self):
         """ Returns provider data as JSON. """
         self.init()
 
-        return self._provider
+        return self._capabilities.provider
 
     def get_process(self, name):
         """ Returns process from name. """
         self.init()
 
-        if name not in self._processes:
+        if name not in self._capabilities.processes:
             raise errors.WPSClientError('No process named \'%s\' was found.' % (name,))
 
         return process.Process.from_identifier(self, name)
@@ -326,127 +595,29 @@ class WPS(object):
         }
 
         operation.result = self.execute(operation.identifier,
-                              data_inputs,
-                              store=store,
-                              status=status,
-                              method=method)
+                                        data_inputs,
+                                        store=store,
+                                        status=status,
+                                        method=method)
 
-    def execute(self, identifier, inputs, store=False, status=False, method='GET'):
-        """ Formats data and executs WPS process. """
-        logger.debug('Executing "%s" at "%s" using HTTP %s method', identifier, self._url, method)
-
-        if method.lower() == 'get':
-            data = {}
-
-            for k, v in inputs.iteritems():
-                data[k] = json.dumps(v)
-
-            data_kv = ['%s=%s' % (k, v) for k, v in data.iteritems()]
-
-            data_kv = ';'.join(data_kv)
-
-            logger.debug('DataInputs:\n%s', data_kv)
-
-            response = self._service.execute(identifier,
-                                             data_kv,
-                                             method=method,
-                                             params={
-                                                 'store': store,
-                                                 'status': status,
-                                             })
-
-            execution = WPSExecution()
-
-            try:
-                execution.parseResponse(etree.fromstring(response.text.encode('utf-8')))
-            except lxml.etree.XMLSyntaxError:
-                raise errors.WPSClientError('Failed to parse server response "%s"' % (response.text,))
-
-        elif method.lower() == 'post':
-            execution = WPSExecution()
-
-            params_kv = [(k, json.dumps(v)) for k, v in inputs.iteritems()]
-
-            output = None
-
-            if store and status:
-                output = 'output'
-
-            xml_data = execution.buildRequest(identifier, params_kv, output)
-
-            if store and status:
-                request_document = xml_data.xpath(
-                    '/wps100:Execute/wps100:ResponseForm/wps100:ResponseDocument',
-                    namespaces=xml_data.nsmap)[0]
-
-                request_document.set('status', str(status))
-                request_document.set('storeExecuteResponse', str(store))
-
-            xml_data = etree.tostring(xml_data)
-
-            logger.debug('HTTP body:\n%s', xml_data)
-
-            response = self._service.execute(identifier, xml_data, method=method)
-
-            # Grabbed from owslib to handle the execute response
-            if response.status_code in [400, 401]:
-                raise ServiceException(response.text)
-
-            if response.status_code in [404, 500, 502, 503, 504]:
-                response.raise_for_status()
-
-            valid_content = [
-                'text/xml',
-                'application/xml',
-                'application/vnd.ogc.se_xml',
-            ]
-
-            if ('Content-Type' in response.headers and
-                    response.headers['Content-Type'] in valid_content):
-                se_tree = etree.fromstring(response.content)
-
-                possible_errors = [
-                    '{http://www.opengis.net/ows}Exception',
-                    '{http://www.opengis.net/ows/1.1}Exception',
-                    '{http://www.opengis.net/ogc}ServiceException',
-                    'ServiceException'
-                ]
-
-                for possible_error in possible_errors:
-                    serviceException = se_tree.find(possible_error)
-
-                    if serviceException is not None:
-                        raise ServiceException(
-                            '\n'.join([str(t).strip()
-                                       for t in serviceException.itertext()
-                                       if str(t).strip()]))
-
-            xml_response = ResponseWrapper(response).read()
-
-            logger.debug('Execute server response\n%s', xml_response)
-
-            try:
-                response = etree.fromstring(xml_response)
-            except lxml.etree.XMLSyntaxError:
-                raise errors.WPSClientError('Failed to parse server response "%s"' % (xml_response,))
-
-            execution.parseResponse(response)
-        else:
-            raise errors.WPSClientError('HTTP method %s is not supported' % (method,))
-
-        return execution
+    def execute(self, identifier, inputs, store=False, status=False, method='POST'):
+        """ Executes a WPS process. """
+        return self._service.execute(identifier,
+                                     inputs,
+                                     method=method,
+                                     store=store,
+                                     status=status)
 
     def __iter__(self):
         self.init()
 
-        for proc in self._processes:
-            yield process.Process.from_identifier(self, proc)
+        processes = self._capabilities.processes
+
+        for proc in processes:
+            yield proc
 
     def __repr__(self):
         return 'WPS(url=%r, service=%r)' % (self._url, self._service)
 
     def __str__(self):
-        return json.dumps({
-            'identification': self.identification,
-            'provider': self.provider},
-                          indent=4)
+        return 'url=%s service=%s' % (self._url, self._service) # pragma: no cover

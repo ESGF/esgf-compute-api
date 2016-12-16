@@ -40,67 +40,58 @@ class Process(object):
         self._operation = operation
 
     @classmethod
-    def from_identifier(cls, wps, identifier):
+    def from_identifier(cls, wps, identifier, name=None):
         """ Helper create process from identifer. """
-        op = operation.Operation(identifier)
+        op = operation.Operation(identifier, name=name)
 
         return cls(wps, op)
 
     @property
-    def name(self):
+    def name(self):  # pragma: no cover
         """ Process name. """
         return self._operation.identifier
 
     @property
-    def status(self):
+    def status(self): # pragma: no cover
         """ Process status. """
         return self._result.status
 
     @property
-    def message(self):
+    def message(self):  # pragma: no cover
         """ Process message. """
-        return self._result.statusMessage
+        return self._result.message
 
     @property
-    def progress(self):
-        """ Process progress. """
-        return self._result.percentCompleted
+    def percent(self):  # pragma: no cover
+        """ Process percent. """
+        return self._result.percent
 
     @property
     def output(self):
         """ Process output. """
-        if not self._result.isSucceded():
+        if self.status != 'ProcessSucceeded':
             raise errors.WPSServerError(
                 'Process has no output, possibly process execution error.')
 
-        output = None
+        output_json = json.loads(self._result.output)
 
-        with NamedTemporaryFile() as temp_file:
-            self._result.getOutput(temp_file.name)
-
-            try:
-                json_obj = json.load(temp_file)
-            except ValueError:
-                raise errors.WPSClientError('Server did not return any '
-                                            'valid output')
-
-            output = variable.Variable.from_dict(json_obj)
-
-        return output
+        return variable.Variable.from_dict(output_json)
 
     def check_status(self, sleep_secs=0):
         """ Retrieves latest status from server. """
-        if not self._result.statusLocation:
+        if not self._result.status_location:
             raise errors.WPSServerError('Process \'%s\' doesn\'t '
                                         'support status.' % (self.name,))
 
-        self._result.checkStatus(sleepSecs=sleep_secs)
+        self._result.check_status(sleepSecs=sleep_secs)
 
     def __nonzero__(self):
         """ Returns true while process is still executing. """
         self.check_status()
 
-        return True if self.status.lower() != 'processsucceeded' else False
+        complete = ('ProcessSucceeded', 'ProcessFailed', 'Exception')
+
+        return self.status not in complete
 
     def execute(self, inputs=None, domain=None, parameters=None, store=False,
                 status=False, method='POST',**kargs):
@@ -115,6 +106,7 @@ class Process(object):
         if parameters:
             for param in parameters:
                 self._operation.add_parameter(param)
+
         for k in kargs:
             self._operation.add_parameter(named_parameter.NamedParameter(k,kargs[k]))
 
@@ -132,8 +124,8 @@ class Process(object):
                                          store=store,
                                          method=method)
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return 'Process(wps=%r, operation=%r)' % (self._wps, self._operation)
 
-    def __str__(self):
+    def __str__(self): # pragma: no cover
         return self.name

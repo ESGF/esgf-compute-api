@@ -2,272 +2,343 @@
 WPS unittest.
 """
 
-import os
-import json
-
 from unittest import TestCase
 
+from mock import call
 from mock import Mock
 from mock import patch
-from mock import PropertyMock
-from mock import call
+import requests
 
-from esgf import Operation
-from esgf import Variable
-from esgf import WPS
-from esgf import WPSServerError
-from esgf import WPSClientError
+import esgf
 
-from esgf.test import test_data
+BASE_URL = 'http://test/wps'
+
+class ProxyResponse(object):
+    def __init__(self, response, status_code):
+        self._response = response
+        self._status_code = status_code
+
+    @property
+    def text(self):
+        return self._response
+
+    @property
+    def url(self):
+        return 'Fake URL'
+
+    @property
+    def status_code(self):
+        return self._status_code
+
+    @property
+    def reason(self):
+        return 'Forbidden'
+
+def read_response_file(file_path):
+    data = []
+
+    with open(file_path, 'r') as temp_file:
+        data = temp_file.readlines()
+
+    return ''.join(data)
+
+def patch_request(request, response, status_code=200):
+    proxy_response = ProxyResponse(response, status_code)
+
+    request._session = Mock()
+    request._session.get.return_value = proxy_response
+    request._session.post.return_value = proxy_response
+
+RESP_GET_CAP = read_response_file('esgf/test/test_data/get_capabilities.xml')
+RESP_DESC_PROC = read_response_file('esgf/test/test_data/describe_process.xml')
+RESP_EXEC = read_response_file('esgf/test/test_data/execute.xml')
+RESP_EXEC_ERR = read_response_file('esgf/test/test_data/execute_error.xml')
 
 class TestWPS(TestCase):
-    """ Test Case for WPS class. """
+    """ WPS Test Case. """
 
-    @patch.object(WPS, 'execute')
-    def test_execute_op(self, execute):
-        wps = WPS('http://localhost:8000/wps')
+    def test_wps_iter(self):
+        """ Check process listing """
+        wps = esgf.WPS(BASE_URL)
 
-        tas = Variable('file:///test.nc', 'tas')
+        patch_request(wps._service, RESP_GET_CAP)
 
-        test = Operation('OP.test', inputs=[tas])
+        procs = [x for x in wps]
 
-        wps.execute_op(test)
-
-        self.assertEqual(execute.mock_calls[0],
-                         call(
-                             'OP.test',
-                             {
-                                 'variable': [tas.parameterize()],
-                                 'domain': [],
-                                 'operation': [test.parameterize()]
-                             },
-                             method='POST',
-                             status=False,
-                             store=False
-                         ))
-
-        test2 = Operation('OP.test2', inputs=[test])
-
-        wps.execute_op(test2)
-
-        self.assertEqual(execute.mock_calls[1],
-                         call(
-                             'OP.test2',
-                             {
-                                 'variable': [tas.parameterize()],
-                                 'domain': [],
-                                 'operation': [test.parameterize(), test2.parameterize()],
-                             },
-                             method='POST',
-                             status=False,
-                             store=False
-                         ))
-
-    @patch('esgf.wps.requests.Session')
-    def test_iter_processes(self, mock_session):
-        """ Tests iterating processes. """
-        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
-
-        wps = WPS('http://localhost:8000/wps')
-
-        identifiers = []
-        expected = [
-            'averager.mv',
-            'averager.ophidia',
+        self.assertEqual(len(procs), 6)
+        self.assertEqual(procs, [
+            'test.passthrough',
+            'test.sleep',
             'test.echo',
-            'test.sleep'
-        ]
+            'cdat.aggregate',
+            'cdat.ensemble',
+            'cdat.averager',
+        ])
 
-        for process in wps:
-            identifiers.append(process._operation.identifier)
+    def test_wps_get_process(self):
+        """ Process creation. """
+        wps = esgf.WPS(BASE_URL)
 
-        self.assertListEqual(expected, identifiers)
+        patch_request(wps._service, RESP_GET_CAP)
 
-    def test_logging(self):
-        """ Tests logging. """
-        wps = WPS('http://localhost:8000/wps', log=True, log_file='test.log')
+        with self.assertRaises(esgf.WPSClientError):
+            proc = wps.get_process('cdat.averager2')
 
-        from esgf import wps as wps_ns
+        proc = wps.get_process('cdat.averager')
 
-        self.assertTrue(os.path.exists(os.path.join(os.path.curdir, 'test.log')))
-        self.assertEqual(len(wps_ns.logger.handlers), 2)
+        self.assertIsNotNone(proc)
+        self.assertIsInstance(proc, esgf.Process)
 
-    @patch('esgf.wps.requests.Session')
-    def test_authorization(self, mock_session):
-        """ Tests authorization. """
-        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+    def test_wps_get_capabilities(self):
+        """ Check GetCapbilities identification and provider response parsing. """
+        wps = esgf.WPS(BASE_URL)
 
-        wps = WPS('http://localhost:8000/wps')
+        patch_request(wps._service, RESP_GET_CAP)
 
-        self.assertIsNone(wps._service._username)
-        self.assertIsNone(wps._service._password)
+        self.assertIsNotNone(wps.identification)
+        self.assertIsNotNone(wps.provider)
 
-        wps = WPS('http://localhost:8000/wps', username='user', password='test')
+    def test_wps_init(self):
+        """ Call init """
+        wps = esgf.WPS(BASE_URL)
 
-        self.assertEqual(wps._service._username, 'user')
-        self.assertEqual(wps._service._password, 'test')
+        with self.assertRaises(esgf.WPSRequestError):
+            wps.init()
 
-        wps.identification
+        patch_request(wps._service, RESP_GET_CAP)
 
-        self.assertEqual(
-            wps._service._session.get.mock_calls[0][2]['auth'],
-            ('user', 'test'))
+        wps.init()
 
-    @patch('esgf.wps.requests.Session')
-    def test_language(self, mock_session):
-        """ Tests language. """
-        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+        self.assertIsNotNone(wps._capabilities)
+        self.assertIsInstance(wps._capabilities,
+                              esgf.wps._WPSGetCapabilitiesResponse)
 
-        wps = WPS('http://localhost:8000/wps')
+    def test_wps_log(self):
+        """ Enable logging """
+        wps = esgf.WPS(BASE_URL, log=True, log_file='test.log')
 
-        self.assertEqual(wps._service._language, None)
+        self.assertEqual(len(esgf.wps.logger.handlers), 2)
 
-        wps = WPS('http://localhost:8000/wps', language='en-US')
+    def test_wps_accept_versions(self):
+        """ Specify acceptable server versions """
+        wps = esgf.WPS(BASE_URL, accept_versions='1.0.0')
 
-        self.assertEqual(wps._service._language, 'en-US')
+        patch_request(wps._service, RESP_GET_CAP)
 
-        wps.identification
+        result = wps._service.get_capabilities()
 
-        self.assertEqual(
-            wps._service._session.get.mock_calls[0][2]['params']['language'],
-            'en-US')
+        params = wps._service._session.get.mock_calls[-1][2]['params']
 
-    @patch('esgf.wps.requests.Session')
-    def test_accept_versions(self, mock_session):
-        """ Tests accept versions. """
-        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+        self.assertEqual(params['AcceptedVersions'], '1.0.0')
 
-        wps = WPS('http://localhost:8000/wps')
+    def test_wps(self):
+        """ General creation """
+        wps = esgf.WPS(BASE_URL)
 
-        self.assertEquals(wps._service._accept_versions, None)
+        self.assertIsNotNone(wps)
 
-        wps = WPS('http://localhost:8000/wps', accept_versions='1.0.0')
+    def test_wps_execute_input(self):
+        """ Pass input to execute call """
+        wps = esgf.WPS(BASE_URL)
 
-        self.assertEquals(wps._service._accept_versions, '1.0.0')
+        patch_request(wps._service, RESP_EXEC)
 
-        wps.identification
+        tas = esgf.Variable('file:///tas.nc', 'tas', name='tas')
 
-        self.assertEqual(
-            wps._service._session.get.mock_calls[0][2]['params']['acceptversions'],
-            '1.0.0')
+        op = esgf.Operation('cdat.averager', inputs=[tas], name='avg')
 
-    def test_execute_unsupported(self):
-        """ Tests running execute as an unknown request. """
-        wps = WPS('http://localhost:8000/wps')
+        wps.execute_op(op, method='GET')
 
-        with self.assertRaises(WPSClientError) as ctx:
-            wps.execute('averager.mv', { }, False, False, 'UPDATE')
+        params = wps._service._session.get.mock_calls[-1][2]['params']
 
-        self.assertEqual(ctx.exception.message,
-                         'HTTP method UPDATE is not supported')
+        expected = ('[variable=[{"uri":"file:///tas.nc","id":"tas|tas"}];'
+                    'domain=[];'
+                    'operation=[{"input":["tas"],"name":"cdat.averager","result":"avg"}]]')
 
-    @patch('esgf.wps.requests.Session')
-    def test_execute_get(self, mock_session):
-        """ Tests running execute as a GET request. """
-        get_resp = self.create_get_response(mock_session,
-                                            test_data.MOCK_EXECUTE_RESPONSE)    
+        self.assertEquals(params['DataInputs'], expected)
 
-        wps = WPS('http://localhost:8000/wps')
+    def test_request_load_xml(self):
+        """ Load XML into response object """
+        request = esgf.wps._WPSResponse()
 
-        wps.execute('averager.mv', { }, False, False, 'GET')
+        with self.assertRaises(esgf.WPSResponseError):
+            request.load_xml(None)
 
-        self.assertEqual(get_resp.mock_calls[0][2]['params']['status'], False)
-        self.assertEqual(get_resp.mock_calls[0][2]['params']['store'], False)
+        with self.assertRaises(esgf.WPSResponseError):
+            request.load_xml('')
 
-        wps.execute('averager.mv', { }, True, True, 'GET')
+    def test_request_execute_output(self):
+        """ Retrieve process output """
+        request = esgf.wps._WPSRequest(BASE_URL)
 
-        self.assertEqual(get_resp.mock_calls[1][2]['params']['status'], True)
-        self.assertEqual(get_resp.mock_calls[1][2]['params']['store'], True)
+        patch_request(request, RESP_EXEC)
 
-        variable = Variable('file:///test.nc', 'tas')
+        result = request.execute('cdat.averager', inputs={})
 
-        wps.execute('averager.mv', {
-            'variable': [json.dumps(variable.parameterize())], 
-        }, False, False, 'GET')
+        with self.assertRaises(esgf.WPSClientError):
+            result.output 
 
-        self.assertTrue('datainputs' in get_resp.mock_calls[2][2]['params'])
+    def test_request_execute_error(self):
+        """ Handle server side error response """
+        request = esgf.wps._WPSRequest(BASE_URL)
 
-    def create_get_response(self, mock_session, text_data):
-        inst_session = mock_session.return_value
-        inst_session.get = Mock(
-            return_value = Mock(
-                text = text_data,
-                url = 'http://localhost:8000/wps'
-            )
-        )
+        patch_request(request, RESP_EXEC_ERR)
 
-        return inst_session.get
+        with self.assertRaises(esgf.WPSResponseError):
+            request.execute('cdat.averager', inputs={})
 
-    @patch('esgf.wps.requests.Session')
-    def test_get_process(self, mock_session):
-        """ Tests retrieving a process. """
-        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+    def test_request_execute_bad_method(self):
+        """ Use a unsupported HTTP method """
+        request = esgf.wps._WPSRequest(BASE_URL)
 
-        wps = WPS('http://localhost:8000/wps')
+        patch_request(request, RESP_EXEC)
 
-        process = wps.get_process('averager.mv')
+        with self.assertRaises(esgf.UnsupportedMethodError):
+            result = request.execute('cdat.averager', inputs={}, method='UPDATE')
 
-        self.assertIsNotNone(process)
-        self.assertIsNotNone(process._operation)
-        self.assertEqual(process._operation.identifier, 'averager.mv')
+    def test_request_execute_status_store(self):
+        """ Specify status and storeExecuteResponse flags """
+        request = esgf.wps._WPSRequest(BASE_URL)
 
-        with self.assertRaises(WPSClientError) as ctx:
-            process = wps.get_process('no.exist')
+        patch_request(request, RESP_EXEC)
 
-        self.assertEqual(ctx.exception.message,
-                         'No process named \'no.exist\' was found.')
+        result = request.execute('cdat.averager',
+                                 inputs={},
+                                 status=True,
+                                 store=True,
+                                 method='GET')
 
-    @patch('esgf.wps.requests.Session')
-    def test_provider(self, mock_session):
-        """ Tests provider processing. """
-        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+        params = request._session.get.mock_calls[-1][2]['params']
 
-        wps = WPS('http://localhost:8000/wps')
+        self.assertEquals(params['status'], True)
+        self.assertEquals(params['storeExecuteResponse'], True)
 
-        prov = wps.provider
+    def test_request_bad_status_code(self):
+        """ Handle bad response status code """
+        request = esgf.wps._WPSRequest(BASE_URL)
 
-        self.assertEqual(prov['url'], 'https://esgf.llnl.gov')
+        patch_request(request, RESP_EXEC, 400)
 
-    @patch('esgf.wps.requests.Session')
-    def test_identification(self, mock_session):
-        """ Tests identification processing. """
-        self.create_get_response(mock_session, test_data.MOCK_GETCAPABILITIES)
+        with self.assertRaises(esgf.WPSResponseError):
+            request.execute('cdat.averager', inputs={}, method='GET')
 
-        wps = WPS('http://localhost:8000/wps')
+        with self.assertRaises(esgf.WPSResponseError):
+            request.execute('cdat.averager', inputs={})
 
-        id = wps.identification
+    def test_request_auth(self):
+        """ Pass authentication information """
+        request = esgf.wps._WPSRequest(BASE_URL,
+                                       username='wps_test',
+                                       password='Abc123!!')
 
-        self.assertEqual(id['service'], 'WPS')
+        patch_request(request, RESP_GET_CAP)
 
-    def test_no_service(self):
-        """ Tests error handling with a non existent server. """
-        cap_error = 'GetCapabilities Request failed, check logs.'
+        request.get_capabilities()
 
-        wps = WPS('http://localhost:9999/wps')
+        auth = request._session.get.mock_calls[-1][2]['auth']
 
-        with self.assertRaises(WPSServerError) as ctx:
-            wps.identification
+        self.assertIsInstance(auth, requests.auth.HTTPBasicAuth)
+        self.assertEqual(auth.username, 'wps_test')
+        self.assertEqual(auth.password, 'Abc123!!')
 
-        self.assertEqual(ctx.exception.message, cap_error)
+    def test_request_language(self):
+        """ Specify service language """
+        request = esgf.wps._WPSRequest(BASE_URL, language='en-CA')
 
-        wps = WPS('http://localhost:9999/wps')
+        patch_request(request, RESP_GET_CAP)
 
-        with self.assertRaises(WPSServerError) as ctx:
-            wps.provider
+        request.get_capabilities()
 
-        self.assertEqual(ctx.exception.message, cap_error)
+        params = request._session.get.mock_calls[-1][2]['params']
 
-        wps = WPS('http://localhost:9999/wps')
+        self.assertEqual(params['language'], 'en-CA')
 
-        with self.assertRaises(WPSServerError) as ctx:
-            wps.get_process('averager.mv')
+    def test_execute_post(self):
+        """ POST request execute """
+        request = esgf.wps._WPSRequest(BASE_URL)
 
-        self.assertEqual(ctx.exception.message, cap_error)
+        with self.assertRaises(esgf.WPSRequestError):
+            result = request.execute('cdat.averager', inputs={})
 
-        wps = WPS('http://localhost:9999/wps')
+        patch_request(request, RESP_EXEC)
 
-        with self.assertRaises(WPSServerError) as ctx:
-            wps.execute('identifier.mv', { }, False, False, 'GET')
+        result = request.execute('cdat.averager', inputs={})
 
-        self.assertEqual(ctx.exception.message,
-                         'Execute Request failed, check logs.')
+        self.assertIsInstance(result, esgf.wps._WPSExecuteResponse)
+        self.assertEqual(result.message, 'PyWPS Process cdat.averager successfully calculated')
+        self.assertEqual(result.percent, 0)
+        self.assertEqual(result.status, 'ProcessSucceeded')
+        self.assertEqual(result.status_location, None)
+
+    def test_execute_get(self):
+        """ GET request execute """
+        request = esgf.wps._WPSRequest(BASE_URL)
+
+        with self.assertRaises(esgf.WPSRequestError):
+            result = request.execute('cdat.averager', inputs={}, method='GET')
+
+        patch_request(request, RESP_EXEC)
+
+        result = request.execute('cdat.averager', inputs={}, method='GET')
+
+        self.assertIsInstance(result, esgf.wps._WPSExecuteResponse)
+        self.assertEqual(result.message, 'PyWPS Process cdat.averager successfully calculated')
+        self.assertEqual(result.percent, 0)
+        self.assertEqual(result.status, 'ProcessSucceeded')
+        self.assertEqual(result.status_location, None)
+
+    def test_describe_process_post(self):
+        """ POST request DescribeProcess """
+        request = esgf.wps._WPSRequest(BASE_URL)
+
+        with self.assertRaises(esgf.UnsupportedMethodError):
+            result = request.describe_process('cdat.averager', method='POST')
+
+    def test_describe_process_get(self):
+        """ GET request DescribeProcess """
+        request = esgf.wps._WPSRequest(BASE_URL)
+
+        with self.assertRaises(esgf.WPSRequestError):
+            result = request.describe_process('cdat.averager')
+
+        patch_request(request, RESP_DESC_PROC)
+
+        result = request.describe_process('cdat.averager')
+
+        self.assertIsInstance(result, esgf.wps._WPSDescribeProcessResponse)
+        self.assertEqual(result.abstract, None)
+        self.assertEqual(result.identifier, 'cdat.averager')
+        self.assertEqual(result.status, True)
+        self.assertEqual(result.store, True)
+        self.assertEqual(result.title, 'CDUtil Averager')
+        self.assertEqual(result.version, None)
+
+    def test_get_capabilities_post(self):
+        """ POST request GetCapabilities """
+        request = esgf.wps._WPSRequest(BASE_URL)
+
+        with self.assertRaises(esgf.UnsupportedMethodError):
+            result = request.get_capabilities(method='POST')
+    
+    def test_get_capabilities_get(self):
+        """ GET request GetCapabilities """
+        request = esgf.wps._WPSRequest(BASE_URL)
+
+        with self.assertRaises(esgf.WPSRequestError):
+            result = request.get_capabilities()
+
+        patch_request(request, RESP_GET_CAP)
+
+        result = request.get_capabilities()
+
+        self.assertIsInstance(result, esgf.wps._WPSGetCapabilitiesResponse)
+        self.assertIsNotNone(result.identification)
+        self.assertIsNotNone(result.provider)
+        self.assertEqual(result.processes, [
+            'test.passthrough',
+            'test.sleep',
+            'test.echo',
+            'cdat.aggregate',
+            'cdat.ensemble',
+            'cdat.averager',
+        ])

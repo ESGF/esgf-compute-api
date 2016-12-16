@@ -17,26 +17,26 @@ class Operation(parameter.Parameter):
     Describes an operation supported by the WPS server.
 
     >>> averager = Operation(
-    'averager',
-    domain = Domain([
-    Dimension(90, -90, Dimension.values, name='lat'),
-    Dimension(90, -90, Dimesnion.values, name='lon'),
-    ]),
-    inputs = [
-    Variable('http://thredds/tas.nc', 'tas', name='tas'),
-    ],
-    parameters = [
-    NamedParameter('axes', 'longitude', 'latitude'), 
-    ])
+        'averager',
+        domain = Domain([
+            Dimension(90, -90, Dimension.values, name='lat'),
+            Dimension(90, -90, Dimesnion.values, name='lon'),
+        ]),
+        inputs = [
+            Variable('http://thredds/tas.nc', 'tas', name='tas'),
+        ],
+        parameters = [
+            NamedParameter('axes', 'longitude', 'latitude'), 
+        ])
 
     Attributes:
-    identifier: A String identifer of the operation.
-    domain: A Domain to be used by the operation.
-    inputs: A List of inputs to the operation, can be a Variable or another 
-    operation.
-    parameters: A List of additional parameters to be passed to the
-    operation.
-    name: Custom name to be referenced by other operations.
+        identifier: A String identifer of the operation.
+        domain: A Domain to be used by the operation.
+        inputs: A List of inputs to the operation, can be a Variable or another 
+        operation.
+        parameters: A List of additional parameters to be passed to the
+        operation.
+        name: Custom name to be referenced by other operations.
     """
     def __init__(self, identifier, inputs=None, parameters=None, domain=None, name=None, **kwargs):
         """ Operation init. """
@@ -121,24 +121,11 @@ class Operation(parameter.Parameter):
     @property
     def output(self):
         """ Operation output. """
-        if not self._result.isSucceded():
+        if self._result.status != 'ProcessSucceeded':
             raise errors.WPSServerError(
                 'Process has no output, possibly process execution error.')
 
-        output = None
-
-        with NamedTemporaryFile() as temp_file:
-            self._result.getOutput(temp_file.name)
-
-            try:
-                json_obj = json.load(temp_file)
-            except ValueError:
-                raise errors.WPSClientError('Server did not return any '
-                                            'valid output')
-
-        output = variable.Variable.from_dict(json_obj)
-
-        return output
+        return self._result.output
 
     def gather(self):
         """ Gathers variables and domains. """

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wps:ProcessDescriptions xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsDescribeProcess_response.xsd" service="WPS" version="1.0.0" xml:lang="en-CA">
+  <ProcessDescription wps:processVersion="None" storeSupported="true" statusSupported="true">
+    <ows:Identifier>cdat.averager</ows:Identifier>
+    <ows:Title>CDUtil Averager</ows:Title>
+    <DataInputs>
+      <Input minOccurs="1" maxOccurs="1">
+        <ows:Identifier>domain</ows:Identifier>
+        <ows:Title>Domain</ows:Title>
+        <ows:Abstract>Domain the process will utilize.</ows:Abstract>
+        <ComplexData>
+          <Default>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Default>
+          <Supported>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Supported>
+        </ComplexData>
+      </Input>
+      <Input minOccurs="1" maxOccurs="1">
+        <ows:Identifier>variable</ows:Identifier>
+        <ows:Title>Variable</ows:Title>
+        <ows:Abstract>Variable the process will execute on.</ows:Abstract>
+        <ComplexData>
+          <Default>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Default>
+          <Supported>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Supported>
+        </ComplexData>
+      </Input>
+      <Input minOccurs="1" maxOccurs="1">
+        <ows:Identifier>operation</ows:Identifier>
+        <ows:Title>Operation</ows:Title>
+        <ows:Abstract>Operation/Arguments for the process.</ows:Abstract>
+        <ComplexData>
+          <Default>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Default>
+          <Supported>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Supported>
+        </ComplexData>
+      </Input>
+      <Input minOccurs="0" maxOccurs="1">
+        <ows:Identifier>auth</ows:Identifier>
+        <ows:Title>Authentication</ows:Title>
+        <ows:Abstract>Authentication info for the process.</ows:Abstract>
+        <ComplexData>
+          <Default>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Default>
+          <Supported>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Supported>
+        </ComplexData>
+      </Input>
+    </DataInputs>
+    <ProcessOutputs>
+      <Output>
+        <ows:Identifier>output</ows:Identifier>
+        <ows:Title>Output</ows:Title>
+        <ows:Abstract>Process output.</ows:Abstract>
+        <ComplexOutput>
+          <Default>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Default>
+          <Supported>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Supported>
+        </ComplexOutput>
+      </Output>
+    </ProcessOutputs>
+  </ProcessDescription>
+</wps:ProcessDescriptions>
