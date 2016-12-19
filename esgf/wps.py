@@ -88,7 +88,7 @@ class _WPSRequest(object):
         """ Returns the common required parameters for a GET request. """
         params = {
             'service': 'WPS',
-            'Request': request,
+            'request': request,
         }
 
         if self._language:
@@ -260,7 +260,7 @@ class _WPSRequest(object):
             data_inputs = ';'.join(data_inputs)
 
             # Set datainputs parameter, remove spaces for server side.
-            params['DataInputs'] = '[%s]' % (data_inputs.replace(' ', ''),)
+            params['datainputs'] = '[%s]' % (data_inputs.replace(' ', ''),)
 
             response = self._get_request(params)
         elif method_sel == 'post':
