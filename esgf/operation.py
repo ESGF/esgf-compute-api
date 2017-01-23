@@ -10,6 +10,7 @@ from esgf import gridder
 from esgf import named_parameter
 from esgf import parameter
 from esgf import variable
+from esgf import errors
 
 class Operation(parameter.Parameter):
     """ Operation.

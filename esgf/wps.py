@@ -367,20 +367,12 @@ class _WPSExecuteResponse(_WPSResponse):
     @property
     def output(self):
         """ Process output. """
-        with tempfile.NamedTemporaryFile() as temp:
-            try:
-                self._data.getOutput(temp.name)
-            except requests.RequestException:
-                logger.exception('Failed to retrieve process outputs')
 
-                for o in self._data.processOutputs:
-                    logger.debug(o.reference)
-                
-                raise errors.WPSClientError('Failed to retrieve process output')
-
-            output = temp.read() # pragma: no cover
-
-        return output # pragma: no cover
+        for o in self._data.processOutputs:
+            if o.mimeType is None:
+                yield o.data
+            else:
+                yield o.reference
 
     @property
     def errors(self):
