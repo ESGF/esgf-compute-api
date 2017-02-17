@@ -25,7 +25,7 @@ class Attribute(object):
         self.attach_element = kwargs.get('attach_element')
 
     def __call__(self, f):
-        f.attribute = self
+        f.metadata = self
 
         return f
 
@@ -50,7 +50,7 @@ class Element(object):
         self.attributes = {}
 
     def __call__(self, f):
-        f.element = self
+        f.metadata = self
 
         return f
 
@@ -78,37 +78,44 @@ class XMLDocumentMarkupType(type):
         store_value = None 
 
         for key, value in dct.iteritems():
-            if hasattr(value, 'element'):
-                elements[key] = value
+            if (hasattr(value, 'metadata') and
+                    isinstance(value.metadata, Element)):
+                metadata = value.metadata
+                
+                elements[key] = metadata
 
-                if value.element.store_value and store_value is None:
+                if metadata.store_value and store_value is None:
                     store_value = key
 
-                if isinstance(value.element.value_type, (list, tuple)):
-                    multiple[key] = value
+                if isinstance(metadata.value_type, (list, tuple)):
+                    multiple[key] = metadata
 
                 dct[key] = property(fget(key), fset(key))
 
         for key, value in dct.iteritems():
-            if hasattr(value, 'attribute'):
-                metadata = value.attribute
+            if (hasattr(value, 'metadata') and
+                    isinstance(value.metadata, Attribute)):
+                metadata = value.metadata
 
                 if metadata.attach_element is not None:
-                    elements[metadata.attach_element].element.attributes[key] = value
+                    if metadata.attach_element not in elements:
+                        raise ValidationError('Element %s does not exist for '
+                                'binding Attribute %s' %
+                                (metadata.attach_element, key))
+
+                    target = elements[metadata.attach_element]
+
+                    target.attributes[key] = metadata
                 else:
-                    attributes[key] = value
+                    attributes[key] = metadata
 
                 dct[key] = property(fget(key), fset(key))
 
         cls = super(XMLDocumentMarkupType, mcs).__new__(mcs, name, bases, dct)
-        #cls = type.__new__(mcs, name, bases, dct)
 
         cls.store_value = store_value
-
         cls.attributes = attributes
-
         cls.elements = elements
-
         cls.multiple = multiple
 
         return cls
@@ -172,18 +179,14 @@ class XMLDocument(object):
         return re.sub('{.*}', '', name)
 
     def validate(self):
-        for name, a in self.attributes.iteritems():
-            metadata = a.attribute
-
+        for name, metadata in self.attributes.iteritems():
             value = getattr(self, name)
 
             if metadata.required and value is None:
                 raise ValidationError('Required attribute %s does not have a '
                         'value' % (name,))
 
-        for name, e in self.elements.iteritems():
-            metadata = e.element
-
+        for name, metadata in self.elements.iteritems():
             value = getattr(self, name)
 
             if metadata.minimum >= 1 and value is None:
@@ -212,7 +215,7 @@ class XMLDocument(object):
                 name = self.translator.attribute_to_property(name)
 
             if hasattr(self, name) and name in self.attributes:
-                metadata = self.attributes[name].attribute
+                metadata = self.attributes[name]
 
                 try:
                     value = CONVERSION_TYPES[metadata.value_type](value)
@@ -239,7 +242,7 @@ class XMLDocument(object):
                 name = self.translator.element_to_property(name)
 
             if hasattr(self, name.lower()):
-                metadata = self.elements[name.lower()].element
+                metadata = self.elements[name.lower()]
 
                 logger.info(metadata.attributes)
 
@@ -377,11 +380,7 @@ class XMLDocument(object):
 
                 processed = False
 
-                for name, func in self.multiple.iteritems():
-                    logger.info('Process function %s', func.__name__)
-
-                    metadata = func.element
-        
+                for name, metadata in self.multiple.iteritems():
                     cls_dict = dict((x.__name__, x) for x in metadata.value_type)
 
                     logger.info('Class dictionary %s for tag %s', cls_dict, element.tag)
@@ -422,9 +421,7 @@ class XMLDocument(object):
 
         root = etree.Element(tag, nsmap=self.nsmap)
 
-        for name, a in self.attributes.iteritems():
-            metadata = a.attribute
-
+        for name, metadata in self.attributes.iteritems():
             if metadata.attach_element is not None:
                 continue
 
@@ -445,9 +442,7 @@ class XMLDocument(object):
 
         path_cache = {}
 
-        for name, e in self.elements.iteritems():
-            metadata = e.element
-
+        for name, metadata in self.elements.iteritems():
             value = getattr(self, name)
 
             if value is None:
