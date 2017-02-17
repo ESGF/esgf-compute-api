@@ -409,19 +409,18 @@ class XMLDocument(object):
 
         logger.info('Done parsing current node')
 
-    def generate_xml(self, element=None):
-        self.validate()
+    def __create_node(self, name, namespace, parent=None):
+        tag = self.__generate_name(name, namespace)
 
-        cls_name = self.__class__.__name__
+        if parent is None:
+            node = etree.Element(tag, nsmap=self.nsmap)
+        else:
+            node = etree.SubElement(parent, tag, nsmap=self.nsmap)
 
-        if self.tag:
-            cls_name = self.tag
-
-        tag = self.__generate_name(cls_name, self.namespace)
-
-        root = etree.Element(tag, nsmap=self.nsmap)
-
-        for name, metadata in self.attributes.iteritems():
+        return node
+        
+    def __set_attributes(self, node, attrs):
+        for name, metadata in attrs.iteritems():
             if metadata.attach_element is not None:
                 continue
 
@@ -430,15 +429,123 @@ class XMLDocument(object):
             if value is None:
                 value = metadata.default
 
-                if value is None:
-                    continue
+            if value is None:
+                continue
 
             if self.translator is not None:
                 name = self.translator.property_to_attribute(name)
 
             attr_name = self.__generate_name(name, metadata.namespace)
 
-            root.set(attr_name, str(value))
+            node.set(attr_name, str(value))
+
+    def __generate_path(self, node, path, nsmap, cache):
+        parts = [x for x in path.split('/') if x != '']
+
+        current_path = ''
+
+        parent = node
+
+        for p in parts:
+            current_path = '%s/%s' % (current_path, p)
+
+            try:
+                namespace = nsmap[p]
+            except (KeyError, TypeError):
+                namespace = None
+
+            tag = self.__generate_name(p, namespace)
+
+            parent = etree.SubElement(parent, tag)
+
+            cache[current_path] = parent
+
+        return parent
+
+    def __create_child_list_node(self, parent, name, metadata, values):
+        # Check that all list/tuple valuess are the same. Having mixed
+        # types would cause a parsing headache, since the source type
+        # is not explicitly store but implicitly derived from the class
+        if not all(values[0].__class__ == x.__class__ for x in values[1:]):
+            raise MismatchedTypeError('All valuess in a list/tuple are '
+                    'required to be of the same type: %s' %
+                    ([x.__class__ for x in values]))
+
+        tag = self.__generate_name(name, metadata.namespace)
+
+        # Already know values is a valid list/tuple
+        if issubclass(values[0].__class__, XMLDocument):
+            parent = etree.SubElement(parent, tag)
+
+            for v in values:
+                element = v.generate_xml()
+
+                parent.append(element)
+        else:
+            if metadata.child_tag is not None:
+                parent = etree.SubElement(parent, tag)
+
+                for v in values:
+                    new_element = self.__create_node(
+                            metadata.child_tag,
+                            metadata.child_namespace,
+                            parent=parent)
+
+                    new_element.text = str(v)
+
+            else:
+                for v in values:
+                    new_element = etree.SubElement(parent, tag)
+
+                    new_element.text = str(v)
+
+    def __create_child_node(self, parent, name, metadata, value):
+        tag = self.__generate_name(name, metadata.namespace)
+
+        if metadata.child_tag is not None:
+            parent = etree.SubElement(parent, tag)
+
+            new_element = self.__create_node(metadata.child_tag,
+                    metadata.child_namespace,
+                    parent=parent)
+
+        if metadata.store_attr:
+            name = self.__generate_name(name,
+                    metadata.attr_namespace)
+
+            if metadata.name is None:
+                parent.set(name, str(value))
+            else:
+                new_element = etree.SubElement(parent, tag)
+
+                new_element.set(metadata.name, str(value))
+        else:
+            if metadata.store_value:
+                parent.text = str(value)
+            else:
+                new_element = etree.SubElement(parent, tag)
+
+                new_element.text = str(value)
+
+                for name, _ in metadata.attributes.iteritems():
+                    value = getattr(self, name)
+
+                    if self.translator is not None:
+                        name = self.translator.property_to_attribute(name)
+
+                    new_element.set(name, str(value))
+
+    def generate_xml(self, element=None):
+        self.validate()
+
+        cls_name = self.__class__.__name__
+
+        if self.tag:
+            cls_name = self.tag
+
+        root = self.__create_node(cls_name, self.namespace)
+
+        self.__set_attributes(root, self.attributes)
 
         path_cache = {}
 
@@ -451,120 +558,24 @@ class XMLDocument(object):
             if self.translator is not None:
                 name = self.translator.propertry_to_element(name)
 
-            tag = self.__generate_name(name, metadata.namespace)
-
+            # Reset the parent node to the root
             parent = root
 
+            # Modify parent if we need to create a path
             if metadata.path is not None:
-                parts = [x for x in metadata.path.split('/') if x != '']
-
-                current = ''
-
-                for p in parts:
-                    current = '%s/%s' % (current, p)
-
-                    if current in path_cache:
-                        parent = path_cache[current]
-                    else:
-                        namespace = None
-
-                        if metadata.nsmap is not None:
-                            namespace = metadata.nsmap[p]
-
-                        new_tag = self.__generate_name(p, namespace)
-
-                        parent = etree.SubElement(parent, new_tag)
-
-                        path_cache[current] = parent 
+                parent = self.__generate_path(parent,
+                        metadata.path,
+                        metadata.nsmap,
+                        path_cache)
 
             if issubclass(value.__class__, XMLDocument):
                 element = value.generate_xml()
 
                 parent.append(element)
             elif isinstance(value, (list, tuple)):
-                if all(issubclass(x.__class__, XMLDocument) for x in value):
-                    parent = etree.SubElement(parent, tag)
-
-                    for v in value:
-                        element = v.generate_xml()
-
-                        parent.append(element)
-                elif all(value[0].__class__ == x for x in [x.__class__ for x in value][1:]):
-                    # Check first class against all others, if one is not equal fail
-                    if metadata.child_tag is not None:
-                        parent = etree.SubElement(parent, tag)
-
-                        for v in value:
-                            new_tag = self.__generate_name(metadata.child_tag,
-                                    metadata.child_namespace)
-
-                            new_element = etree.SubElement(parent, new_tag)
-
-                            new_element.text = str(v)
-
-                    else:
-                        for v in value:
-                            new_element = etree.SubElement(parent, tag)
-
-                            if metadata.store_attr:
-                                if metadata.name is None:
-                                    raise ValidationError('Storing a value as an '
-                                            'attribute requires a name.')
-
-                                name = self.__generate_name(metadata.name,
-                                        metadata.attr_namespace)
-
-                                new_element.set(name, str(v))
-                            else:
-                                new_element.text = str(v)
-                else:
-                    raise MismatchedTypeError('Cannot handle list with mixed types')
-            elif isinstance(value, dict):
-                parent = etree.SubElement(parent, tag)
-
-                for n, v in value.iteritems():
-                    tag = self.__generate_name(n, metadata.namespace)
-
-                    new_element = etree.SubElement(parent, tag)
-
-                    new_element.text = str(v)
+                self.__create_child_list_node(parent, name, metadata, value)
             else:
-                if metadata.child_tag is not None:
-                    parent = etree.SubElement(parent, tag)
-
-                    new_tag = self.__generate_name(metadata.child_tag,
-                            metadata.child_namespace)
-
-                    new_element = etree.SubElement(parent, new_tag)
-                #else:
-                #    new_element = etree.SubElement(parent, tag)
-
-                if metadata.store_attr:
-                    name = self.__generate_name(name,
-                            metadata.attr_namespace)
-
-                    if metadata.name is None:
-                        parent.set(name, str(value))
-                    else:
-                        new_element = etree.SubElement(parent, tag)
-
-                        new_element.set(metadata.name, str(value))
-                else:
-                    if metadata.store_value:
-                        parent.text = str(value)
-                    else:
-                        new_element = etree.SubElement(parent, tag)
-
-                        new_element.text = str(value)
-
-                        # TODO make attributes accesible to all new elements
-                        for name, func in metadata.attributes.iteritems():
-                            value = getattr(self, name)
-
-                            if self.translator is not None:
-                                name = self.translator.property_to_attribute(name)
-
-                            new_element.set(name, str(value))
+                self.__create_child_node(parent, name, metadata, value)
 
         return root
 
