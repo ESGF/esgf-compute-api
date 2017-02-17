@@ -311,38 +311,6 @@ class XMLDocumentTest(unittest.TestCase):
         self.assertEqual(c.miles, 121343234232)
         self.assertEqual(c.driving, True)
 
-    def test_element_dict(self):
-        class Car(xml.XMLDocument):
-            __metaclass__ = xml.XMLDocumentMarkupType
-
-            def __init__(self):
-                super(Car, self).__init__()
-            
-            @xml.Element()
-            def random(self):
-                pass
-
-        c = Car()
-        c.random = {
-                'color': 'blue',
-                'state': 'driving',
-                'speed': 89,
-                'new': True,
-                }
-
-        document = c.xml()
-
-        tree = etree.fromstring(document)
-
-        self.assertEqual(len(tree.xpath('/Car/random/color')), 1)
-        self.assertEqual(len(tree.xpath('/Car/random/state')), 1)
-        self.assertEqual(len(tree.xpath('/Car/random/speed')), 1)
-        self.assertEqual(len(tree.xpath('/Car/random/new')), 1)
-
-        del c
-
-        c = Car.from_xml(document)
-
     def test_element_list(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
