@@ -7,153 +7,150 @@ from esgf.wps_lib import xml
 
 class XMLDocumentTest(unittest.TestCase):
 
-    def test_multiple_value_type(self):
-        class V8(xml.XMLDocument):
+    def test_value_type_xml_document(self):
+        class Person(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
-            def __init__(self, **kwargs):
-                super(V8, self).__init__()
+            def __init__(self):
+                super(Person, self).__init__()
 
-        class V6(xml.XMLDocument):
-            __metaclass__ = xml.XMLDocumentMarkupType
-
-            def __init__(self, **kwargs):
-                super(V6, self).__init__()
-
-        class InlineV6(xml.XMLDocument):
-            __metaclass__ = xml.XMLDocumentMarkupType
-
-            def __init__(self, **kwargs):
-                super(InlineV6, self).__init__()
-        
-        class Car(xml.XMLDocument):
-            __metaclass__ = xml.XMLDocumentMarkupType
-
-            def __init__(self, **kwargs):
-                super(Car, self).__init__()
-
-            @xml.Element(value_type=(V8, V6))
-            def engine(self):
+            @xml.Attribute()
+            def name(self):
                 pass
 
-        c = Car()
-        c.engine = V8()
-
-        document = c.xml()
-
-        del c
-
-        c = Car.from_xml(document)
-
-        self.assertIsInstance(c.engine, V8)
-
-        c.engine = InlineV6()
-
-        document = c.xml()
-
-        del c
-
-        c = Car.from_xml(document)
-
-        self.assertIsNone(c.engine)
-
-    def test_element_boundaries(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
                 super(Car, self).__init__()
 
-            @xml.Element()
+            @xml.Element(value_type=Person)
             def driver(self):
                 pass
 
-            @xml.Element(minimum=0, maximum=4, output_list=True, value_type=int)
+            @xml.Element(value_type=Person, output_list=True)
             def passengers(self):
                 pass
 
         c = Car()
+        c.driver = Person()
+        c.driver.name = 'tom'
+        c.passengers = [Person(), Person()]
+        c.passengers[0].name = 'larry'
+        c.passengers[1].name = 'jerry'
 
-        with self.assertRaises(xml.ValidationError) as e:
-            c.xml()
+        doc = c.xml()
 
-        c.driver = ['tom', 'larry']
+        del c
 
-        with self.assertRaises(xml.ValidationError) as e:
-            c.xml()
+        print doc
+        c = Car.from_xml(doc)
 
-        c.driver = 'tom'
+        self.assertIsInstance(c.driver, Person)
+        self.assertEqual(c.driver.name, 'tom')
+        self.assertIsInstance(c.passengers, list)
+        self.assertIsInstance(c.passengers[0], Person)
+        self.assertEqual(len(c.passengers), 2)
 
-        c.passengers = [0, 1, 2, 3, 4]
-
-        with self.assertRaises(xml.ValidationError) as e:
-            c.xml()
-
-        c.passengers = [0, 1, 2, 3]
-
-        self.assertIsNotNone(c.xml())
-
-    def test_attribute_required(self):
+    def test_value_type(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
                 super(Car, self).__init__()
 
-            @xml.Attribute(required=True)
+            @xml.Attribute(value_type=bool)
+            def driving(self):
+                pass
+
+            @xml.Element(value_type=int)
             def speed(self):
                 pass
 
         c = Car()
+        c.driving = True
+        c.speed = 56
 
-        with self.assertRaises(xml.ValidationError) as e:
-            c.xml()
+        doc = c.xml()
 
-    def test_mismatch_types(self):
+        del c
+
+        c = Car.from_xml(doc)
+
+        self.assertEqual(c.driving, True)
+        self.assertEqual(c.speed, 56)
+
+    def test_path_shared(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
                 super(Car, self).__init__()
 
-            @xml.Element(value_type=int, output_list=True, maximum=3)
-            def test(self):
+            @xml.Element(path='people')
+            def driver(self):
+                pass
+
+            @xml.Element(path='people')
+            def passenger(self):
                 pass
 
         c = Car()
-        c.test = [0, 'test', 3.3]
+        c.driver = 'tom'
+        c.passenger = 'larry'
 
-        with self.assertRaises(xml.MismatchedTypeError) as e:
-            c.xml()
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
+        self.assertEqual(len(tree.xpath('/Car/people')), 1)
+
+        del c
+
+        c = Car.from_xml(doc)
+
+        self.assertEqual(c.driver, 'tom')
+        self.assertEqual(c.passenger, 'larry')
 
     def test_path_namespace(self):
-        NSMAP = {'NS1': 'http://NS1'}
-
+        nsmap = {
+                'ns1': 'http://ns1',
+                'ns2': 'http://ns2',
+                }
+        
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
-                super(Car, self).__init__(nsmap=NSMAP)
+                super(Car, self).__init__(nsmap=nsmap)
 
-            @xml.Element(path='driver', nsmap={'driver':'NS1'})
-            def person(self):
+            @xml.Element(path='outside', nsmap={'outside':'ns1'})
+            def color(self):
+                pass
+
+            @xml.Element(path='engine/oil', nsmap={'engine':'ns2','oil':'ns1'})
+            def level(self):
                 pass
 
         c = Car()
-        c.person = 'larry'
+        c.color = 'blue'
+        c.level = 'low'
 
-        document = c.xml()
+        doc = c.xml()
 
-        tree = etree.fromstring(document)
+        tree = etree.fromstring(doc)
 
-        self.assertEqual(len(tree.xpath('/Car/NS1:driver/person',
-            namespaces=NSMAP)), 1)
+        self.assertEqual(len(tree.xpath('/Car/ns1:outside/color',
+            namespaces=nsmap)), 1)
+        self.assertEqual(len(tree.xpath('/Car/ns2:engine/ns1:oil/level',
+            namespaces=nsmap)), 1)
 
         del c
 
-        c = Car.from_xml(document)
+        c = Car.from_xml(doc)
 
-        self.assertEqual(c.person, 'larry')
+        self.assertEqual(c.color, 'blue')
+        self.assertEqual(c.level, 'low')
 
     def test_path(self):
         class Car(xml.XMLDocument):
@@ -162,255 +159,259 @@ class XMLDocumentTest(unittest.TestCase):
             def __init__(self):
                 super(Car, self).__init__()
 
-            @xml.Element(path='driver')
-            def person(self):
+            @xml.Element(path='outside')
+            def color(self):
+                pass
+
+            @xml.Element(path='engine/oil')
+            def level(self):
                 pass
 
         c = Car()
-        c.person = 'larry'
+        c.color = 'blue'
+        c.level = 'low'
 
-        document = c.xml()
+        doc = c.xml()
 
-        tree = etree.fromstring(document)
+        tree = etree.fromstring(doc)
 
-        self.assertEqual(len(tree.xpath('/Car/driver/person')), 1)
+        self.assertEqual(len(tree.xpath('/Car/outside/color')), 1)
+        self.assertEqual(len(tree.xpath('/Car/engine/oil/level')), 1)
 
         del c
 
-        c = Car.from_xml(document)
+        c = Car.from_xml(doc)
 
-        self.assertEqual(c.person, 'larry')
+        self.assertEqual(c.color, 'blue')
+        self.assertEqual(c.level, 'low')
 
-    def test_store_attr(self):
+    def test_element_attr(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
                 super(Car, self).__init__()
 
-            @xml.Element(store_attr=True, name='href')
-            def brochure(self):
+            @xml.Element(attr='color')
+            def outside(self):
                 pass
 
         c = Car()
-        c.brochure = 'http://test_brochure.com'
+        c.outside = 'blue'
 
-        document = c.xml()
+        doc = c.xml()
 
-        tree = etree.fromstring(document)
+        tree = etree.fromstring(doc)
 
-        xpath_result = tree.xpath('/Car/brochure/@href')
-
-        self.assertEqual(len(xpath_result), 1)
-        self.assertEqual(xpath_result[0], 'http://test_brochure.com')
+        self.assertEqual(len(tree.xpath('/Car/outside/@color')), 1)
 
         del c
 
-        c = Car.from_xml(document)
+        c = Car.from_xml(doc)
 
-        self.assertEqual(c.brochure, 'http://test_brochure.com')
+        self.assertEqual(c.outside, 'blue')
 
-    def test_output_type_bad(self):
+    def test_child_tag_combine(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
                 super(Car, self).__init__()
 
-            @xml.Attribute(value_type=list)
-            def speed(self):
+            @xml.Element(child_tag='item', combine=True, output_list=True)
+            def multiple(self):
                 pass
 
         c = Car()
-        c.speed = 45
+        c.multiple = [0, 1, 2, 3]
 
-        tree = c.xml()
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
+        self.assertEqual(len(tree.xpath('/Car/multiple')), 1)
 
         del c
 
-        with self.assertRaises(xml.ValueConversionError) as e:
-            c = Car.from_xml(tree)
+        c = Car.from_xml(doc)
 
-    def test_output_type_attribute(self):
+        self.assertIsInstance(c.multiple, list)
+        self.assertEqual(len(c.multiple), 4)
+    
+    def test_child_tag_namespace(self):
+        nsmap = {
+                'ns1': 'http://ns1',
+                'ns2': 'http://ns2',
+                }
+
+        class Car(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(Car, self).__init__(nsmap=nsmap)
+
+            @xml.Element(child_tag='item', child_namespace='ns1', output_list=True)
+            def multiple(self):
+                pass
+
+            @xml.Element(child_tag='item', child_namespace='ns2')
+            def single(self):
+                pass
+
+        c = Car()
+        c.multiple = [0, 1, 2, 3]
+        c.single = 0
+
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
+        self.assertEqual(len(tree.xpath('/Car/multiple/ns1:item',
+            namespaces=nsmap)), 4)
+        self.assertEqual(len(tree.xpath('/Car/single/ns2:item',
+            namespaces=nsmap)), 1)
+
+        del c
+
+        c = Car.from_xml(doc)
+
+        self.assertIsInstance(c.multiple, list)
+        self.assertEqual(len(c.multiple), 4)
+        self.assertIsInstance(c.single, str)
+
+    def test_child_tag(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
                 super(Car, self).__init__()
 
-            @xml.Attribute(value_type=int)
-            def speed(self):
+            @xml.Element(child_tag='item', output_list=True)
+            def multiple(self):
                 pass
 
-            @xml.Attribute(value_type=float)
-            def temperature(self):
-                pass
-
-            @xml.Attribute(value_type=long)
-            def miles(self):
-                pass
-
-            @xml.Attribute(value_type=bool)
-            def driving(self):
+            @xml.Element(child_tag='item')
+            def single(self):
                 pass
 
         c = Car()
-        c.speed = 56
-        c.temperature = 105.6
-        c.miles = 121343234232
-        c.driving = True
+        c.multiple = [0, 1, 2, 3]
+        c.single = 0
 
-        tree = c.xml()
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
+        self.assertEqual(len(tree.xpath('/Car/multiple/item')), 4)
+        self.assertEqual(len(tree.xpath('/Car/single/item')), 1)
 
         del c
 
-        c = Car.from_xml(tree)
+        c = Car.from_xml(doc)
 
-        self.assertEqual(c.speed, 56)
-        self.assertEqual(c.temperature, 105.6)
-        self.assertEqual(c.miles, 121343234232)
-        self.assertEqual(c.driving, True)
+        self.assertIsInstance(c.multiple, list)
+        self.assertEqual(len(c.multiple), 4)
+        self.assertIsInstance(c.single, str)
 
-    def test_value_type_element(self):
+    def test_element_output_list(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
                 super(Car, self).__init__()
-
-            @xml.Element(value_type=int)
-            def speed(self):
-                pass
-
-            @xml.Element(value_type=float)
-            def temperature(self):
-                pass
-
-            @xml.Element(value_type=long)
-            def miles(self):
-                pass
-
-            @xml.Element(value_type=bool)
-            def driving(self):
+            
+            @xml.Element(output_list=True)
+            def passengers(self):
                 pass
 
         c = Car()
-        c.speed = 56
-        c.temperature = 105.6
-        c.miles = 121343234232
-        c.driving = True
+        c.passengers = ['tom', 'larry']
 
-        tree = c.xml()
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
+        self.assertEqual(len(tree.xpath('/Car/passengers')), 2)
 
         del c
 
-        c = Car.from_xml(tree)
+        c = Car.from_xml(doc)
 
-        self.assertEqual(c.speed, 56)
-        self.assertEqual(c.temperature, 105.6)
-        self.assertEqual(c.miles, 121343234232)
-        self.assertEqual(c.driving, True)
+        self.assertIsInstance(c.passengers, list)
+        self.assertEqual(len(c.passengers), 2)
 
-    def test_element_list(self):
+    def test_namespace_missing(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
-                super(Car, self).__init__()
+                super(Car, self).__init__(nsmap={})
 
-            @xml.Element(output_list=True, maximum=2)
-            def years(self):
+            @xml.Element(namespace='ns1')
+            def driver(self):
                 pass
 
-        c = Car()
-        c.years = [1987, 1988]
-
-        document = c.xml()
-
-        tree = etree.fromstring(document)
-
-        self.assertEqual(len(tree.xpath('/Car/years')), 2)
-
-        del c
-
-        c = Car.from_xml(document)
-
-        self.assertIsInstance(c.years, list)
-        self.assertIn('1987', c.years)
-        self.assertIn('1988', c.years)
-
-    def test_missing_namespace_entry(self):
-        class Car(xml.XMLDocument):
+        class Car2(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
             def __init__(self):
-                super(Car, self).__init__(namespace='car', nsmap={})
+                super(Car2, self).__init__()
 
-            @xml.Element(namespace='car', minimum=0)
-            def state(self):
+            @xml.Element(namespace='ns1')
+            def driver(self):
                 pass
 
         c = Car()
+        c.driver = 'tom'
 
-        with self.assertRaises(xml.MissingNamespaceError) as e:
+        with self.assertRaises(xml.MissingNamespaceError):
             c.xml()
 
-    def test_missing_namespace_map(self):
-        class Car(xml.XMLDocument):
-            __metaclass__ = xml.XMLDocumentMarkupType
+        c = Car2()
+        c.driver = 'tom'
 
-            def __init__(self):
-                super(Car, self).__init__(namespace='car')
-
-            @xml.Element(namespace='car', minimum=0)
-            def state(self):
-                pass
-
-        c = Car()
-
-        with self.assertRaises(xml.MissingNamespaceError) as e:
+        with self.assertRaises(xml.MissingNamespaceError):
             c.xml()
 
     def test_namespace(self):
+        nsmap = {
+                'desc': 'description',
+                'state': 'state',
+                }
+
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
-            NSMAP = {
-                    'car':'http://car',
-                    'engine': 'http://engine',
-                    'state': 'http://state',
-                    }
-
             def __init__(self):
-                super(Car, self).__init__(namespace='car', nsmap=Car.NSMAP)
+                super(Car, self).__init__(namespace='state', nsmap=nsmap)
 
             @xml.Attribute(namespace='state')
             def state(self):
                 pass
 
-            @xml.Element(namespace='engine')
-            def engine(self):
+            @xml.Element(namespace='desc')
+            def color(self):
                 pass
 
         c = Car()
-        c.engine = 'v8'
         c.state = 'driving'
+        c.color = 'blue'
 
-        document = c.xml()
+        doc = c.xml()
 
-        tree = etree.fromstring(document)
+        tree = etree.fromstring(doc)
 
-        self.assertEqual(len(tree.xpath('/car:Car/@state:state',
-            namespaces=c.NSMAP)), 1)
-        self.assertEqual(len(tree.xpath('/car:Car/engine:engine',
-            namespaces=c.NSMAP)), 1)
+        self.assertEqual(len(tree.xpath('/state:Car/@state:state',
+            namespaces=nsmap)), 1)
+        self.assertEqual(len(tree.xpath('/state:Car/desc:color',
+            namespaces=nsmap)), 1)
 
         del c
 
-        c = Car.from_xml(document)
+        c = Car.from_xml(doc)
 
+        self.assertEqual(c.color, 'blue')
         self.assertEqual(c.state, 'driving')
-        self.assertEqual(c.engine, 'v8')
 
     def test_attribute(self):
         class Car(xml.XMLDocument):
@@ -418,28 +419,28 @@ class XMLDocumentTest(unittest.TestCase):
 
             def __init__(self):
                 super(Car, self).__init__()
-
+            
             @xml.Attribute()
-            def state(self):
+            def driver(self):
                 pass
 
         c = Car()
-        c.state = 'Driving'
+        c.driver = 'tom'
 
-        document = c.xml()
+        doc = c.xml()
 
-        tree = etree.fromstring(document)
+        tree = etree.fromstring(doc)
 
-        xpath_result = tree.xpath('/Car/@state')
+        xpath_result = tree.xpath('/Car/@driver')
 
         self.assertEqual(len(xpath_result), 1)
-        self.assertEqual(xpath_result[0], 'Driving')
+        self.assertEqual(xpath_result[0], 'tom')
 
         del c
 
-        c = Car.from_xml(document)
+        c = Car.from_xml(doc)
 
-        self.assertEqual(c.state, 'Driving')
+        self.assertEqual(c.driver, 'tom')
 
     def test_element(self):
         class Car(xml.XMLDocument):
@@ -447,52 +448,30 @@ class XMLDocumentTest(unittest.TestCase):
 
             def __init__(self):
                 super(Car, self).__init__()
-
+            
             @xml.Element()
-            def engine(self):
+            def driver(self):
                 pass
-
+       
         c = Car()
-        c.engine = 'v8'
+        c.driver = 'tom'
 
-        document = c.xml()
+        doc = c.xml()
 
-        tree = etree.fromstring(document)
+        tree = etree.fromstring(doc)
 
-        xpath_result = tree.xpath('/Car/engine')
+        xpath_result = tree.xpath('/Car/driver')
 
         self.assertEqual(len(xpath_result), 1)
-        self.assertEqual(xpath_result[0].text, 'v8')
+        self.assertEqual(xpath_result[0].text, 'tom')
 
         del c
 
-        c = Car.from_xml(document)
+        c = Car.from_xml(doc)
 
-        self.assertEqual(c.engine, 'v8')
+        self.assertEqual(c.driver, 'tom')
 
-    def test_nsmap(self):
-        class Car(xml.XMLDocument):
-            __metaclass__ = xml.XMLDocumentMarkupType
-
-            def __init__(self):
-                super(Car, self).__init__(nsmap={'car':'http://car.com'})
-
-        c = Car()
-
-        document = c.xml()
-
-        tree = etree.fromstring(document)
-
-        self.assertIn('car', tree.nsmap)
-        self.assertEqual(tree.nsmap['car'], 'http://car.com')
-
-        del c
-
-        c = Car.from_xml(document)
-
-        self.assertIsInstance(c, Car)
-
-    def test_base_tag(self):
+    def test_document(self):
         class Car(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
 
@@ -501,10 +480,11 @@ class XMLDocumentTest(unittest.TestCase):
 
         c = Car()
 
-        tree = etree.fromstring(c.xml())
-        
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
         self.assertEqual(len(tree.xpath('/Car')), 1)
 
 if __name__ == '__main__':
-    unittest.main()
-    #unittest.main(verbosity=10)
+    unittest.main(verbosity=2)
