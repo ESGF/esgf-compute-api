@@ -4,18 +4,11 @@ from lxml import etree
 import logging
 import re
 import sys
-import types
 import inspect
 
 logger = logging.getLogger(__name__)
 
-CONVERSION_TYPES = {
-        types.BooleanType: bool,
-        types.FloatType: float,
-        types.IntType: int,
-        types.LongType: long,
-        types.StringType: str,
-        }
+SUPPORTED_CONVERSION = (str, float, bool, int, long)
 
 class Translator(object):
     def property_to_element(self, name):
@@ -219,27 +212,39 @@ class XMLDocument(object):
 
                         setattr(self, tag, value)
                     else:
-                        if isinstance(metadata.value_type, (list, tuple)):
-                            self.__append_children_to_stack(node, stack)
-                        elif (inspect.isclass(metadata.value_type) and
-                                issubclass(metadata.value_type, XMLDocument)):
-                            value = metadata.value_type.from_element(node,
-                                    self.translator)
-
-                            setattr(self, tag, value)
-                        else:
+                        if metadata.value_type in SUPPORTED_CONVERSION:
                             value = metadata.value_type(node.text)
 
                             setattr(self, tag, value)
+                        else:
+                            children = node.getchildren()
+
+                            if len(children) > 0:
+                                self.__append_children_to_stack(node, stack)
+                            else:
+                                value = metadata.value_type.from_element(node,
+                                        self.translator)
+
+                                setattr(self, tag, value)
             else:
                 if self.store_value is not None:
-                    setattr(self, self.store_value, node.text)
+                    children = node.getchildren()
+
+                    if len(children) > 0:
+                        values = []
+
+                        for c in children:
+                            values.append(etree.tostring(c))
+
+                        setattr(self, self.store_value, values)
+                    else:
+                        setattr(self, self.store_value, node.text)
                 else:
                     parent = node.getparent()
 
                     if parent is not None:
                         parent_tag = self.__parse_name(parent.tag, Element)
-
+                        
                         if parent_tag in self.elements:
                             parent_metadata = self.elements[parent_tag]
 
@@ -248,20 +253,18 @@ class XMLDocument(object):
                             else:
                                 if isinstance(metadata.value_type, (list, tuple)):
                                     vt_names = dict((x.__name__, x)
-                                            for x in parent_metadata.value_type)
-
+                                            for x in metadata.value_type)
+                                    
                                     name = tag
 
                                     if self.translator is not None:
                                         name = self.translator.property_to_element(name)
 
-                                    try:
-                                        value = vt_names[name].from_element(node,
-                                                self.translator)
-                                    except KeyError:
-                                        raise ValidationError('Tag %s was '
-                                                'not in the value_type list' % (name,))
-                                elif issubclass(metadata.value_type, XMLDocument):
+
+                                    value = vt_names[name].from_element(node,
+                                            self.translator)
+                                elif (inspect.isclass(metadata.value_type) and
+                                        issubclass(metadata.value_type, XMLDocument)):
                                     value = metadata.value_type.from_element(node,
                                             self.translator)
                                 else:

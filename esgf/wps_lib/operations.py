@@ -68,8 +68,10 @@ class ExecuteResponse(xml.XMLDocument):
     def creation_time(self):
         pass
 
-    @metadata.wps_zero_many_element(value_type=metadata.Input)
-    def data_inputs(self):
+    @metadata.wps_zero_many_element(path='DataInputs',
+            nsmap={'DataInputs':ns.WPS},
+            value_type=metadata.Input)
+    def input(self):
         pass
 
     @metadata.wps_zero_many_element(value_type=metadata.DocumentOutputDefinition)
