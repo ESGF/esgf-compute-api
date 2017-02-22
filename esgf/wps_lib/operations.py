@@ -6,14 +6,16 @@ from esgf.wps_lib import metadata
 from esgf.wps_lib import namespace as ns
 from esgf.wps_lib import xml
 
-class WPSTranslator(object):
+from esgf.wps_lib.test import metadata as md
+
+class WPSTranslator(xml.Translator):
 
     def property_to_attribute(self, name):
         parts = name.split('_')
 
         return ''.join([parts[0]] + [x.title() for x in parts[1:]])
 
-    def propertry_to_element(self, name):
+    def property_to_element(self, name):
         return ''.join(x.title() for x in name.split('_'))
 
     def attribute_to_property(self, name):
@@ -125,7 +127,7 @@ class ExecuteRequest(xml.XMLDocument):
         pass
 
     @metadata.wps_zero_many_element(path='DataInputs',
-            value_type=metadata.Input)
+            value_type=metadata.Input, output_list=True)
     def input(self):
         pass
 
@@ -258,13 +260,17 @@ class GetCapabilitiesResponse(xml.XMLDocument):
     def service_provider(self):
         pass
 
-    @xml.Element(namespace=ns.OWS, value_type=metadata.Operation, output_list=True,
-            maximum=None)
-    def operations_metadata(self):
+    @xml.Element(namespace=ns.OWS,
+            path='OperationsMetadata',
+            nsmap={'OperationsMetadata': ns.OWS},
+            value_type=metadata.Operation,
+            output_list=True)
+    def operation(self):
         pass
+    #def operations_metadata(self):
+    #    pass
 
-    @xml.Element(namespace=ns.WPS, value_type=metadata.Process, output_list=True,
-            maximum=None)
+    @xml.Element(namespace=ns.WPS, value_type=metadata.Process, output_list=True)
     def process_offerings(self):
         pass
 

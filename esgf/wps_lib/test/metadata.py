@@ -6,6 +6,7 @@ identification = metadata.ServiceIdentification()
 identification.service_type = 'WPS'
 identification.service_type_version = ['1.0.0', '2.0.0']
 identification.title = 'LLNL WPS Service'
+identification.keywords = ['test', '1']
 
 provider = metadata.ServiceProvider()
 provider.provider_name = 'LLNL'

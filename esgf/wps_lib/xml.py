@@ -5,6 +5,7 @@ import logging
 import re
 import sys
 import types
+import inspect
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +17,24 @@ CONVERSION_TYPES = {
         types.StringType: str,
         }
 
+class Translator(object):
+    def property_to_element(self, name):
+        raise NotImplmenetedError()
+
+    def property_to_attribute(self, name):
+        raise NotImplmenetedError()
+
+    def element_to_property(self, name):
+        raise NotImplmenetedError()
+
+    def element_to_attribute(self, name):
+        raise NotImplmenetedError()
+
 class Attribute(object):
     def __init__(self, **kwargs):
         self.namespace = kwargs.get('namespace')
         self.value_type = kwargs.get('value_type', str)
+        self.required = kwargs.get('required', False)
 
     def __call__(self, f):
         f.metadata = self
@@ -40,6 +55,9 @@ class Element(object):
         self.path = kwargs.get('path')
         self.nsmap = kwargs.get('nsmap')
         self.value_type = kwargs.get('value_type', str)
+        self.store_value = kwargs.get('store_value', False)
+        self.minimum = kwargs.get('minimum', 1)
+        self.maximum = kwargs.get('maximum')
 
     def __call__(self, f):
         f.metadata = self
@@ -65,12 +83,15 @@ class XMLDocumentMarkupType(type):
 
         attributes = {}
         elements = {}
-        multiple = {}
+        store_value = None
 
         for key, value in dct.iteritems():
             if (hasattr(value, 'metadata') and
                     isinstance(value.metadata, Element)):
                 metadata = value.metadata
+
+                if metadata.store_value and store_value is None:
+                    store_value = key
                 
                 elements[key] = metadata
 
@@ -89,6 +110,7 @@ class XMLDocumentMarkupType(type):
 
         cls.attributes = attributes
         cls.elements = elements
+        cls.store_value = store_value
 
         return cls
 
@@ -105,9 +127,11 @@ class ValidationError(Exception):
     pass
 
 class XMLDocument(object):
-    def __init__(self, namespace=None, nsmap=None):
+    def __init__(self, namespace=None, nsmap=None, tag=None, translator=None):
         self.namespace = namespace
         self.nsmap = nsmap
+        self.tag = tag
+        self.translator = translator
 
     @classmethod
     def from_xml(cls, data):
@@ -120,8 +144,10 @@ class XMLDocument(object):
         return doc
 
     @classmethod
-    def from_element(cls, element):
+    def from_element(cls, element, translator):
         doc = cls()
+
+        doc.translator = translator
 
         doc.parse_xml(element)
 
@@ -129,15 +155,23 @@ class XMLDocument(object):
 
     def __parse_attributes(self, node):
         for name, value in node.attrib.iteritems():
-            parsed_name = self.__parse_name(name)
+            parsed_name = self.__parse_name(name, Attribute)
 
             if parsed_name in self.attributes:
                 metadata = self.attributes[parsed_name]
 
                 setattr(self, parsed_name, metadata.value_type(value))
 
-    def __parse_name(self, name):
-        return re.sub('^{.*}', '', name)
+    def __parse_name(self, name, item_type):
+        value = re.sub('^{.*}', '', name)
+
+        if self.translator is not None:
+            if item_type == Element:
+                value = self.translator.element_to_property(value)
+            else:
+                value = self.translator.attribute_to_property(value)
+
+        return value
 
     def __append_children_to_stack(self, node, stack):
         children = node.getchildren()
@@ -153,7 +187,7 @@ class XMLDocument(object):
             values = []
 
         if issubclass(metadata.value_type, XMLDocument):
-            value = metadata.value_type.from_element(node)
+            value = metadata.value_type.from_element(node, self.translator)
         else:
             value = metadata.value_type(node.text)
 
@@ -169,50 +203,83 @@ class XMLDocument(object):
         while len(stack):
             node = stack.pop()
 
-            tag = self.__parse_name(node.tag)
+            tag = self.__parse_name(node.tag, Element)
 
             if tag in self.elements:
                 metadata = self.elements[tag]
 
                 if metadata.output_list:
-                    if not metadata.combine:
-                        self.__set_values(tag, node, metadata)
-                    else:
+                    if metadata.child_tag is not None:
                         self.__append_children_to_stack(node, stack)
+                    else:
+                        self.__set_values(tag, node, metadata)
                 else:
                     if metadata.attr is not None:
                         value = metadata.value_type(node.attrib[metadata.attr])
+
+                        setattr(self, tag, value)
                     else:
-                        if issubclass(metadata.value_type, XMLDocument):
-                            value = metadata.value_type.from_element(node)
+                        if isinstance(metadata.value_type, (list, tuple)):
+                            self.__append_children_to_stack(node, stack)
+                        elif (inspect.isclass(metadata.value_type) and
+                                issubclass(metadata.value_type, XMLDocument)):
+                            value = metadata.value_type.from_element(node,
+                                    self.translator)
+
+                            setattr(self, tag, value)
                         else:
                             value = metadata.value_type(node.text)
 
-                    setattr(self, tag, value)
+                            setattr(self, tag, value)
             else:
-                parent = node.getparent()
+                if self.store_value is not None:
+                    setattr(self, self.store_value, node.text)
+                else:
+                    parent = node.getparent()
 
-                if parent is not None:
-                    parent_tag = self.__parse_name(parent.tag)
-                    
-                    if parent_tag in self.elements:
-                        parent_metadata = self.elements[parent_tag]
+                    if parent is not None:
+                        parent_tag = self.__parse_name(parent.tag, Element)
 
-                        if parent_metadata.combine and parent_metadata.output_list:
-                            self.__set_values(parent_tag, node, metadata)
-                        else:
-                            if issubclass(metadata.value_type, XMLDocument):
-                                value = metadata.value_type.from_element(node)
+                        if parent_tag in self.elements:
+                            parent_metadata = self.elements[parent_tag]
+
+                            if parent_metadata.combine or parent_metadata.output_list:
+                                self.__set_values(parent_tag, node, metadata)
                             else:
-                                value = metadata.value_type(node.text)
+                                if isinstance(metadata.value_type, (list, tuple)):
+                                    vt_names = dict((x.__name__, x)
+                                            for x in parent_metadata.value_type)
 
-                            setattr(self, parent_tag, value)
+                                    name = tag
 
-                        continue
+                                    if self.translator is not None:
+                                        name = self.translator.property_to_element(name)
 
-                self.__append_children_to_stack(node, stack)
+                                    try:
+                                        value = vt_names[name].from_element(node,
+                                                self.translator)
+                                    except KeyError:
+                                        raise ValidationError('Tag %s was '
+                                                'not in the value_type list' % (name,))
+                                elif issubclass(metadata.value_type, XMLDocument):
+                                    value = metadata.value_type.from_element(node,
+                                            self.translator)
+                                else:
+                                    value = metadata.value_type(node.text)
 
-    def __generate_name(self, name, namespace):
+                                setattr(self, parent_tag, value)
+
+                            continue
+
+                    self.__append_children_to_stack(node, stack)
+
+    def __generate_name(self, name, namespace, item_type):
+        if self.translator is not None:
+            if item_type == Element:
+                name = self.translator.property_to_element(name)
+            else:
+                name = self.translator.property_to_attribute(name)
+
         if namespace is not None:
             try:
                 name = '{%s}%s' % (self.nsmap[namespace], name)
@@ -229,7 +296,7 @@ class XMLDocument(object):
 
         if metadata.child_tag is not None:
             child_node_name = self.__generate_name(metadata.child_tag,
-                    metadata.child_namespace)
+                    metadata.child_namespace, Element)
 
             child_node = etree.SubElement(root, child_node_name)
 
@@ -259,7 +326,7 @@ class XMLDocument(object):
             if local_nsmap is not None and p in local_nsmap:
                 namespace = local_nsmap[p]
 
-            p_tag = self.__generate_name(p, namespace)
+            p_tag = self.__generate_name(p, namespace, Element)
 
             parent = etree.SubElement(parent, p_tag)
 
@@ -269,44 +336,96 @@ class XMLDocument(object):
 
         return parent
 
+    def validate(self):
+        for name, metadata in self.attributes.iteritems():
+            if metadata.required:
+                value = getattr(self, name)
+
+                if value is None:
+                    raise ValidationError('%s Attribute %s is required' %
+                            (self.__class__.__name__, name,))
+
+        for name, metadata in self.elements.iteritems():
+            if metadata.output_list:
+                value = getattr(self, name)
+
+                if metadata.minimum > 0:
+                    if not isinstance(value, (list, tuple)):
+                        raise ValidationError('%s Element %s was expecting a '
+                                'list or tuple of values' % (self.__class__.__name__, name,))
+                    elif value is None or len(value) < metadata.minimum:
+                        raise ValidationError('%s Element %s requires a minimum '
+                                'of %s values' % (self.__class__.__name__, name, metadata.minimum))
+
+                if metadata.maximum is not None:
+                    if len(value) > metadata.maximum:
+                        raise ValidationError('%s Element %s requires max %s'
+                                ' values, %s were provided' %
+                                (self.__class__.__name__, name, metadata.maximum, len(value)))
+            else:
+                if metadata.minimum > 0:
+                    value = getattr(self, name)
+
+                    if value is None:
+                        raise ValidationError('%s Element %s requires atleast '
+                                'one value' % (self.__class__.__name__, name,))
+                    elif isinstance(value, (list, tuple)):
+                        raise ValidationError('%s Element %s was expecting a '
+                                'single value' % (self.__class__.__name__, name,))
+
     def generate_xml(self):
-        tag = self.__generate_name(self.__class__.__name__, self.namespace)
+        self.validate()
+
+        cls_name = self.__class__.__name__
+
+        if self.tag is not None:
+            cls_name = self.tag
+
+        tag = self.__generate_name(cls_name, self.namespace, Element)
 
         root = etree.Element(tag, nsmap=self.nsmap)
 
         for name, metadata in self.attributes.iteritems():
             value = getattr(self, name)
 
-            attr_name = self.__generate_name(name, metadata.namespace)
+            attr_name = self.__generate_name(name, metadata.namespace,
+                    Attribute)
 
             root.set(attr_name, str(value))
 
-        path_cache = {}
+        if self.store_value is not None:
+            value = getattr(self, self.store_value)
 
-        for name, metadata in self.elements.iteritems():
-            parent = root
+            root.text = str(value)
+        else:
+            path_cache = {}
 
-            if metadata.path is not None:
-                parent = self.__generate_path(parent, metadata.path,
-                        metadata.nsmap, path_cache)
+            for name, metadata in self.elements.iteritems():
+                parent = root
 
-            value = getattr(self, name)
+                if metadata.path is not None:
+                    parent = self.__generate_path(parent, metadata.path,
+                            metadata.nsmap, path_cache)
 
-            node_name = self.__generate_name(name, metadata.namespace)
+                value = getattr(self, name)
 
-            if metadata.output_list:
-                if metadata.combine:
-                    node = etree.SubElement(parent, node_name)
+                node_name = self.__generate_name(name, metadata.namespace,
+                        Element)
 
-                for v in value:
-                    if not metadata.combine:
+                if metadata.output_list:
+                    if metadata.combine:
                         node = etree.SubElement(parent, node_name)
 
-                    self.__generate_node(node, node_name, metadata, v)
-            else:
-                node = etree.SubElement(parent, node_name)
+                    if value is not None:
+                        for v in value:
+                            if not metadata.combine:
+                                node = etree.SubElement(parent, node_name)
 
-                self.__generate_node(node, node_name, metadata, value)
+                            self.__generate_node(node, node_name, metadata, v)
+                else:
+                    node = etree.SubElement(parent, node_name)
+
+                    self.__generate_node(node, node_name, metadata, value)
 
         return root
 

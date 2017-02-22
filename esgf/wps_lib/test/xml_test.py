@@ -7,6 +7,240 @@ from esgf.wps_lib import xml
 
 class XMLDocumentTest(unittest.TestCase):
 
+    def test_element_list_maximum(self):
+        class Car(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(Car, self).__init__()
+
+            @xml.Element(minimum=0)
+            def passengers(self):
+                pass
+
+            @xml.Element(maximum=4, output_list=True)
+            def snacks(self):
+                pass
+
+        c = Car()
+
+        with self.assertRaises(xml.ValidationError):
+            c.xml()
+
+        c.snacks = [0, 1, 2, 3, 4]
+
+        with self.assertRaises(xml.ValidationError):
+            c.xml()
+
+    def test_element_list_minimum(self):
+        class Car(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(Car, self).__init__()
+
+            @xml.Element(output_list=True)
+            def passengers(self):
+                pass
+
+            @xml.Element(minimum=0, output_list=True)
+            def luggage(self):
+                pass
+
+        c = Car()
+
+        with self.assertRaises(xml.ValidationError):
+            c.xml()
+
+        c.passengers = 'test'
+
+        with self.assertRaises(xml.ValidationError):
+            c.xml()
+
+        c.passengers = []
+
+        with self.assertRaises(xml.ValidationError):
+            c.xml()
+
+        c.passengers = [0]
+
+        self.assertIsNotNone(c.xml())
+
+    def test_element_minimum(self):
+        class Car(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(Car, self).__init__()
+
+            @xml.Element()
+            def driver(self):
+                pass
+
+        c = Car()
+
+        with self.assertRaises(xml.ValidationError):
+            c.xml()
+
+        c.driver = []
+
+        with self.assertRaises(xml.ValidationError):
+            c.xml()
+
+        c.driver = 'tom'
+
+        self.assertIsNotNone(c.xml())
+
+    def test_attribute_required(self):
+        class Car(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(Car, self).__init__()
+
+            @xml.Attribute(required=True)
+            def color(self):
+                pass
+
+        c = Car()
+
+        with self.assertRaises(xml.ValidationError):
+            c.xml()
+
+    def test_tranlator(self):
+        class UpCaseDownCase(xml.Translator):
+            def property_to_element(self, name):
+                return name.upper()
+
+            def element_to_property(self, name):
+                return name.lower()
+
+            def property_to_attribute(self, name):
+                return name.upper()
+
+            def attribute_to_property(self, name):
+                return name.lower()
+
+        class Car(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(Car, self).__init__(translator=UpCaseDownCase())
+
+            @xml.Attribute()
+            def color(self):
+                pass
+
+            @xml.Element()
+            def name(self):
+                pass
+
+        c = Car()
+        c.color = 'blue'
+        c.name = 'tom'
+
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
+        self.assertEqual(len(tree.xpath('/CAR/@COLOR')), 1)
+        self.assertEqual(len(tree.xpath('/CAR/NAME')), 1)
+
+        del c
+
+        c = Car.from_xml(doc)
+
+        self.assertEqual(c.color, 'blue')
+        self.assertEqual(c.name, 'tom')
+
+    def test_override_tag(self):
+        class Car(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(Car, self).__init__(tag='Ford')
+
+        c = Car()
+        
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
+        self.assertEqual(len(tree.xpath('/Ford')), 1)
+
+    def test_multiple_type(self):
+        class V8(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(V8, self).__init__()
+
+            @xml.Attribute()
+            def cylinders(self):
+                pass
+
+        class V6(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(V6, self).__init__()
+
+            @xml.Attribute()
+            def cylinders(self):
+                pass
+
+        class Car(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(Car, self).__init__()
+
+            @xml.Element(value_type=(V6, V8))
+            def engine(self):
+                pass
+
+        c = Car()
+        c.engine = V8()
+        c.engine.cylinders = 8
+
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
+        self.assertEqual(len(tree.xpath('/Car/engine/V8')), 1)
+
+        del c
+
+        c = Car.from_xml(doc)
+
+        self.assertIsInstance(c.engine, V8)
+
+    def test_store_value(self):
+        class Car(xml.XMLDocument):
+            __metaclass__ = xml.XMLDocumentMarkupType
+
+            def __init__(self):
+                super(Car, self).__init__()
+
+            @xml.Element(store_value=True)
+            def data(self):
+                pass
+
+        c = Car()
+        c.data = 'test'
+
+        doc = c.xml()
+
+        tree = etree.fromstring(doc)
+
+        self.assertEqual(len(tree.xpath('/Car/data')), 0)
+        
+        del c
+
+        c = Car.from_xml(doc)
+
+        self.assertEqual(c.data, 'test')
+
     def test_value_type_xml_document(self):
         class Person(xml.XMLDocument):
             __metaclass__ = xml.XMLDocumentMarkupType
@@ -43,7 +277,6 @@ class XMLDocumentTest(unittest.TestCase):
 
         del c
 
-        print doc
         c = Car.from_xml(doc)
 
         self.assertIsInstance(c.driver, Person)
@@ -167,9 +400,14 @@ class XMLDocumentTest(unittest.TestCase):
             def level(self):
                 pass
 
+            @xml.Element(path='collection', output_list=True)
+            def passenger(self):
+                pass
+
         c = Car()
         c.color = 'blue'
         c.level = 'low'
+        c.passenger = ['tom', 'larry']
 
         doc = c.xml()
 
@@ -177,6 +415,7 @@ class XMLDocumentTest(unittest.TestCase):
 
         self.assertEqual(len(tree.xpath('/Car/outside/color')), 1)
         self.assertEqual(len(tree.xpath('/Car/engine/oil/level')), 1)
+        self.assertEqual(len(tree.xpath('/Car/collection/passenger')), 2)
 
         del c
 
@@ -184,6 +423,9 @@ class XMLDocumentTest(unittest.TestCase):
 
         self.assertEqual(c.color, 'blue')
         self.assertEqual(c.level, 'low')
+        self.assertIsInstance(c.passenger, list)
+        self.assertIn('tom', c.passenger)
+        self.assertIn('larry', c.passenger)
 
     def test_element_attr(self):
         class Car(xml.XMLDocument):
