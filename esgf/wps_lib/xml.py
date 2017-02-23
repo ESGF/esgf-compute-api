@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 
 from lxml import etree
+import inspect
 import logging
 import re
 import sys
-import inspect
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,7 @@ class Attribute(object):
         self.namespace = kwargs.get('namespace')
         self.value_type = kwargs.get('value_type', str)
         self.required = kwargs.get('required', False)
+        self.attach = kwargs.get('attach')
 
     def __call__(self, f):
         f.metadata = self
@@ -51,6 +52,7 @@ class Element(object):
         self.store_value = kwargs.get('store_value', False)
         self.minimum = kwargs.get('minimum', 1)
         self.maximum = kwargs.get('maximum')
+        self.attributes = {}
 
     def __call__(self, f):
         f.metadata = self
@@ -195,6 +197,15 @@ class XMLDocument(object):
 
         while len(stack):
             node = stack.pop()
+
+            if len(node.attrib) > 0:
+                for key, value in node.attrib.iteritems():
+                    name = self.__parse_name(key, Attribute)
+
+                    if name in self.attributes:
+                        attr_metadata = self.attributes[name]
+
+                        setattr(self, name, attr_metadata.value_type(value))
 
             tag = self.__parse_name(node.tag, Element)
 
@@ -388,14 +399,6 @@ class XMLDocument(object):
 
         root = etree.Element(tag, nsmap=self.nsmap)
 
-        for name, metadata in self.attributes.iteritems():
-            value = getattr(self, name)
-
-            attr_name = self.__generate_name(name, metadata.namespace,
-                    Attribute)
-
-            root.set(attr_name, str(value))
-
         if self.store_value is not None:
             value = getattr(self, self.store_value)
 
@@ -429,6 +432,18 @@ class XMLDocument(object):
                     node = etree.SubElement(parent, node_name)
 
                     self.__generate_node(node, node_name, metadata, value)
+
+        for name, metadata in self.attributes.iteritems():
+            value = getattr(self, name)
+
+            attr_name = self.__generate_name(name, metadata.namespace,
+                    Attribute)
+
+            if metadata.attach is not None:
+                if metadata.attach in path_cache:
+                    path_cache[metadata.attach].set(attr_name, str(value))
+            else:
+                root.set(attr_name, str(value))
 
         return root
 
