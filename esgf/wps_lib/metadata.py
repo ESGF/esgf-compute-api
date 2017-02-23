@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 from functools import partial
+import re
 
 from esgf.wps_lib import namespace as ns
 from esgf.wps_lib import xml
@@ -21,6 +22,56 @@ ows_zero_many_element = partial(zero_many_element, namespace=ns.OWS)
 wps_zero_one_element = partial(zero_one_element, namespace=ns.WPS)
 wps_one_many_element = partial(one_many_element, namespace=ns.WPS)
 wps_zero_many_element = partial(zero_many_element, namespace=ns.WPS)
+
+class WPSTranslator(xml.Translator):
+
+    def property_to_attribute(self, name):
+        parts = name.split('_')
+
+        return ''.join([parts[0]] + [x.title() for x in parts[1:]])
+
+    def property_to_element(self, name):
+        return ''.join(x.title() for x in name.split('_'))
+
+    def attribute_to_property(self, name):
+        matches = re.match('^([a-z]*)([A-Z][a-z]*)*$', name).groups()
+        
+        return '_'.join(x.lower() for x in matches if x is not None)
+
+    def element_to_property(self, name):
+        matches = re.findall('[A-Z][^A-Z]*', name)
+
+        return '_'.join(x.lower() for x in matches)
+
+class Exception(object):
+    MissingParameterValue = 'MissingParameterValue'
+    InvalidParameterValue = 'InvalidParameterValue'
+    VersionNegotiationFailed = 'VersionNegotiationFailed'
+    InvalidUpdateSequence = 'InvalidUpdateSequence'
+    NoApplicableCode = 'NoApplicableCode'
+    NotEnoughStorage = 'NotEnoughStorage'
+    ServerBusy = 'ServerBusy'
+    FileSizeExceeded = 'FileSizeExceeded'
+    StorageNotSupported = 'StorageNotSupported'
+
+class ExceptionReport(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self):
+        super(ExceptionReport, self).__init__(namespace=ns.OWS,
+                nsmap=ns.NSMAP,
+                translator=WPSTranslator())
+
+    @xml.Attribute(attach='Exception', required=True)
+    def exception_code(self):
+        pass
+
+    @ows_zero_many_element(path='Exception', nsmap={'Exception':ns.OWS})
+    def exception_text(self):
+        pass
+
+    def locator(self):
+        pass
 
 class ComplexData(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType

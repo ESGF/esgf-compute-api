@@ -8,33 +8,13 @@ from esgf.wps_lib import xml
 
 from esgf.wps_lib.test import metadata as md
 
-class WPSTranslator(xml.Translator):
-
-    def property_to_attribute(self, name):
-        parts = name.split('_')
-
-        return ''.join([parts[0]] + [x.title() for x in parts[1:]])
-
-    def property_to_element(self, name):
-        return ''.join(x.title() for x in name.split('_'))
-
-    def attribute_to_property(self, name):
-        matches = re.match('^([a-z]*)([A-Z][a-z]*)*$', name).groups()
-        
-        return '_'.join(x.lower() for x in matches if x is not None)
-
-    def element_to_property(self, name):
-        matches = re.findall('[A-Z][^A-Z]*', name)
-
-        return '_'.join(x.lower() for x in matches)
-
 class ExecuteResponse(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
     def __init__(self):
         super(ExecuteResponse, self).__init__(namespace=ns.WPS,
                 nsmap=ns.NSMAP,
-                translator=WPSTranslator())
+                translator=metadata.WPSTranslator())
 
     @xml.Attribute(required=True)
     def service(self):
@@ -114,7 +94,7 @@ class ExecuteRequest(xml.XMLDocument):
         super(ExecuteRequest, self).__init__(tag='Execute',
                 namespace=ns.WPS,
                 nsmap=ns.NSMAP,
-                translator=WPSTranslator())
+                translator=metadata.WPSTranslator())
 
     @xml.Attribute(required=True)
     def service(self):
@@ -164,7 +144,7 @@ class DescribeProcessResponse(xml.XMLDocument):
         super(DescribeProcessResponse, self).__init__(tag='ProcessDescriptions',
                 namespace=ns.WPS,
                 nsmap=ns.NSMAP,
-                translator=WPSTranslator())
+                translator=metadata.WPSTranslator())
 
     @metadata.zero_many_element(value_type=metadata.ProcessDescription)
     def process_description(self):
@@ -200,7 +180,7 @@ class DescribeProcessRequest(xml.XMLDocument):
         super(DescribeProcessRequest, self).__init__(tag='DescribeProcess',
                 namespace=ns.WPS,
                 nsmap=ns.NSMAP,
-                translator=WPSTranslator())
+                translator=metadata.WPSTranslator())
 
     @xml.Attribute(required=True)
     def service(self):
@@ -236,7 +216,7 @@ class GetCapabilitiesResponse(xml.XMLDocument):
         super(GetCapabilitiesResponse, self).__init__(tag='Capabilities',
                 namespace=ns.WPS,
                 nsmap=ns.NSMAP,
-                translator=WPSTranslator())
+                translator=metadata.WPSTranslator())
 
     @xml.Attribute(required=True)
     def service(self):
@@ -315,7 +295,7 @@ class GetCapabilitiesRequest(xml.XMLDocument):
         super(GetCapabilitiesRequest, self).__init__(tag='GetCapabilities',
                 namespace=ns.WPS,
                 nsmap=ns.NSMAP,
-                translator=WPSTranslator())
+                translator=metadata.WPSTranslator())
 
     @xml.Attribute(namespace=ns.XSI)
     def schema_location(self):
