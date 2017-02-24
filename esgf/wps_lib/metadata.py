@@ -59,6 +59,8 @@ class Exception(xml.XMLDocument):
     def __init__(self):
         super(Exception, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
 
+        self.exception_text = []
+
     @ows_zero_many_element()
     def exception_text(self):
         pass
@@ -74,10 +76,13 @@ class Exception(xml.XMLDocument):
 class ExceptionReport(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
+    def __init__(self, version):
         super(ExceptionReport, self).__init__(namespace=ns.OWS,
                 nsmap=ns.NSMAP,
                 translator=WPSTranslator())
+
+        self.exception = []
+        self.version = version
 
     @ows_one_many_element(value_type=Exception)
     def exception(self):
@@ -86,6 +91,14 @@ class ExceptionReport(xml.XMLDocument):
     @xml.Attribute(required=True)
     def version(self):
         pass
+
+    def add_exception(self, ex_code, msg, locator=None):
+        ex = Exception()
+        ex.exception_code = ex_code
+        ex.exception_text.append(msg)
+        ex.locator = locator
+
+        self.exception.append(ex)
 
 class ComplexData(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
