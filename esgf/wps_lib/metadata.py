@@ -43,7 +43,9 @@ class WPSTranslator(xml.Translator):
 
         return '_'.join(x.lower() for x in matches)
 
-class Exception(object):
+class Exception(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
     MissingParameterValue = 'MissingParameterValue'
     InvalidParameterValue = 'InvalidParameterValue'
     VersionNegotiationFailed = 'VersionNegotiationFailed'
@@ -54,6 +56,21 @@ class Exception(object):
     FileSizeExceeded = 'FileSizeExceeded'
     StorageNotSupported = 'StorageNotSupported'
 
+    def __init__(self):
+        super(Exception, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+
+    @ows_zero_many_element()
+    def exception_text(self):
+        pass
+
+    @xml.Attribute(required=True)
+    def exception_code(self):
+        pass
+
+    @xml.Attribute()
+    def locator(self):
+        pass
+
 class ExceptionReport(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
@@ -62,15 +79,12 @@ class ExceptionReport(xml.XMLDocument):
                 nsmap=ns.NSMAP,
                 translator=WPSTranslator())
 
-    @xml.Attribute(attach='Exception', required=True)
-    def exception_code(self):
+    @ows_one_many_element(value_type=Exception)
+    def exception(self):
         pass
 
-    @ows_zero_many_element(path='Exception', nsmap={'Exception':ns.OWS})
-    def exception_text(self):
-        pass
-
-    def locator(self):
+    @xml.Attribute(required=True)
+    def version(self):
         pass
 
 class ComplexData(xml.XMLDocument):
