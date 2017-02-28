@@ -120,6 +120,14 @@ class Operation(parameter.Parameter):
         return [x for x in self.inputs if isinstance(x, variable.Variable)]
 
     @property
+    def status_location(self):
+        """ Status location """
+        if self._result.status_location is None:
+            raise errors.WPSServerError('No status location available')
+
+        return self._result.status_location
+
+    @property
     def output(self):
         """ Operation output. """
         if self._result.status != 'ProcessSucceeded':
