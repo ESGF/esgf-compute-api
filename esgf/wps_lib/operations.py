@@ -36,7 +36,7 @@ class ExecuteResponse(xml.XMLDocument):
     def service_instance(self):
         pass
 
-    @xml.Element(value_type=metadata.Process)
+    @metadata.wps_element(value_type=metadata.Process)
     def process(self):
         pass
 
