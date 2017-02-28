@@ -287,11 +287,11 @@ class XMLDocument(object):
 
                     self.__append_children_to_stack(node, stack)
 
-    def __generate_name(self, name, namespace, item_type):
+    def __generate_name(self, name, namespace, item_type=None):
         if self.translator is not None:
             if item_type == Element:
                 name = self.translator.property_to_element(name)
-            else:
+            elif item_type == Attribute:
                 name = self.translator.property_to_attribute(name)
 
         if namespace is not None:
@@ -395,7 +395,7 @@ class XMLDocument(object):
         if self.tag is not None:
             cls_name = self.tag
 
-        tag = self.__generate_name(cls_name, self.namespace, Element)
+        tag = self.__generate_name(cls_name, self.namespace)
 
         root = etree.Element(tag, nsmap=self.nsmap)
 
