@@ -236,7 +236,8 @@ class Output(xml.XMLDocument):
     def reference(self):
         pass
 
-    @zero_one_element(value_type=(ComplexData, LiteralData, BoundingBoxData))
+    @zero_one_element(namespace=ns.WPS,
+            value_type=(ComplexData, LiteralData, BoundingBoxData))
     def data(self):
         pass
 
