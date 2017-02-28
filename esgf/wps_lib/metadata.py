@@ -43,6 +43,36 @@ class WPSTranslator(xml.Translator):
 
         return '_'.join(x.lower() for x in matches)
 
+class ProcessAccepted(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self):
+        super(ProcessAccepted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+
+class ProcessStarted(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self):
+        super(ProcessStarted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+
+class ProcessPaused(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self):
+        super(ProcessPaused, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+
+class ProcessSucceeded(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self):
+        super(ProcessSucceeded, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+
+class ProcessFailed(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self):
+        super(ProcessFailed, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+
 class Exception(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
