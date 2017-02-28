@@ -5,6 +5,9 @@ Operation Module.
 import json
 from tempfile import NamedTemporaryFile
 
+import requests
+
+import esgf
 from esgf import domain
 from esgf import gridder
 from esgf import named_parameter
@@ -126,6 +129,30 @@ class Operation(parameter.Parameter):
             raise errors.WPSServerError('No status location available')
 
         return self._result.status_location
+
+    @property
+    def status(self):
+        """ Status """
+        return self._result.status
+
+    @property
+    def processing(self):
+        """ True if status is accepted/started. """
+        if self._result.status_location is None:
+            raise errors.WPSServerError('No status location available')
+
+        response = requests.get(self._result.status_location)
+
+        if response.status_code != 200:
+            raise errors.WPSServerError('Bad response from server {0}'.format(response.status_code))
+
+        self._result = esgf.wps._WPSExecuteResponse.from_response(response.text)
+
+        if (self._result.status == 'ProcessStarted' or
+                self._result.status == 'ProcessAccepted'):
+            return True
+
+        return False
 
     @property
     def output(self):
