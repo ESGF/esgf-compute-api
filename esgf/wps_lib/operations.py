@@ -49,7 +49,7 @@ class ExecuteResponse(xml.XMLDocument):
     def status(self):
         pass
 
-    @xml.Attribute(attach_element='status', required=True)
+    @xml.Attribute(attach='Status', required=True)
     def creation_time(self):
         pass
 
