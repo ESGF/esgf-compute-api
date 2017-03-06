@@ -34,7 +34,12 @@ class WPSTranslator(xml.Translator):
         return ''.join(x.title() for x in name.split('_'))
 
     def attribute_to_property(self, name):
-        matches = re.match('^([a-z]*)([A-Z][a-z]*)*$', name).groups()
+        matches = re.match('^([a-z]*)([A-Z][a-z]*)*$', name)
+
+        if matches is None:
+            return None
+
+        matches = matches.groups()
         
         return '_'.join(x.lower() for x in matches if x is not None)
 
