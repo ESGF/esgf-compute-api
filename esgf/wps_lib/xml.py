@@ -429,7 +429,10 @@ class XMLDocument(object):
 
                             self.__generate_node(node, node_name, metadata, v)
                 else:
-                    node = etree.SubElement(parent, node_name)
+		    if not issubclass(value.__class__, XMLDocument):
+	                node = etree.SubElement(parent, node_name)
+		    else:
+			node = parent
 
                     self.__generate_node(node, node_name, metadata, value)
 
