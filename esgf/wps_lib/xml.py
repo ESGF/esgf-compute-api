@@ -196,6 +196,8 @@ class XMLDocument(object):
         stack = [root]
 
         while len(stack):
+            logger.info(stack)
+
             node = stack.pop()
 
             if len(node.attrib) > 0:
@@ -209,8 +211,12 @@ class XMLDocument(object):
 
             tag = self.__parse_name(node.tag, Element)
 
+            logger.info('Processing tag %s', tag)
+
             if tag in self.elements:
                 metadata = self.elements[tag]
+
+                logger.info('Tag is a known element with metadata %s', metadata)
 
                 if metadata.output_list:
                     if metadata.child_tag is not None:
@@ -222,21 +228,26 @@ class XMLDocument(object):
                         value = metadata.value_type(node.attrib[metadata.attr])
 
                         setattr(self, tag, value)
+                    elif metadata.value_type in SUPPORTED_CONVERSION:
+                        value = metadata.value_type(node.text)
+
+                        setattr(self, tag, value)
+                    elif (inspect.isclass(metadata.value_type) and
+                            issubclass(metadata.value_type, XMLDocument)):
+                        value = metadata.value_type.from_element(node,
+                                self.translator)
+
+                        setattr(self, tag, value)
                     else:
-                        if metadata.value_type in SUPPORTED_CONVERSION:
-                            value = metadata.value_type(node.text)
+                        children = node.getchildren()
+
+                        if len(children) > 0:
+                            self.__append_children_to_stack(node, stack)
+                        else:
+                            value = metadata.value_type.from_element(node,
+                                    self.translator)
 
                             setattr(self, tag, value)
-                        else:
-                            children = node.getchildren()
-
-                            if len(children) > 0:
-                                self.__append_children_to_stack(node, stack)
-                            else:
-                                value = metadata.value_type.from_element(node,
-                                        self.translator)
-
-                                setattr(self, tag, value)
             else:
                 if self.store_value is not None:
                     children = node.getchildren()
