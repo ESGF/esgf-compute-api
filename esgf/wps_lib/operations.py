@@ -44,7 +44,8 @@ class ExecuteResponse(xml.XMLDocument):
         metadata.ProcessStarted,
         metadata.ProcessPaused,
         metadata.ProcessSucceeded,
-        metadata.ProcessFailed))
+        metadata.ProcessFailed),
+        path='Status', nsmap={'Status': ns.WPS})
     def status(self):
         pass
 
