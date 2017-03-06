@@ -318,6 +318,8 @@ class XMLDocument(object):
             child_node.set(metadata.attr, str(value))
         else:
             if issubclass(value.__class__, XMLDocument):
+                value.translator = self.translator
+
                 value_node = value.generate_xml()
 
                 child_node.append(value_node)
