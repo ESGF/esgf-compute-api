@@ -36,11 +36,15 @@ class ExecuteResponse(xml.XMLDocument):
     def service_instance(self):
         pass
 
-    @xml.Element(value_type=metadata.Process)
+    @metadata.wps_element(value_type=metadata.Process)
     def process(self):
         pass
 
-    @metadata.wps_element()
+    @metadata.wps_element(value_type=(metadata.ProcessAccepted,
+        metadata.ProcessStarted,
+        metadata.ProcessPaused,
+        metadata.ProcessSucceeded,
+        metadata.ProcessFailed))
     def status(self):
         pass
 

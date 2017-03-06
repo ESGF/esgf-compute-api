@@ -387,6 +387,15 @@ class _WPSExecuteResponse(_WPSResponse):
 
         self._data.parseResponse(xml)
 
+        # YES A HACK
+        data = xml.xpath('/wps:ExecuteResponse/wps:ProcessOutputs/wps:Output/wps:Data/ows:LiteralData', namespaces=xml.nsmap)
+
+        # SUPER HACKY CREATE OBJECT MUAHAHA
+        for x in data:
+            params = {'mimeType': None, 'data': x.text}
+
+            self._data.processOutputs.append(type('Output', (object,), dict(**params)))
+
     def check_status(self, timeout): # pragma: no cover
         """ Wait timeout then check Process status. """
         self._data.checkStatus(timeout)
