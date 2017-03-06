@@ -202,7 +202,7 @@ class XMLDocument(object):
                 for key, value in node.attrib.iteritems():
                     name = self.__parse_name(key, Attribute)
 
-                    if name in self.attributes:
+                    if name is not None and name in self.attributes:
                         attr_metadata = self.attributes[name]
 
                         setattr(self, name, attr_metadata.value_type(value))
