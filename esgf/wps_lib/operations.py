@@ -256,7 +256,7 @@ class GetCapabilitiesResponse(xml.XMLDocument):
     #def operations_metadata(self):
     #    pass
 
-    @xml.Element(namespace=ns.WPS, value_type=metadata.Process, output_list=True)
+    @xml.Element(namespace=ns.WPS, value_type=metadata.Process, output_list=True, maximum=None, combine=True)
     def process_offerings(self):
         pass
 
