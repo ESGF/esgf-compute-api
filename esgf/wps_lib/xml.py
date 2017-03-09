@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import absolute_import
+
 from lxml import etree
 import inspect
 import logging
@@ -52,7 +54,6 @@ class Element(object):
         self.store_value = kwargs.get('store_value', False)
         self.minimum = kwargs.get('minimum', 1)
         self.maximum = kwargs.get('maximum')
-        self.attributes = {}
 
     def __call__(self, f):
         f.metadata = self
@@ -148,221 +149,6 @@ class XMLDocument(object):
 
         return doc
 
-    def __parse_attributes(self, node):
-        for name, value in node.attrib.iteritems():
-            parsed_name = self.__parse_name(name, Attribute)
-
-            if parsed_name in self.attributes:
-                metadata = self.attributes[parsed_name]
-
-                setattr(self, parsed_name, metadata.value_type(value))
-
-    def __parse_name(self, name, item_type):
-        value = re.sub('^{.*}', '', name)
-
-        if self.translator is not None:
-            if item_type == Element:
-                value = self.translator.element_to_property(value)
-            else:
-                value = self.translator.attribute_to_property(value)
-
-        return value
-
-    def __append_children_to_stack(self, node, stack):
-        children = node.getchildren()
-
-        if len(children) > 0:
-            for c in children:
-                stack.append(c)
-
-    def __set_values(self, tag, node, metadata):
-        values = getattr(self, tag)
-
-        if values is None:
-            values = []
-
-        if issubclass(metadata.value_type, XMLDocument):
-            value = metadata.value_type.from_element(node, self.translator)
-        else:
-            value = metadata.value_type(node.text)
-
-        values.append(value)
-
-        setattr(self, tag, values)
-
-    def parse_xml(self, root):
-        self.__parse_attributes(root)
-
-        stack = [root]
-
-        while len(stack):
-            logger.info(stack)
-
-            node = stack.pop()
-
-            if len(node.attrib) > 0:
-                for key, value in node.attrib.iteritems():
-                    name = self.__parse_name(key, Attribute)
-
-                    if name is not None and name in self.attributes:
-                        attr_metadata = self.attributes[name]
-
-                        setattr(self, name, attr_metadata.value_type(value))
-
-            tag = self.__parse_name(node.tag, Element)
-
-            logger.info('Processing tag %s', tag)
-
-            if tag in self.elements:
-                metadata = self.elements[tag]
-
-                logger.info('Tag is a known element with metadata %s', metadata)
-
-                if metadata.output_list:
-                    if metadata.child_tag is not None:
-                        self.__append_children_to_stack(node, stack)
-                    else:
-                        self.__set_values(tag, node, metadata)
-                else:
-                    if metadata.attr is not None:
-                        value = metadata.value_type(node.attrib[metadata.attr])
-
-                        setattr(self, tag, value)
-                    elif metadata.value_type in SUPPORTED_CONVERSION:
-                        value = metadata.value_type(node.text)
-
-                        setattr(self, tag, value)
-                    elif (inspect.isclass(metadata.value_type) and
-                            issubclass(metadata.value_type, XMLDocument)):
-                        value = metadata.value_type.from_element(node,
-                                self.translator)
-
-                        setattr(self, tag, value)
-                    else:
-                        children = node.getchildren()
-
-                        if len(children) > 0:
-                            self.__append_children_to_stack(node, stack)
-                        else:
-                            value = metadata.value_type.from_element(node,
-                                    self.translator)
-
-                            setattr(self, tag, value)
-            else:
-                if self.store_value is not None:
-                    children = node.getchildren()
-
-                    if len(children) > 0:
-                        values = []
-
-                        for c in children:
-                            values.append(etree.tostring(c))
-
-                        setattr(self, self.store_value, values)
-                    else:
-                        setattr(self, self.store_value, node.text)
-                else:
-                    parent = node.getparent()
-
-                    if parent is not None:
-                        parent_tag = self.__parse_name(parent.tag, Element)
-                        
-                        if parent_tag in self.elements:
-                            parent_metadata = self.elements[parent_tag]
-
-                            if parent_metadata.combine or parent_metadata.output_list:
-                                self.__set_values(parent_tag, node, metadata)
-                            else:
-                                if isinstance(metadata.value_type, (list, tuple)):
-                                    vt_names = dict((x.__name__, x)
-                                            for x in metadata.value_type)
-                                    
-                                    name = tag
-
-                                    if self.translator is not None:
-                                        name = self.translator.property_to_element(name)
-
-
-                                    value = vt_names[name].from_element(node,
-                                            self.translator)
-                                elif (inspect.isclass(metadata.value_type) and
-                                        issubclass(metadata.value_type, XMLDocument)):
-                                    value = metadata.value_type.from_element(node,
-                                            self.translator)
-                                else:
-                                    value = metadata.value_type(node.text)
-
-                                setattr(self, parent_tag, value)
-
-                            continue
-
-                    self.__append_children_to_stack(node, stack)
-
-    def __generate_name(self, name, namespace, item_type=None):
-        if self.translator is not None:
-            if item_type == Element:
-                name = self.translator.property_to_element(name)
-            elif item_type == Attribute:
-                name = self.translator.property_to_attribute(name)
-
-        if namespace is not None:
-            try:
-                name = '{%s}%s' % (self.nsmap[namespace], name)
-            except TypeError:
-                raise MissingNamespaceError('Namespace provided but map was not.')
-            except KeyError:
-                raise MissingNamespaceError('Namespace %s was not found in the '
-                        'map.' % (namespace,))
-
-        return name
-
-    def __generate_node(self, root, node_name, metadata, value):
-        child_node = root
-
-        if metadata.child_tag is not None:
-            child_node_name = self.__generate_name(metadata.child_tag,
-                    metadata.child_namespace, Element)
-
-            child_node = etree.SubElement(root, child_node_name)
-
-        if metadata.attr is not None:
-            child_node.set(metadata.attr, str(value))
-        else:
-            if issubclass(value.__class__, XMLDocument):
-                value.translator = self.translator
-
-                value_node = value.generate_xml()
-
-                child_node.append(value_node)
-            else:
-                child_node.text = str(value)
-
-    def __generate_path(self, parent, path, local_nsmap, path_cache):
-        if path in path_cache:
-            return path_cache[path]
-
-        parts = [x for x in path.split('/') if x != '']
-
-        current = ''
-
-        for p in parts:
-            current = '%s%s' % (current, p)
-
-            namespace = None
-
-            if local_nsmap is not None and p in local_nsmap:
-                namespace = local_nsmap[p]
-
-            p_tag = self.__generate_name(p, namespace, Element)
-
-            parent = etree.SubElement(parent, p_tag)
-
-            path_cache[current] = parent
-
-            current = '%s/' % (current,)
-
-        return parent
-
     def validate(self):
         for name, metadata in self.attributes.iteritems():
             if metadata.required:
@@ -400,66 +186,278 @@ class XMLDocument(object):
                         raise ValidationError('%s Element %s was expecting a '
                                 'single value' % (self.__class__.__name__, name,))
 
-    def generate_xml(self):
-        self.validate()
+    def __append_value(self, name, node, metadata):
+        values = getattr(self, name)
 
+        if values is None:
+            values = []
+
+        if issubclass(metadata.value_type, XMLDocument):
+            value = metadata.value_type.from_element(node, self.translator)
+        else:
+            try:
+                value = metadata.value_type(node.text)
+            except ValueError:
+                raise ValueConversionError('Could not convert from %s to %s' %
+                        (value.__class__, metadata.value_type.__class__))
+
+        values.append(value)
+
+        setattr(self, name, values)
+
+    def __store_value(self, name, node, metadata):
+        if metadata.output_list:
+            self.__append_value(name, node, metadata)
+        else:
+            if issubclass(metadata.value_type, XMLDocument):
+                value = metadata.value_type.from_element(node, self.translator)
+            else:
+                try:
+                    value = metadata.value_type(node.text)
+                except ValueError:
+                    raise ValueConversionError('Could not convert from %s to %s' %
+                            (value.__class__, metadata.value_type.__class__))
+
+            setattr(self, name, value)
+
+    def __match_parent(self, node):
+        parent = node
+        parent_element = None
+        parent_metadata = None
+
+        while True:
+            parent = parent.getparent()
+
+            if parent is None:
+                break
+
+            if parent.tag in self.elements:
+                metadata = self.elements[parent.tag]
+
+                if (metadata.child_tag is not None and
+                        metadata.child_tag == node.tag):
+                    parent_element = parent
+                    
+                    parent_metadata = metadata
+
+                    break
+
+        return parent_element, parent_metadata
+
+    def __set_property(self, name, value, metadata):
+        try:
+            value = metadata.value_type(value)
+        except ValueError:
+            raise ValueConversionError('Could not convert from %s to %s' %
+                    (value.__class__, metadata.value_type.__class__))
+
+        setattr(self, name, value)
+
+    def __match_element_value_type(self, tag):
+        for name, metadata in self.elements.iteritems():
+            if tag == metadata.value_type.__name__:
+                return name, metadata
+
+        return None, None
+
+    def parse_xml(self, root):
+        logger.debug('%s BEGIN PARSING "%s" %s', '#'*6, re.sub('^{.*}', '', root.tag), '#'*6)
+        logger.debug(etree.tostring(root, pretty_print=True))
+        logger.debug('Translator %s', self.translator)
+        logger.debug('Known elements %s', self.elements.keys())
+
+        for name, value in root.attrib.iteritems():
+            name = re.sub('^{.*}', '', name)
+
+            if self.translator is not None:
+                name = self.translator.attribute_to_property(name)
+
+            if name in self.attributes:
+                metadata = self.attributes[name]
+
+                self.__set_property(name, value, metadata)
+
+        stack = [root]
+
+        while len(stack):
+            node = stack.pop()
+
+            tag = node.tag
+
+            name = re.sub('^{.*}', '', tag)
+                
+            if self.translator is not None:
+                trans_name = self.translator.element_to_property(name)
+            else:
+                trans_name = name
+            
+            logger.debug('Processing element "%s" (%s)', trans_name, name)
+
+            # Check each non-root element for attached attributes
+            if node != root:
+                for atrans_name, value in node.attrib.iteritems():
+                    if self.translator is not None:
+                        atrans_name = self.translator.attribute_to_property(atrans_name)
+
+                    if atrans_name in self.attributes:
+                        metadata = self.attributes[atrans_name]
+
+                        self.__set_property(atrans_name, value, metadata)
+
+            if trans_name in self.elements:
+                metadata = self.elements[trans_name]
+
+                logger.debug('Element "%s" is a known property %s', trans_name, metadata)
+
+                if metadata.attr is not None:
+                    if metadata.attr in node.attrib:
+                        value = node.attrib[metadata.attr]
+
+                        self.__set_property(node.tag, value, metadata)
+                elif (metadata.child_tag is not None or
+                        (metadata.output_list and issubclass(metadata.value_type, XMLDocument))):
+                    for c in node.getchildren():
+                        stack.append(c)
+                else:
+                    self.__store_value(trans_name, node, metadata)
+            else:
+                logger.debug('Handling unknown element "%s"', name)
+
+                match_trans_name, match_metadata = self.__match_element_value_type(name)
+
+                if match_trans_name is not None:
+                    self.__store_value(match_trans_name, node, match_metadata)
+                else:
+                    parent_element, parent_metadata = self.__match_parent(node)
+
+                    if parent_element is not None:
+                        self.__store_value(parent_element.tag, node, parent_metadata)
+                    else:
+                        for c in node.getchildren():
+                            stack.append(c)
+
+        logger.debug('%s END PARSING "%s" %s', '#'*6, re.sub('^{.*}', '', root.tag), '#'*6)
+
+    def __generate_name(self, name, namespace, metadata=None):
+        new_name = name
+
+        if metadata is not None and self.translator is not None:
+            if isinstance(metadata, Element):
+                new_name = self.translator.property_to_element(name)
+            else:
+                new_name = self.translator.property_to_attribute(name)
+
+        if namespace is None:
+            return new_name
+
+        try:
+            return '{%s}%s' % (self.nsmap[namespace], new_name)
+        except TypeError:
+            return new_name
+        except KeyError:
+            raise MissingNamespaceError('Namespace %s was not found in the namespace map' %
+                    (namespace,))
+
+    def __generate_element(self, parent, name, value, metadata, cache):
+        if value is None:
+            return None
+
+        if isinstance(value, XMLDocument):
+            if self.translator is not None:
+                value.translator = self.translator
+
+            child_element = value.generate_xml()
+
+            parent.append(child_element)
+        else:
+            new_name = self.__generate_name(name, metadata.namespace, metadata)
+
+            new_element = etree.SubElement(parent, new_name)
+
+            if metadata.attr is not None:
+                new_element.set(metadata.attr, value)
+            else:
+                new_element.text = str(value)
+
+            cache[name] = new_element
+
+    def generate_xml(self):
         cls_name = self.__class__.__name__
 
         if self.tag is not None:
             cls_name = self.tag
 
-        tag = self.__generate_name(cls_name, self.namespace)
+        cls_name = self.__generate_name(cls_name, self.namespace)
 
-        root = etree.Element(tag, nsmap=self.nsmap)
+        root = etree.Element(cls_name, nsmap=self.nsmap)
 
-        if self.store_value is not None:
-            value = getattr(self, self.store_value)
+        cache = {}
 
-            root.text = str(value)
-        else:
-            path_cache = {}
+        for name, metadata in self.elements.iteritems():
+            parent = root
 
-            for name, metadata in self.elements.iteritems():
-                parent = root
-
-                if metadata.path is not None:
-                    parent = self.__generate_path(parent, metadata.path,
-                            metadata.nsmap, path_cache)
-
+            if metadata.store_value:
                 value = getattr(self, name)
 
-                node_name = self.__generate_name(name, metadata.namespace,
-                        Element)
+                root.text = value
 
-                if metadata.output_list:
-                    if metadata.combine:
-                        node = etree.SubElement(parent, node_name)
+                break
 
-                    if value is not None:
-                        for v in value:
-                            if not metadata.combine:
-                                node = etree.SubElement(parent, node_name)
+            if metadata.path is not None:
+                for s in metadata.path.split('/'):
+                    if s != '':
+                        new_s = s
 
-                            self.__generate_node(node, node_name, metadata, v)
-                else:
-		    if not issubclass(value.__class__, XMLDocument):
-	                node = etree.SubElement(parent, node_name)
-		    else:
-			node = parent
+                        if (metadata.nsmap is not None and
+                                s in metadata.nsmap):
+                            new_s = self.__generate_name(s, metadata.nsmap[s], metadata)
 
-                    self.__generate_node(node, node_name, metadata, value)
+                        parent = etree.SubElement(parent, new_s)
+
+                        cache[s] = parent
+
+            if metadata.attr is not None:
+                value = getattr(self, name)
+
+                self.__generate_element(parent, name, value, metadata, cache)
+            elif metadata.child_tag is not None:
+                value = getattr(self, name)
+    
+                new_name = self.__generate_name(name, metadata.namespace, metadata)
+
+                new_element = etree.SubElement(parent, new_name)
+
+                cache[name] = new_element
+
+                if not metadata.output_list:
+                    value = [value]
+    
+                for v in value:
+                    self.__generate_element(new_element, metadata.child_tag, v, metadata, cache)
+            elif metadata.output_list:
+                value = getattr(self, name)
+
+                if value is not None:
+                    for v in value:
+                        self.__generate_element(parent, name, v, metadata, cache)
+            else:
+                value = getattr(self, name)
+
+                self.__generate_element(parent, name, value, metadata, cache)
 
         for name, metadata in self.attributes.iteritems():
             value = getattr(self, name)
 
-            attr_name = self.__generate_name(name, metadata.namespace,
-                    Attribute)
+            if value is None:
+                continue
+
+            name = self.__generate_name(name, metadata.namespace, metadata)
 
             if metadata.attach is not None:
-                if metadata.attach in path_cache:
-                    path_cache[metadata.attach].set(attr_name, str(value))
+                if metadata.attach in cache:
+                    cache[metadata.attach].set(name, str(value))
             else:
-                root.set(attr_name, str(value))
+                root.set(name, str(value))
 
         return root
 
