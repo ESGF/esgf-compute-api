@@ -432,8 +432,9 @@ class XMLDocument(object):
                 if not metadata.output_list:
                     value = [value]
     
-                for v in value:
-                    self.__generate_element(new_element, metadata.child_tag, v, metadata, cache)
+                if value is not None:
+                    for v in value:
+                        self.__generate_element(new_element, metadata.child_tag, v, metadata, cache)
             elif metadata.output_list:
                 value = getattr(self, name)
 
