@@ -209,12 +209,26 @@ class XMLDocument(object):
         if metadata.output_list:
             self.__append_value(name, node, metadata)
         else:
-            if issubclass(metadata.value_type, XMLDocument):
+            if (inspect.isclass(metadata.value_type) and
+                    issubclass(metadata.value_type, XMLDocument)):
                 value = metadata.value_type.from_element(node, self.translator)
             else:
-                try:
-                    value = metadata.value_type(node.text)
-                except ValueError:
+                value = None
+                candidates = metadata.value_type
+
+                if not isinstance(candidates, (list, tuple)):
+                    candidates = [candidates]
+
+                for c in candidates:
+                    try:
+                        if issubclass(c, XMLDocument):
+                            value = c.from_xml(node.text)
+                        else:
+                            value = c(node.text)
+                    except ValueError:
+                        pass
+
+                if value is None:
                     raise ValueConversionError('Could not convert from %s to %s' %
                             (value.__class__, metadata.value_type.__class__))
 
@@ -255,7 +269,8 @@ class XMLDocument(object):
 
     def __match_element_value_type(self, tag):
         for name, metadata in self.elements.iteritems():
-            if tag == metadata.value_type.__name__:
+            if (not isinstance(metadata.value_type, (list, tuple)) and
+                    tag == metadata.value_type.__name__):
                 return name, metadata
 
         return None, None
@@ -315,7 +330,9 @@ class XMLDocument(object):
 
                         self.__set_property(node.tag, value, metadata)
                 elif (metadata.child_tag is not None or
-                        (metadata.output_list and issubclass(metadata.value_type, XMLDocument))):
+                        (metadata.output_list and
+                            issubclass(metadata.value_type, XMLDocument)) or
+                        metadata.path is not None):
                     for c in node.getchildren():
                         stack.append(c)
                 else:
