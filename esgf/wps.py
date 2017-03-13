@@ -191,7 +191,7 @@ class WPS(object):
 
         domains = [x.parameterize() for x in domains]
 
-        parameters = [named_parameter.namedparameter(x, *y) for x, y in kwargs.iteritems()]
+        parameters = [named_parameter.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
 
         process.inputs = inputs
 
@@ -213,7 +213,7 @@ class WPS(object):
         elif method.lower() == 'post':
             request = operations.ExecuteRequest()
 
-            params['input'] = []
+            params['data_inputs'] = []
 
             for key, value in data_inputs.iteritems():
                 inp = metadata.Input()
@@ -226,7 +226,7 @@ class WPS(object):
 
                 inp.data = inp_data
 
-                params['input'].append(inp) 
+                params['data_inputs'].append(inp) 
 
             data = request(**params) 
 

@@ -205,32 +205,23 @@ class XMLDocument(object):
 
         setattr(self, name, values)
 
-    def __store_value(self, name, node, metadata):
+    def __store_value(self, raw_name, name, node, metadata):
+        logger.debug('Storing value "%s", "%s", "%s"', name, node.tag, metadata)
+
         if metadata.output_list:
             self.__append_value(name, node, metadata)
         else:
-            if (inspect.isclass(metadata.value_type) and
-                    issubclass(metadata.value_type, XMLDocument)):
+            if isinstance(metadata.value_type, (list, tuple)):
+                try:
+                    target = [x for x in metadata.value_type if x.__name__ == raw_name][0]
+                except IndexError:
+                    raise WPSError('Failed to find value_type for {0}'.format(raw_name))
+
+                value = target.from_element(node, self.translator)
+            elif issubclass(metadata.value_type, XMLDocument):
                 value = metadata.value_type.from_element(node, self.translator)
             else:
-                value = None
-                candidates = metadata.value_type
-
-                if not isinstance(candidates, (list, tuple)):
-                    candidates = [candidates]
-
-                for c in candidates:
-                    try:
-                        if issubclass(c, XMLDocument):
-                            value = c.from_xml(node.text)
-                        else:
-                            value = c(node.text)
-                    except ValueError:
-                        pass
-
-                if value is None:
-                    raise ValueConversionError('Could not convert from %s to %s' %
-                            (value.__class__, metadata.value_type.__class__))
+                value = metadata.value_type(node.text)
 
             setattr(self, name, value)
 
@@ -269,9 +260,14 @@ class XMLDocument(object):
 
     def __match_element_value_type(self, tag):
         for name, metadata in self.elements.iteritems():
-            if (not isinstance(metadata.value_type, (list, tuple)) and
-                    tag == metadata.value_type.__name__):
-                return name, metadata
+            candidates = metadata.value_type
+
+            if not isinstance(candidates, (list, tuple)):
+                candidates = [candidates]
+
+            for c in candidates:
+                if c.__name__ == tag:
+                    return name, metadata
 
         return None, None
 
@@ -336,22 +332,35 @@ class XMLDocument(object):
                     for c in node.getchildren():
                         stack.append(c)
                 else:
-                    self.__store_value(trans_name, node, metadata)
+                    self.__store_value(name, trans_name, node, metadata)
             else:
                 logger.debug('Handling unknown element "%s"', name)
 
                 match_trans_name, match_metadata = self.__match_element_value_type(name)
 
-                if match_trans_name is not None:
-                    self.__store_value(match_trans_name, node, match_metadata)
-                else:
-                    parent_element, parent_metadata = self.__match_parent(node)
+                logger.debug('Match element by value_type "%s": "%s"', match_trans_name, match_metadata)
 
-                    if parent_element is not None:
-                        self.__store_value(parent_element.tag, node, parent_metadata)
-                    else:
-                        for c in node.getchildren():
-                            stack.append(c)
+                if match_trans_name is not None:
+                    self.__store_value(name, match_trans_name, node, match_metadata)
+                else:
+                    handled = False
+
+                    for ename, emeta in self.elements.iteritems():
+                        if emeta.store_value:
+                            setattr(self, ename, node.text)
+
+                            handled = True
+
+                            break
+
+                    if not handled:
+                        parent_element, parent_metadata = self.__match_parent(node)
+
+                        if parent_element is not None:
+                            self.__store_value(name, parent_element.tag, node, parent_metadata)
+                        else:
+                            for c in node.getchildren():
+                                stack.append(c)
 
         logger.debug('%s END PARSING "%s" %s', '#'*6, re.sub('^{.*}', '', root.tag), '#'*6)
 
