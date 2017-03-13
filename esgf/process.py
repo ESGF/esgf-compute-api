@@ -2,130 +2,49 @@
 Process Module.
 """
 
-import json
+from esgf import parameter
 
-from tempfile import NamedTemporaryFile
+class Process(parameter.Parameter):
+    def __init__(self, process, name=None):
+        super(Process, self).__init__(name)
 
-from esgf import errors
-from esgf import operation
-from esgf import variable
-from esgf import named_parameter
+        self.__process = process
+        self.__response = None
+        self.__inputs = None
+        self.__params = None
 
-class Process(object):
-    """ Process.
+    def __getattr__(self, name):
+        if hasattr(self.__process, name):
+            return getattr(self.__process, name)
 
-    Represents the operation that will be peformed.
+        if hasattr(self.__response, name):
+            return getattr(self.__response, name)
 
-    Can be created from the Process class but there is no checking if the 
-    process actually exists on the server.
+        raise AttributeError(name)
 
-    >>> wps = WPS('http://localhost/wps/')
-    >>> averager = Process.from_identifier(wps, 'averager.mv')
+    def __set_inputs(self, inputs):
+        self.__inputs = [x.name for x in inputs]
 
-    To retrieve a process that is known to be on the server use WPS.
+    inputs = property(None, __set_inputs)
 
-    >>> averager = wps.get_process('averager.mv')
-   
-    Attributes:
-        wps: A WPS instance pointing the a WPS server.
-        operation: An Operation that will be executed by the process.
-    """
-    def __init__(self, wps, operation):
-        """ Process init. """
-        self._wps = wps
-        self._result = None
-    
-        self._variable = {}
-        self._domain = {}
-        self._operation = operation
+    def __set_parameters(self, params):
+        self.__params = [x.parameterize() for x in params]
 
-    @classmethod
-    def from_identifier(cls, wps, identifier, name=None):
-        """ Helper create process from identifer. """
-        op = operation.Operation(identifier, name=name)
+    parameters = property(None, __set_parameters)
 
-        return cls(wps, op)
+    def __set_response(self, response):
+        self.__response = response
 
-    @property
-    def name(self):  # pragma: no cover
-        """ Process name. """
-        return self._operation.identifier
+    response = property(None, __set_response)
 
-    @property
-    def status(self): # pragma: no cover
-        """ Process status. """
-        return self._result.status
+    def parameterize(self):
+        params = {
+                'name': self.__process.identifier,
+                'input': self.__inputs,
+                'result': self.name
+                }
 
-    @property
-    def message(self):  # pragma: no cover
-        """ Process message. """
-        return self._result.message
+        for p in self.__params:
+            params.update(p)
 
-    @property
-    def percent(self):  # pragma: no cover
-        """ Process percent. """
-        return self._result.percent
-
-    @property
-    def output(self):
-        """ Process output. """
-        if self.status != 'ProcessSucceeded':
-            raise errors.WPSServerError(
-                'Process has no output, possibly process execution error.')
-
-        output_json = json.loads(self._result.output)
-
-        return variable.Variable.from_dict(output_json)
-
-    def check_status(self, sleep_secs=0):
-        """ Retrieves latest status from server. """
-        if not self._result.status_location:
-            raise errors.WPSServerError('Process \'%s\' doesn\'t '
-                                        'support status.' % (self.name,))
-
-        self._result.check_status(sleepSecs=sleep_secs)
-
-    def __nonzero__(self):
-        """ Returns true while process is still executing. """
-        self.check_status()
-
-        complete = ('ProcessSucceeded', 'ProcessFailed', 'Exception')
-
-        return self.status not in complete
-
-    def execute(self, inputs=None, domain=None, parameters=None, store=False,
-                status=False, method='POST',**kargs):
-        """ Passes process parameters to WPS to execute. """
-        if inputs:
-            for inp in inputs:
-                self._operation.add_input(inp)
-
-        if domain:
-            self._operation.domain = domain
-
-        if parameters:
-            for param in parameters:
-                self._operation.add_parameter(param)
-
-        for k in kargs:
-            self._operation.add_parameter(named_parameter.NamedParameter(k,kargs[k]))
-
-        self._variable, self._domain = self._operation.gather()
-
-        datainputs = {
-            'variable': [x.parameterize() for x in self._variable.values()],
-            'domain': [x.parameterize() for x in self._domain.values()],
-            'operation': self._operation.flatten(),
-        }
-
-        self._result = self._wps.execute(self._operation.identifier,
-                                         datainputs,
-                                         status=status,
-                                         store=store,
-                                         method=method)
-
-    def __repr__(self): # pragma: no cover
-        return 'Process(wps=%r, operation=%r)' % (self._wps, self._operation)
-
-    def __str__(self): # pragma: no cover
-        return self.name
+        return params
