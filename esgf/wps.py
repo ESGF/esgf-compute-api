@@ -1,13 +1,14 @@
 """ A WPS Client """
 
-import sys
 import json
 import logging
+import sys
 
 import requests
 
-from esgf import process
 from esgf import named_parameter
+from esgf import process
+from esgf.wps_lib import metadata
 from esgf.wps_lib import operations
 
 logger = logging.getLogger()
@@ -23,6 +24,8 @@ class WPS(object):
         self.__version = kwargs.get('version')
         self.__language = kwargs.get('laanguage')
         self.__capabilities = None 
+        self.__csrf_token = None
+        self.__client = requests.Session()
 
         if kwargs.get('log') is not None:
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
@@ -50,8 +53,18 @@ class WPS(object):
         return self.__capabilities
 
     def __request(self, method, params=None, data=None):
+        url = self.__url
+
+        if method.lower() == 'post' and self.__url[-1] != '/':
+            url = '{0}/'.format(self.__url)
+
+        headers = {}
+
+        if self.__csrf_token is not None:
+            headers['X-CSRFToken'] = self.__csrf_token
+        
         try:
-            response = requests.request(method, self.__url, params=params, data=data)
+            response = self.__client.request(method, url, params=params, data=data, headers=headers)
         except requests.RequestException:
             logger.exception()
 
@@ -59,13 +72,20 @@ class WPS(object):
 
         logger.debug('%s request succeeded', method)
 
+        logger.debug('Response headers %s', response.headers)
+
+        logger.debug('Response cookies %s', response.cookies)
+
+        if 'csrftoken' in response.cookies:
+            self.__csrf_token = response.cookies['csrftoken']
+
         if response.status_code != 200:
             raise WPSHTTPError('{0} response failed with status code '
                     '{1} {2}'.format(method, response.status_code, response.content))
 
         return response
 
-    def __get_capabilities(self):
+    def __get_capabilities(self, method):
         params = {
                 'service': 'WPS',
                 'request': 'GetCapabilities',
@@ -77,21 +97,21 @@ class WPS(object):
         if self.__language is not None:
             params['language'] = self.__language
 
-        response = self.__request('GET', params=params)
+        response = self.__request(method, params=params)
 
         capabilities = operations.GetCapabilitiesResponse.from_xml(response.text)
 
         return capabilities
 
-    def processes(self, regex=None, refresh=False):
+    def processes(self, regex=None, refresh=False, method='GET'):
         if self.__capabilities is None or refresh:
-            self.__capabilities = self.__get_capabilities()
+            self.__capabilities = self.__get_capabilities(method)
 
         return [process.Process(x) for x in self.__capabilities.process_offerings]
 
-    def get_process(self, identifier):
+    def get_process(self, identifier, method='GET'):
         if self.__capabilities is None:
-            self.__capabilities = self.__get_capabilities()
+            self.__capabilities = self.__get_capabilities(method)
 
         try:
             return [process.Process(x) for x in self.__capabilities.process_offerings
@@ -101,7 +121,7 @@ class WPS(object):
 
             return None
 
-    def describe(self, process):
+    def describe(self, process, method='GET'):
         params = {
                 'service': 'WPS',
                 'request': 'DescribeProcess',
@@ -112,13 +132,13 @@ class WPS(object):
         if self.__language is not None:
             params['language'] = self.__language
 
-        response = self.__request('GET', params=params)
+        response = self.__request(method, params=params)
 
         desc = operations.DescribeProcessResponse.from_xml(response.text)
 
         return desc
 
-    def execute(self, process, inputs=None, domains=None, **kwargs):
+    def execute(self, process, inputs=None, domains=None, method='POST', **kwargs):
         if inputs is None:
             inputs = []
 
@@ -128,15 +148,15 @@ class WPS(object):
         params = {
                 'service': 'WPS',
                 'request': 'Execute',
-                #'version': process.version,
-                'Identifier': process.identifier,
+                'version': '1.0.0',
+                'identifier': process.identifier,
                 }
 
-        variable = [x.parameterize() for x in inputs]
+        variables = [x.parameterize() for x in inputs]
 
-        domain = [x.parameterize() for x in domains]
+        domains = [x.parameterize() for x in domains]
 
-        parameters = [named_parameter.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
+        parameters = [named_parameter.namedparameter(x, *y) for x, y in kwargs.iteritems()]
 
         process.inputs = inputs
 
@@ -145,14 +165,47 @@ class WPS(object):
         operation = [process.parameterize()]
 
         data_inputs = {
-                'variable': variable,
-                'domain': domain,
+                'variable': variables,
+                'domain': domains,
                 'operation': operation
                 }
 
-        params['datainputs'] = '[{0}]'.format(';'.join('{0}={1}'.format(x, json.dumps(y))
-            for x, y in data_inputs.iteritems()))
+        if method.lower() == 'get':
+            params['datainputs'] = '[{0}]'.format(';'.join('{0}={1}'.format(x, json.dumps(y))
+                for x, y in data_inputs.iteritems()))
 
-        response = self.__request('GET', params=params)
+            response = self.__request(method, params=params)
+        elif method.lower() == 'post':
+            request = operations.ExecuteRequest()
+
+            params['input'] = []
+
+            for key, value in data_inputs.iteritems():
+                inp = metadata.Input()
+
+                inp.identifier = key
+
+                inp_data = metadata.ComplexData()
+
+                inp_data.value = '{0}'.format(value)
+
+                inp.data = inp_data
+
+                params['input'].append(inp) 
+
+            data = request(**params) 
+
+            response = self.__request(method, data=data)
 
         process.response = operations.ExecuteResponse.from_xml(response.text)
+
+if __name__ == '__main__':
+    w = WPS('http://0.0.0.0:8000/wps')
+
+    from variable import Variable
+
+    tas = Variable('file:///data/tas_6h.nc', 'tas')
+
+    p = w.get_process('CDSpark.min')
+
+    w.execute(p, inputs=[tas])
