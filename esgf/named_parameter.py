@@ -40,7 +40,7 @@ class NamedParameter(parameter.Parameter):
               isinstance(self.values[0], parameter.Parameter)):
             value = self.values[0].name
 
-        return value
+        return {self.name: value}
 
     def __repr__(self):
         return 'NamedParameter(name=%r, values=%r)' % (
