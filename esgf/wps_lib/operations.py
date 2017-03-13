@@ -113,9 +113,9 @@ class ExecuteRequest(xml.XMLDocument):
     def identifier(self):
         pass
 
-    @metadata.wps_zero_many_element(path='DataInputs',
-            value_type=metadata.Input, output_list=True)
-    def input(self):
+    @metadata.wps_zero_many_element(value_type=metadata.Input,
+            output_list=True, child_tag='Input', nsmap={'Input', ns.WPS})
+    def data_inputs(self):
         pass
 
     @metadata.wps_zero_one_element(value_type=(metadata.ResponseDocument,
@@ -134,7 +134,7 @@ class ExecuteRequest(xml.XMLDocument):
 
         self.identifier = kwargs.get('identifier')
 
-        self.input = kwargs.get('input')
+        self.data_inputs = kwargs.get('data_inputs')
 
         self.response_form = kwargs.get('response_form')
 
