@@ -16,6 +16,9 @@ logger = logging.getLogger()
 class WPSHTTPError(Exception):
     pass
 
+class WPSHTTPMethodError(Exception):
+    pass
+
 class WPS(object):
     def __init__(self, url, username=None, password=None, **kwargs):
         self.__url = url
@@ -85,7 +88,7 @@ class WPS(object):
 
         return response
 
-    def __get_capabilities(self, method):
+    def __get_capabilities(self, method='GET'):
         params = {
                 'service': 'WPS',
                 'request': 'GetCapabilities',
@@ -97,7 +100,16 @@ class WPS(object):
         if self.__language is not None:
             params['language'] = self.__language
 
-        response = self.__request(method, params=params)
+        if method.lower() == 'get':
+            response = self.__request(method, params=params)
+        elif method.lower() == 'post':
+            request = operations.GetCapabilitiesRequest()
+
+            data = request(**params)
+
+            response = self.__request(method, data=data)
+        else:
+            raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
         capabilities = operations.GetCapabilitiesResponse.from_xml(response.text)
 
@@ -123,8 +135,8 @@ class WPS(object):
 
     def describe(self, process, method='GET'):
         params = {
-                'service': 'WPS',
-                'request': 'DescribeProcess',
+                'service': 'wps',
+                'request': 'describeprocess',
                 'version': '1.0.0',
                 'identifier': process.identifier,
                 }
@@ -132,7 +144,16 @@ class WPS(object):
         if self.__language is not None:
             params['language'] = self.__language
 
-        response = self.__request(method, params=params)
+        if method.lower() == 'get':
+            response = self.__request(method, params=params)
+        elif method.lower() == 'post':
+            request = operations.DescribeProcess()
+
+            data = request(**params)
+
+            resposne = self.__request(method, data=data)
+        else:
+            raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
         desc = operations.DescribeProcessResponse.from_xml(response.text)
 
@@ -196,6 +217,8 @@ class WPS(object):
             data = request(**params) 
 
             response = self.__request(method, data=data)
+        else:
+            raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
         process.response = operations.ExecuteResponse.from_xml(response.text)
 
@@ -208,4 +231,5 @@ if __name__ == '__main__':
 
     p = w.get_process('CDSpark.min')
 
-    w.execute(p, inputs=[tas])
+    w.describe(p)
+    #w.execute(p, inputs=[tas])
