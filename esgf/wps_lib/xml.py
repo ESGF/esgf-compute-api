@@ -399,6 +399,8 @@ class XMLDocument(object):
             cache[name] = new_element
 
     def generate_xml(self):
+        self.validate()
+
         cls_name = self.__class__.__name__
 
         if self.tag is not None:
