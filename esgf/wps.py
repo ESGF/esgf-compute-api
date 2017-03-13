@@ -61,7 +61,7 @@ class WPS(object):
 
         if response.status_code != 200:
             raise WPSHTTPError('{0} response failed with status code '
-                    '{1}'.format(method, response.status_code))
+                    '{1} {2}'.format(method, response.status_code, response.content))
 
         return response
 
@@ -102,7 +102,21 @@ class WPS(object):
             return None
 
     def describe(self, process):
-        pass
+        params = {
+                'service': 'WPS',
+                'request': 'DescribeProcess',
+                'version': '1.0.0',
+                'identifier': process.identifier,
+                }
+
+        if self.__language is not None:
+            params['language'] = self.__language
+
+        response = self.__request('GET', params=params)
+
+        desc = operations.DescribeProcessResponse.from_xml(response.text)
+
+        return desc
 
     def execute(self, process, inputs=None, domains=None, **kwargs):
         if inputs is None:
@@ -142,16 +156,3 @@ class WPS(object):
         response = self.__request('GET', params=params)
 
         process.response = operations.ExecuteResponse.from_xml(response.text)
-
-if __name__ == '__main__':
-    from esgf import Variable
-
-    tas = Variable('file:///data/tas_6h.nc', 'tas')
-
-    w = WPS('http://0.0.0.0:8000/wps', log=True)
-
-    p = w.get_process('CDSpark.max')
-
-    w.execute(p, inputs=[tas], axes=['x', 'y'])
-
-    print p.status_location
