@@ -5,6 +5,7 @@ import logging
 import sys
 
 import requests
+from lxml import etree
 
 from esgf import named_parameter
 from esgf import process
@@ -12,6 +13,9 @@ from esgf.wps_lib import metadata
 from esgf.wps_lib import operations
 
 logger = logging.getLogger()
+
+class WPSError(Exception):
+    pass
 
 class WPSHTTPError(Exception):
     pass
@@ -69,7 +73,7 @@ class WPS(object):
         try:
             response = self.__client.request(method, url, params=params, data=data, headers=headers)
         except requests.RequestException:
-            logger.exception()
+            logger.exception('%s request failed', method)
 
             raise WPSHTTPError('{0} request failed'.format(method))
 
@@ -111,7 +115,12 @@ class WPS(object):
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        capabilities = operations.GetCapabilitiesResponse.from_xml(response.text)
+        try:
+            capabilities = operations.GetCapabilitiesResponse.from_xml(response.text)
+        except etree.XMLSyntaxError:
+            logger.exception('Failed to parse XML response')
+
+            raise WPSError('Failed to parse XML response')
 
         return capabilities
 
@@ -155,7 +164,12 @@ class WPS(object):
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        desc = operations.DescribeProcessResponse.from_xml(response.text)
+        try:
+            desc = operations.DescribeProcessResponse.from_xml(response.text)
+        except etree.XMLSyntaxError:
+            logger.exception('Failed to parse XML response')
+
+            raise WPSError('Failed to parse XML response')
 
         return desc
 
@@ -220,7 +234,12 @@ class WPS(object):
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        process.response = operations.ExecuteResponse.from_xml(response.text)
+        try:
+            process.response = operations.ExecuteResponse.from_xml(response.text)
+        except etree.XMLSyntaxError:
+            logger.exception('Failed to parse XML response')
+
+            raise WPSError('Failed to parse XML response')
 
 if __name__ == '__main__':
     w = WPS('http://0.0.0.0:8000/wps')
