@@ -2,7 +2,11 @@
 Process Module.
 """
 
+import requests
+
 from esgf import parameter
+from esgf.wps_lib import metadata
+from esgf.wps_lib import operations
 
 class Process(parameter.Parameter):
     def __init__(self, process, name=None):
@@ -37,6 +41,25 @@ class Process(parameter.Parameter):
 
     response = property(None, __set_response)
 
+    @property
+    def processing(self):
+        self.update_status()
+
+        return self.status.__class__ in (metadata.ProcessAccepted, metadata.ProcessStarted)
+
+    def update_status(self):
+        if self.status_location is None:
+            raise WPSError('Process does not support status updates')
+
+        try:
+            response = requests.get(self.status_location)
+        except requests.RequestException:
+            logger.exception('Error retrieving job status')
+
+            raise WPSError('Error retrieving job status')
+
+        self.__response = operations.ExecuteResponse.from_xml(response.text)
+
     def parameterize(self):
         params = {
                 'name': self.__process.identifier,
@@ -48,3 +71,27 @@ class Process(parameter.Parameter):
             params.update(p)
 
         return params
+
+#if __name__ == '__main__':
+#    import wps
+#
+#    w = wps.WPS('http://0.0.0.0:8000/wps')
+#
+#    p = w.get_process('CDSpark.min')
+#
+#    import variable
+#
+#    tas = variable.Variable('file:///data/tas_6h.nc', 'tas')
+#
+#    w.execute(p, inputs=[tas], axes=['x', 'y'])
+#
+#    import time
+#
+#    print 'STARTED', p.status
+#
+#    while p.processing:
+#        print 'Processing'
+#
+#        time.sleep(1)
+#
+#    print 'DONE', p.status
