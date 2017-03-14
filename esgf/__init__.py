@@ -1,6 +1,8 @@
 """
 WPS Client library imports.
 """
+from __future__ import absolute_import
+
 from .mask import Mask
 
 from .gridder import Gridder
@@ -13,8 +15,10 @@ from .variable import Variable
 
 from .domain import Domain
 
+from .dimension import CRS
 from .dimension import Dimension
 
 from .parameter import Parameter
+from .parameter import ParameterError
 
 from .wps import WPS
