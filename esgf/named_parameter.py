@@ -32,6 +32,10 @@ class NamedParameter(parameter.Parameter):
         """ Creates NamedParameter from string value. """
         return cls(name, *values.split('|'))
 
+    @classmethod
+    def from_list(cls, name, values):
+        return cls(name, *values)
+
     def parameterize(self):
         """ Parameterizes NamedParameter for GET request. """
         if all(isinstance(x, (str, unicode)) for x in self.values):
@@ -46,6 +50,3 @@ class NamedParameter(parameter.Parameter):
         return 'NamedParameter(name=%r, values=%r)' % (
             self.name,
             self.values)
-
-    def __str__(self):
-        return 'name=%s values=%s' % (self.name, self.values)
