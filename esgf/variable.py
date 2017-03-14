@@ -2,14 +2,7 @@
 Variable module.
 """
 
-import os
-import json
-import requests
-
-from StringIO import StringIO
-
 from esgf import domain
-from esgf import errors
 from esgf import parameter
 
 class Variable(parameter.Parameter):
@@ -49,7 +42,7 @@ class Variable(parameter.Parameter):
         if 'uri' in data:
             uri = data['uri']
         else:
-            raise errors.WPSAPIError('Variable must provide a uri.')
+            raise parameter.ParameterError('Variable must provide a uri.')
 
         name = None
         var_name = None
@@ -58,9 +51,9 @@ class Variable(parameter.Parameter):
             if '|' in data['id']:
                 var_name, name = data['id'].split('|')
             else:
-                raise errors.WPSAPIError('Variable id must contain a variable name and id.')
+                raise parameter.ParameterError('Variable id must contain a variable name and id.')
         else:
-            raise errors.WPSAPIError('Variable must provide an id.')
+            raise parameter.ParameterError('Variable must provide an id.')
 
         domains = None
 
@@ -87,30 +80,6 @@ class Variable(parameter.Parameter):
         """ Mime-type of uri. """
         return self._mime_type
 
-    def _download_http(self, output, chunk_size):
-        """ HTTP download. """
-        if not chunk_size:
-            chunk_size = 1024
-
-        response = requests.get(self.uri, stream=True)
-
-        for chunk in response.iter_content(chunk_size):
-            output.write(chunk)
-
-    def download(self, out_path, chunk_size=None):
-        """ Factory download method. """
-        download_fn = None
-
-        if self.uri[:4] == 'http':
-            download_fn = self._download_http
-        else:
-            raise errors.WPSClientError('Unsupported uri %s' % (self.uri,))
-
-        with open(out_path, 'wb') as out_file:
-            download_fn(out_file, chunk_size)
-
-        return os.path.abspath(out_path)
-
     def parameterize(self):
         """ Parameterize variable for GET request. """
         params = {
@@ -133,7 +102,3 @@ class Variable(parameter.Parameter):
         return ('Variable(name=%r, uri=%r, var_name=%r, domains=%r, '
                 'mime_type=%r)' % (self.name, self.uri, self._var_name,
                                    self.domains, self._mime_type))
-
-    def __str__(self):
-        return ('name=%s uri=%s var_name=%s domains=%s mime_type=%s' %
-                (self.name, self.uri, self._var_name, self.domains, self._mime_type))

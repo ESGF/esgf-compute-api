@@ -4,19 +4,9 @@ import json
 
 from unittest import TestCase
 
-from mock import patch, Mock
-
 from esgf import Domain
 from esgf import Variable
-from esgf import WPSAPIError
-from esgf import WPSClientError
-
-MOCK_DATA = ['hello', ' ', 'you', ' ', 'person']
-
-def mock_gen():
-    """ Mock generator for requests.iter_content. """
-    for item in MOCK_DATA:
-        yield item
+from esgf import ParameterError
 
 class TestVariable(TestCase):
     """ Variable Test Case. """
@@ -30,13 +20,6 @@ class TestVariable(TestCase):
                          "uri='file:///test.nc', var_name='tas', "
                          "domains=None, mime_type='application/netcdf')")
         
-    def test_str(self):
-        """ Test str value. """
-        var = Variable('file:///test.nc', 'tas', name='v0', mime_type='application/netcdf')
-
-        self.assertEqual(str(var), "name=v0 uri=file:///test.nc var_name=tas "
-                         "domains=None mime_type=application/netcdf""")
-
     def test_mime_type(self):
         """ Tests mime_type. """
         output = {
@@ -74,66 +57,23 @@ class TestVariable(TestCase):
         self.assertEqual(var.name, 'v0')
         self.assertListEqual(var.domains, ['d0', 'd1'])
 
-        with self.assertRaises(WPSAPIError) as ctx:
+        with self.assertRaises(ParameterError) as ctx:
             var = Variable.from_dict(missing_uri)
 
         self.assertEqual(ctx.exception.message,
                          'Variable must provide a uri.')
 
-        with self.assertRaises(WPSAPIError) as ctx:
+        with self.assertRaises(ParameterError) as ctx:
             var = Variable.from_dict(missing_id)
 
         self.assertEqual(ctx.exception.message,
                          'Variable must provide an id.')
 
-        with self.assertRaises(WPSAPIError) as ctx:
+        with self.assertRaises(ParameterError) as ctx:
             var = Variable.from_dict(missing_name)
 
         self.assertEqual(ctx.exception.message,
                          'Variable id must contain a variable name and id.')
-
-    @patch('esgf.variable.requests')
-    @patch('esgf.variable.open')
-    def test_download(self, mock_open, mock_requests):
-        """ Download output to file. """
-        variable = Variable('file://test.nc', 'ta')
-
-        with self.assertRaises(WPSClientError):
-            variable.download('./test.json')
-
-        # Mock requests.reponse.iter_content method
-        get_mock = Mock()
-        get_mock.iter_content.return_value = mock_gen()
-
-        # Mock requests.get returned response
-        mock_requests.get.return_value = get_mock
-
-        # pylint: disable=too-few-public-methods
-        class MockFile(object):
-            """ Mock class for return value of open(). """
-            def __init__(self):
-                """ MockFile init. """
-                self.data = []
-
-            def __enter__(self):
-                """ Enter """
-                return self
-
-            def __exit__(self, exc_type, exc_value, traceback):
-                """ Exit """
-                pass
-
-            def write(self, data):
-                """ Mock file.write method. """
-                self.data.append(data)
-
-        mock_open.return_value = MockFile()
-
-        variable = Variable('http://localhost:8000/wps/media/test.nc', 'ta')
-
-        variable.download('./test.json')
-
-        self.assertItemsEqual(mock_open.return_value.data, MOCK_DATA)
 
     def test_optional_init(self):
         """ Tests optional init. """
