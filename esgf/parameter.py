@@ -4,6 +4,9 @@ Parameter module.
 
 from uuid import uuid4 as uuid
 
+class ParameterError(Exception):
+    pass
+
 class Parameter(object):
     """ Parameter.
 
