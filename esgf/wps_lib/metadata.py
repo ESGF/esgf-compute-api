@@ -78,18 +78,18 @@ class ProcessFailed(xml.XMLDocument):
     def __init__(self):
         super(ProcessFailed, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
 
+MissingParameterValue = 'MissingParameterValue'
+InvalidParameterValue = 'InvalidParameterValue'
+VersionNegotiationFailed = 'VersionNegotiationFailed'
+InvalidUpdateSequence = 'InvalidUpdateSequence'
+NoApplicableCode = 'NoApplicableCode'
+NotEnoughStorage = 'NotEnoughStorage'
+ServerBusy = 'ServerBusy'
+FileSizeExceeded = 'FileSizeExceeded'
+StorageNotSupported = 'StorageNotSupported'
+
 class Exception(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
-
-    MissingParameterValue = 'MissingParameterValue'
-    InvalidParameterValue = 'InvalidParameterValue'
-    VersionNegotiationFailed = 'VersionNegotiationFailed'
-    InvalidUpdateSequence = 'InvalidUpdateSequence'
-    NoApplicableCode = 'NoApplicableCode'
-    NotEnoughStorage = 'NotEnoughStorage'
-    ServerBusy = 'ServerBusy'
-    FileSizeExceeded = 'FileSizeExceeded'
-    StorageNotSupported = 'StorageNotSupported'
 
     def __init__(self):
         super(Exception, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
