@@ -3,7 +3,6 @@ Domain Module.
 """
 
 from esgf import dimension
-from esgf import errors
 from esgf import mask
 from esgf import parameter
 
@@ -50,7 +49,7 @@ class Domain(parameter.Parameter):
         if 'id' in data:
             name = data['id']
         else:
-            raise errors.WPSAPIError('Domain must provide an id.')
+            raise parameter.ParameterError('Domain must provide an id.')
 
         dimensions = []
 
@@ -97,8 +96,4 @@ class Domain(parameter.Parameter):
 
     def __repr__(self):
         return ('Domain(dimensions=%r, mask=%r, name=%r)' %
-                (self.dimensions, self._mask, self.name))
-
-    def __str__(self):
-        return ('dimensions=%s mask=%s name=%s' %
                 (self.dimensions, self._mask, self.name))

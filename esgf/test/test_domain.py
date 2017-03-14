@@ -2,152 +2,43 @@
 
 from unittest import TestCase
 
-from esgf import WPSAPIError
 from esgf import Mask
 from esgf import Domain
 from esgf import Dimension
+from esgf import ParameterError
+
+MASK = Mask('clt.nc', 'clt', 'var_data<0.5')
+
+LAT = Dimension('lat', 0, 90)
+LON = Dimension('lon', 0, 180)
 
 class TestDomain(TestCase):
     """ Domain Test Case """
 
-    def test_get_dimension(self):
-        """ Tests retrieving dimension by name. """
-        lat = Dimension('lat', 1, 2)
-
-        domain = Domain([lat])
-
-        result = domain.get_dimension('lat')
-        self.assertIsNotNone(result)
-        self.assertEqual(lat, result)
-
-        result = domain.get_dimension('time')
-        self.assertIsNone(result)
-
-    def test_repr(self):
-        """ Test repr value. """
-        domain = Domain([], None, 'd0')
-
-        self.assertEqual(repr(domain),
-                         "Domain(dimensions=[], mask=None, name='d0')")
-    
-    def test_str(self):
-        """ Test str value. """
-        domain = Domain([], None, 'd0')
-
-        self.assertEqual(str(domain),
-                         "dimensions=[] mask=None name=d0")
+    def test_from_dict_missing_name(self):
+        with self.assertRaises(ParameterError):
+            d = Domain.from_dict({})
 
     def test_from_dict(self):
-        """ Create domain from dict representation. """
-        single_dim = {"id": "d0",
-                      "time": {"start": 1980, "end": 1982, "crs": "values"}}
-        multiple_dim = {"id": "d0",
-                        "time": {"start": 1980, "end": 1982, "crs": "values"},
-                        "longitude": {"start": 1, "end": 2, "crs": "indices"}}
-        mask = {"id": "d0",
-                "time": {"start": 1980, "end": 1982, "crs": "values"},
-                "mask": {"uri": "/test.nc", "id": "tas", "operation": "test_op"}}
-        missing_id = {"time": {"start": 1980, "end": 1982, "crs": "values"}}
-        missing_dim = {"id": "d0"}
-
-        domain = Domain.from_dict(single_dim)
-
-        self.assertEqual(domain.name, 'd0')
-        self.assertIsNone(domain.mask)
-        self.assertIsNotNone(domain.dimensions)
-        self.assertEqual(len(domain.dimensions), 1)
-
-        domain = Domain.from_dict(multiple_dim)
-
-        self.assertEqual(domain.name, 'd0')
-        self.assertIsNone(domain.mask)
-        self.assertIsNotNone(domain.dimensions)
-        self.assertEqual(len(domain.dimensions), 2)
-
-        domain = Domain.from_dict(mask)
-
-        self.assertEqual(domain.name, 'd0')
-        self.assertIsNotNone(domain.mask)
-        self.assertIsNotNone(domain.dimensions)
-        self.assertEqual(len(domain.dimensions), 1)
-
-        with self.assertRaises(WPSAPIError) as ctx:
-            domain = Domain.from_dict(missing_id)
-
-        self.assertEqual(ctx.exception.message,
-                         'Domain must provide an id.')
-
-    def test_mask(self):
-        """ Pass domain a mask and parameterize. """
-        time = Dimension('time', 1920, 1930, Dimension.values)
-
-        mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='mask0')
-
-        domain = Domain([time], mask=mask, name='d0')
-
-        expected = {
-            'id': 'd0',
-            'time': {
+        d = Domain.from_dict({
+            'id': 'test',
+            'mask': MASK.parameterize(),
+            'lon': {
+                'start': 0,
                 'crs': 'values',
-                'start': 1920,
-                'end': 1930,
-                'step': 1
-            },
-            'mask': {
-                'uri': 'file://test.nc',
-                'id': 'ta|mask0',
-                'operation': 'var_data>mask_data'
-            }
-        }
+                }
+            })
 
-        self.assertEqual(domain.parameterize(), expected)
-
-    def test_optional_init(self):
-        """ Test optional init values. """
-        # Check if dimensions is empty and name is auto-generated.
-        domain = Domain()
-
-        self.assertEqual(domain.dimensions, [])
-        self.assertIsNotNone(domain.name)
-
-        # Check if we pass name to parameter class.
-        domain = Domain(name='test')
-
-        self.assertEqual(domain.name, 'test')
-
-    def test_add_parameter(self):
-        """ Tests addding parameters. """
-        # Test adding single parameter.
-        longitude = Dimension('longitude', -180.0, 180.0, Dimension.values)
-
-        single_dimension_domain = Domain()
-
-        single_dimension_domain.add_dimension(longitude)
-
-        self.assertEqual(len(single_dimension_domain.dimensions), 1)
+        self.assertEqual(d.name, 'test')
+        self.assertIsInstance(d.mask, Mask)
+        self.assertIsInstance(d.dimensions, list)
+        self.assertEqual(len(d.dimensions), 1)
+        self.assertIsInstance(d.dimensions[0], Dimension)
 
     def test_parameterize(self):
-        """ Tests parameterizing a domain. """
-        # Tests parameterizing with two dimensions.
-        longitude = Dimension("longitude", -180.0, 180.0, Dimension.values)
-        time = Dimension("time", 1980, 1982, Dimension.values)
+        d = Domain([LAT, LON], MASK, 'test')
 
-        domain = Domain([longitude, time], name='glbl')
+        data = d.parameterize()
 
-        expected = {
-            'id': 'glbl',
-            'longitude': {
-                'crs': 'values',
-                'start': -180.0,
-                'end': 180.0,
-                'step': 1,
-            },
-            'time': {
-                'crs': 'values',
-                'start': 1980,
-                'end': 1982,
-                'step': 1,
-            }
-        }
-
-        self.assertEqual(domain.parameterize(), expected)
+        self.assertEqual(data['id'], 'test')
+        self.assertItemsEqual(data.keys(), ('lat', 'lon', 'mask', 'id'))
