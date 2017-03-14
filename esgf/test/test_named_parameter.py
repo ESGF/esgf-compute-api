@@ -9,42 +9,16 @@ from esgf import NamedParameter
 class TestNamedParameter(TestCase):
     """ NamedParameter Test Case. """
 
-    def test_repr(self):
-        """ Test repr value. """
-        axes = NamedParameter('axes', 'x', 'y')
+    def test_from_list(self):
+        p = NamedParameter.from_list('axes', ['x', 'y'])
 
-        self.assertEqual(repr(axes),
-                         "NamedParameter(name='axes', values=['x', 'y'])")
+        self.assertIsInstance(p.values, list)
+        self.assertEqual(len(p.values), 2)
+        self.assertItemsEqual(p.values, ['x', 'y'])
 
-    def test_str(self):
-        """ Test str value. """
-        axes = NamedParameter('axes', 'x', 'y')
+    def test_from_string(self):
+        p = NamedParameter.from_string('axes', 'x|y')
 
-        self.assertEqual(str(axes),
-                         "name=axes values=['x', 'y']")
-
-    def test_optional_init(self):
-        """ Tests optional init values. """
-        named = NamedParameter('axis')
-
-        self.assertEqual(named.values, [])
-
-        named = NamedParameter('axis', 'x', 'y')
-
-        self.assertEqual(named.values, ['x', 'y'])
-
-    def test_parameterize(self):
-        """ Test parameterizing NamedParameter for GET request. """
-        named = NamedParameter('axis', 'x', 'y')
-
-        self.assertEqual(named.parameterize(), 'x|y')
-
-    def test_parameter(self):
-        """ Test passing parameter in constructor. """
-        time = Dimension.from_single_index('time', 2)
-
-        domain = Domain([time], name='d0')
-
-        named = NamedParameter('domain', domain)
-
-        self.assertEqual(named.parameterize(), 'd0')
+        self.assertIsInstance(p.values, list)
+        self.assertEqual(len(p.values), 2)
+        self.assertItemsEqual(p.values, ['x', 'y'])
