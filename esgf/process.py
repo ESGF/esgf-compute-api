@@ -8,6 +8,9 @@ from esgf import parameter
 from esgf.wps_lib import metadata
 from esgf.wps_lib import operations
 
+class ProcessError(Exception):
+    pass
+
 class Process(parameter.Parameter):
     def __init__(self, process, name=None):
         super(Process, self).__init__(name)
@@ -23,7 +26,7 @@ class Process(parameter.Parameter):
 
         if hasattr(self.__response, name):
             return getattr(self.__response, name)
-
+        
         raise AttributeError(name)
 
     def __set_inputs(self, inputs):
@@ -48,15 +51,15 @@ class Process(parameter.Parameter):
         return self.status.__class__ in (metadata.ProcessAccepted, metadata.ProcessStarted)
 
     def update_status(self):
-        if self.status_location is None:
-            raise WPSError('Process does not support status updates')
+        if self.__response is None or self.status_location is None:
+            raise ProcessError('Process does not support status updates')
 
         try:
             response = requests.get(self.status_location)
         except requests.RequestException:
             logger.exception('Error retrieving job status')
 
-            raise WPSError('Error retrieving job status')
+            raise ProcessError('Error retrieving job status')
 
         self.__response = operations.ExecuteResponse.from_xml(response.text)
 
@@ -67,8 +70,9 @@ class Process(parameter.Parameter):
                 'result': self.name
                 }
 
-        for p in self.__params:
-            params.update(p)
+        if self.__params is not None:
+            for p in self.__params:
+                params.update(p)
 
         return params
 

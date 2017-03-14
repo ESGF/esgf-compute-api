@@ -8,6 +8,7 @@ from .mask import Mask
 from .gridder import Gridder
 
 from .process import Process
+from .process import ProcessError
 
 from .named_parameter import NamedParameter
 
