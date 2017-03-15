@@ -98,7 +98,7 @@ class WPS(object):
         try:
             data = response_type.from_xml(response.text)
         except Exception:
-            logger.exception('Failed to parse ExecuteResponse')
+            logger.exception('Failed to parse CDAS2 response.')
         else:
             return data
 
@@ -110,7 +110,7 @@ class WPS(object):
 
                 raise WPSError('Failed to parse server response')
             else:
-                raise WPSError(response.text)
+                raise WPSError(data)
 
     def __get_capabilities(self, method='GET'):
         params = {
