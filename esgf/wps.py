@@ -173,6 +173,41 @@ class WPS(object):
 
         return desc
 
+    def __prepare_data_inputs(self, process, inputs, domains, **kwargs):
+        variables = [x.parameterize() for x in inputs]
+
+        domains = [x.parameterize() for x in domains]
+
+        parameters = [named_parameter.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
+
+        process.inputs = inputs
+
+        process.parameters = parameters
+        
+        operation = [process.parameterize()]
+
+        return {'variable': variables, 'domain': domains, 'operation': operation}
+
+    def __execute_post_data(self, data_inputs, base_params):
+        request = operations.ExecuteRequest()
+
+        base_params['data_inputs'] = []
+
+        for key, value in data_inputs.iteritems():
+            inp = metadata.Input()
+
+            inp.identifier = key
+
+            inp_data = metadata.ComplexData()
+
+            inp_data.value = '{0}'.format(value)
+
+            inp.data = inp_data
+
+            base_params['data_inputs'].append(inp) 
+
+        return request(**base_params)
+
     def execute(self, process, inputs=None, domains=None, method='POST', **kwargs):
         if inputs is None:
             inputs = []
@@ -187,23 +222,7 @@ class WPS(object):
                 'identifier': process.identifier,
                 }
 
-        variables = [x.parameterize() for x in inputs]
-
-        domains = [x.parameterize() for x in domains]
-
-        parameters = [named_parameter.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
-
-        process.inputs = inputs
-
-        process.parameters = parameters
-        
-        operation = [process.parameterize()]
-
-        data_inputs = {
-                'variable': variables,
-                'domain': domains,
-                'operation': operation
-                }
+        data_inputs = self.__prepare_data_inputs(process, inputs, domains, **kwargs)
 
         if method.lower() == 'get':
             params['datainputs'] = '[{0}]'.format(';'.join('{0}={1}'.format(x, json.dumps(y))
@@ -211,35 +230,30 @@ class WPS(object):
 
             response = self.__request(method, params=params)
         elif method.lower() == 'post':
-            request = operations.ExecuteRequest()
-
-            params['data_inputs'] = []
-
-            for key, value in data_inputs.iteritems():
-                inp = metadata.Input()
-
-                inp.identifier = key
-
-                inp_data = metadata.ComplexData()
-
-                inp_data.value = '{0}'.format(value)
-
-                inp.data = inp_data
-
-                params['data_inputs'].append(inp) 
-
-            data = request(**params) 
+            data = self.__execute_post_data(data_inputs, params)
 
             response = self.__request(method, data=data)
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        try:
-            process.response = operations.ExecuteResponse.from_xml(response.text)
-        except etree.XMLSyntaxError:
-            logger.exception('Failed to parse XML response')
+        data = None
 
-            raise WPSError('Failed to parse XML response')
+        try:
+            data = operations.ExecuteResponse.from_xml(response.text)
+        except Exception:
+            logger.exception('Failed to parse ExecuteResponse')
+        else:
+            process.response = data
+
+        if data is None:
+            try:
+                data = metadata.ExceptionReport.from_xml(response.text)
+            except Exception:
+                logger.exception('Failed to parse ExceptionReport')
+
+                raise WPSError('Failed to parse server response')
+            else:
+                process.response = data
 
 if __name__ == '__main__':
     w = WPS('http://0.0.0.0:8000/wps')
