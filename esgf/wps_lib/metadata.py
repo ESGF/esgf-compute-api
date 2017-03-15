@@ -108,10 +108,16 @@ class Exception(xml.XMLDocument):
     def locator(self):
         pass
 
+    def __str__(self):
+        return 'ExceptionCode: {0} Locator: {1} Text: {2}'.format(
+                self.exception_code,
+                self.locator,
+                self.exception_text)
+
 class ExceptionReport(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self, version):
+    def __init__(self, version=None):
         super(ExceptionReport, self).__init__(namespace=ns.OWS,
                 nsmap=ns.NSMAP,
                 translator=WPSTranslator())
@@ -134,6 +140,11 @@ class ExceptionReport(xml.XMLDocument):
         ex.locator = locator
 
         self.exception.append(ex)
+
+    def __str__(self):
+        return 'Verson {0}\n{1}'.format(
+                self.version,
+                '\n'.join(str(x) for x in self.exception))
 
 class ComplexData(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
