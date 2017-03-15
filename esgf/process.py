@@ -42,13 +42,21 @@ class Process(parameter.Parameter):
     def __set_response(self, response):
         self.__response = response
 
-    response = property(None, __set_response)
+    def __get_response(self):
+        return self.__response
+
+    response = property(__get_response, __set_response)
 
     @property
     def processing(self):
         self.update_status()
 
         return self.status.__class__ in (metadata.ProcessAccepted, metadata.ProcessStarted)
+
+    @property
+    def error(self):
+        return True if (self.__response is not None and
+                isinstance(self.__response, metadata.ExceptionReport)) else False
 
     def update_status(self):
         if self.__response is None or self.status_location is None:
