@@ -92,6 +92,26 @@ class WPS(object):
 
         return response
 
+    def __parse_response(self, response, response_type):
+        data = None
+
+        try:
+            data = response_type.from_xml(response.text)
+        except Exception:
+            logger.exception('Failed to parse ExecuteResponse')
+        else:
+            return data
+
+        if data is None:
+            try:
+                data = metadata.ExceptionReport.from_xml(response.text)
+            except Exception:
+                logger.exception('Failed to parse ExceptionReport')
+
+                raise WPSError('Failed to parse server response')
+            else:
+                raise WPSError(response.text)
+
     def __get_capabilities(self, method='GET'):
         params = {
                 'service': 'WPS',
@@ -115,12 +135,7 @@ class WPS(object):
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        try:
-            capabilities = operations.GetCapabilitiesResponse.from_xml(response.text)
-        except etree.XMLSyntaxError:
-            logger.exception('Failed to parse XML response')
-
-            raise WPSError('Failed to parse XML response')
+        capabilities = self.__parse_response(response, operations.GetCapabilitiesResponse)
 
         return capabilities
 
@@ -164,12 +179,7 @@ class WPS(object):
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        try:
-            desc = operations.DescribeProcessResponse.from_xml(response.text)
-        except etree.XMLSyntaxError:
-            logger.exception('Failed to parse XML response')
-
-            raise WPSError('Failed to parse XML response')
+        desc = self.__parse_response(response, operations.DescribeProcessResponse)
 
         return desc
 
@@ -236,24 +246,7 @@ class WPS(object):
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        data = None
-
-        try:
-            data = operations.ExecuteResponse.from_xml(response.text)
-        except Exception:
-            logger.exception('Failed to parse ExecuteResponse')
-        else:
-            process.response = data
-
-        if data is None:
-            try:
-                data = metadata.ExceptionReport.from_xml(response.text)
-            except Exception:
-                logger.exception('Failed to parse ExceptionReport')
-
-                raise WPSError('Failed to parse server response')
-            else:
-                process.response = data
+        process.response = self.__parse_response(response, operations.ExecuteResponse)
 
 if __name__ == '__main__':
     w = WPS('http://0.0.0.0:8000/wps')
