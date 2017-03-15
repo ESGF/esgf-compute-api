@@ -272,6 +272,12 @@ class XMLDocument(object):
         return None, None
 
     def parse_xml(self, root):
+        cls_name = re.sub('^{.*}', '', root.tag)
+
+        if not (cls_name == self.__class__.__name__ or
+                (self.tag is not None and cls_name == self.tag)):
+            raise ValidationError('XML does not match class definition')
+
         logger.debug('%s BEGIN PARSING "%s" %s', '#'*6, re.sub('^{.*}', '', root.tag), '#'*6)
         logger.debug(etree.tostring(root, pretty_print=True))
         logger.debug('Translator %s', self.translator)
@@ -327,7 +333,8 @@ class XMLDocument(object):
                         self.__set_property(node.tag, value, metadata)
                 elif (metadata.child_tag is not None or
                         (metadata.output_list and
-                            issubclass(metadata.value_type, XMLDocument)) or
+                            issubclass(metadata.value_type, XMLDocument) and
+                            metadata.path is not None) or
                         metadata.path is not None):
                     for c in node.getchildren():
                         stack.append(c)
