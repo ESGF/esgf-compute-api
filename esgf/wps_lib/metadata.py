@@ -51,32 +51,32 @@ class WPSTranslator(xml.Translator):
 class ProcessAccepted(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ProcessAccepted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ProcessAccepted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
 class ProcessStarted(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ProcessStarted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ProcessStarted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
 class ProcessPaused(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ProcessPaused, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ProcessPaused, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
 class ProcessSucceeded(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ProcessSucceeded, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ProcessSucceeded, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
 class ProcessFailed(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ProcessFailed, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ProcessFailed, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
 MissingParameterValue = 'MissingParameterValue'
 InvalidParameterValue = 'InvalidParameterValue'
@@ -91,8 +91,8 @@ StorageNotSupported = 'StorageNotSupported'
 class Exception(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(Exception, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(Exception, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP, **kwargs)
 
         self.exception_text = []
 
@@ -149,8 +149,8 @@ class ExceptionReport(xml.XMLDocument):
 class ComplexData(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ComplexData, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ComplexData, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP, **kwargs)
 
     @xml.Attribute()
     def mime_type(self):
@@ -171,8 +171,8 @@ class ComplexData(xml.XMLDocument):
 class LiteralData(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(LiteralData, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(LiteralData, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP, **kwargs)
 
     @xml.Attribute()
     def data_type(self):
@@ -189,8 +189,8 @@ class LiteralData(xml.XMLDocument):
 class BoundingBoxData(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(BoundingBoxData, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(BoundingBoxData, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP, **kwargs)
 
     @ows_element(value_type=float, output_list=True)
     def lower_corner(self):
@@ -211,8 +211,8 @@ class BoundingBoxData(xml.XMLDocument):
 class OutputReference(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(OutputReference, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(OutputReference, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @xml.Attribute()
     def format(self):
@@ -233,8 +233,8 @@ class OutputReference(xml.XMLDocument):
 class Output(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(Output, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(Output, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @ows_element()
     def identifier(self):
@@ -260,8 +260,8 @@ class Output(xml.XMLDocument):
 class DocumentOutputDefinition(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(DocumentOutputDefinition, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(DocumentOutputDefinition, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @ows_zero_one_element()
     def mime_type(self):
@@ -298,8 +298,8 @@ class DocumentOutputDefinition(xml.XMLDocument):
 class ResponseDocument(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ResponseDocument, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ResponseDocument, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @xml.Attribute(value_type=bool, default_value=False)
     def store_execute_resposne(self):
@@ -320,8 +320,8 @@ class ResponseDocument(xml.XMLDocument):
 class RawDataOutput(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(RawDataOutput, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(RawDataOutput, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @ows_element()
     def identifier(self):
@@ -346,8 +346,8 @@ class RawDataOutput(xml.XMLDocument):
 class Reference(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(Reference, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(Reference, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @xml.Attribute()
     def mime_type(self):
@@ -384,8 +384,8 @@ class Reference(xml.XMLDocument):
 class Input(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(Input, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(Input, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @ows_element()
     def identifier(self):
@@ -406,8 +406,8 @@ class Input(xml.XMLDocument):
 class Format(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(Format, self).__init__(nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(Format, self).__init__(nsmap=ns.NSMAP, **kwargs)
 
     @xml.Element()
     def mime_type(self):
@@ -424,8 +424,8 @@ class Format(xml.XMLDocument):
 class ComplexDataDescription(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ComplexDataDescription, self).__init__(nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ComplexDataDescription, self).__init__(nsmap=ns.NSMAP, **kwargs)
 
     @xml.Element(path='Default', value_type=Format)
     def default(self):
@@ -442,8 +442,8 @@ class ComplexDataDescription(xml.XMLDocument):
 class UOMS(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(UOMS, self).__init__(nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(UOMS, self).__init__(nsmap=ns.NSMAP, **kwargs)
 
     @xml.Element(child_pag='UOM', child_namespace=ns.OWS)
     def default(self):
@@ -457,8 +457,8 @@ class UOMS(xml.XMLDocument):
 class Range(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(Range, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(Range, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP, **kwargs)
 
     @ows_zero_one_element()
     def minimum_value(self):
@@ -479,8 +479,8 @@ class Range(xml.XMLDocument):
 class AllowedValues(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(AllowedValues, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(AllowedValues, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP, **kwargs)
 
     @ows_zero_many_element()
     def value(self):
@@ -493,14 +493,14 @@ class AllowedValues(xml.XMLDocument):
 class AnyValue(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(AnyValue, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(AnyValue, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP, **kwargs)
 
 class ValuesReference(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ValuesReference, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ValuesReference, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP, **kwargs)
 
     @ows_element()
     def reference(self):
@@ -513,8 +513,8 @@ class ValuesReference(xml.XMLDocument):
 class LiteralDataDescription(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(LiteralDataDescription, self).__init__(nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(LiteralDataDescription, self).__init__(nsmap=ns.NSMAP, **kwargs)
 
     @ows_zero_one_element()
     def data_type(self):
@@ -535,8 +535,8 @@ class LiteralDataDescription(xml.XMLDocument):
 class BoundingBoxDataDescription(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(BoundingBoxDataDescription, self).__init__(nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(BoundingBoxDataDescription, self).__init__(nsmap=ns.NSMAP, **kwargs)
 
     @xml.Element()
     def default(self):
@@ -549,8 +549,8 @@ class BoundingBoxDataDescription(xml.XMLDocument):
 class InputDescription(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(InputDescription, self).__init__(nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(InputDescription, self).__init__(nsmap=ns.NSMAP, **kwargs)
 
     @ows_element()
     def identifier(self):
@@ -585,8 +585,8 @@ class InputDescription(xml.XMLDocument):
 class OutputDescription(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(OutputDescription, self).__init__(nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(OutputDescription, self).__init__(nsmap=ns.NSMAP, **kwargs)
 
     @ows_element()
     def identifier(self):
@@ -613,8 +613,8 @@ class OutputDescription(xml.XMLDocument):
 class ProcessDescription(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(ProcessDescription, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(ProcessDescription, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @ows_element()
     def identifier(self):
@@ -667,8 +667,8 @@ class ProcessDescription(xml.XMLDocument):
 class Languages(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(Languages, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(Languages, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @wps_element(child_tag='Language', child_namespace=ns.OWS)
     def default(self):
@@ -681,8 +681,8 @@ class Languages(xml.XMLDocument):
 class Process(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(Process, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(Process, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
     @xml.Attribute(namespace=ns.WPS)
     def process_version(self):
@@ -716,8 +716,8 @@ class Process(xml.XMLDocument):
 class Operation(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
-        super(Operation, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP)
+    def __init__(self, **kwargs):
+        super(Operation, self).__init__(namespace=ns.OWS, nsmap=ns.NSMAP, **kwargs)
 
     @xml.Attribute(required=True) 
     def name(self):
@@ -736,9 +736,9 @@ class Operation(xml.XMLDocument):
 class ServiceContact(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(ServiceContact, self).__init__(namespace=ns.OWS,
-                nsmap=ns.NSMAP)
+                nsmap=ns.NSMAP, **kwargs)
     
     @ows_element()
     def individual_name(self):
@@ -791,9 +791,9 @@ class ServiceContact(xml.XMLDocument):
 class ServiceProvider(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(ServiceProvider, self).__init__(namespace=ns.OWS,
-                nsmap=ns.NSMAP)
+                nsmap=ns.NSMAP, **kwargs)
 
     @ows_element()
     def provider_name(self):
@@ -810,9 +810,9 @@ class ServiceProvider(xml.XMLDocument):
 class ServiceIdentification(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(ServiceIdentification, self).__init__(namespace=ns.OWS,
-                nsmap=ns.NSMAP)
+                nsmap=ns.NSMAP, **kwargs)
 
     @ows_element()
     def service_type(self):
