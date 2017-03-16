@@ -82,27 +82,29 @@ class XMLDocumentMarkupType(type):
         store_value = None
 
         for key, value in dct.iteritems():
-            if (hasattr(value, 'metadata') and
-                    isinstance(value.metadata, Element)):
+            if hasattr(value, 'metadata'):
                 metadata = value.metadata
 
-                if metadata.store_value and store_value is None:
-                    store_value = key
-                
-                elements[key] = metadata
-
-                dct[key] = property(fget(key), fset(key))
-
-        for key, value in dct.iteritems():
-            if (hasattr(value, 'metadata') and
-                    isinstance(value.metadata, Attribute)):
-                metadata = value.metadata
-
-                attributes[key] = metadata
+                if isinstance(metadata, Element):
+                    if metadata.store_value and store_value is None:
+                        store_value = key
+                    
+                    elements[key] = metadata
+                else:
+                    attributes[key] = metadata
 
                 dct[key] = property(fget(key), fset(key))
 
         cls = super(XMLDocumentMarkupType, mcs).__new__(mcs, name, bases, dct)
+
+        for key, value in dct.iteritems():
+            if hasattr(value, 'metadata'):
+                metadata = value.metadata
+
+                if metadata.value_type in (list, tuple):
+                    setattr(cls, key, [])
+                else:
+                    setattr(cls, key, None)
 
         cls.attributes = attributes
         cls.elements = elements
