@@ -92,6 +92,12 @@ class ExecuteResponse(xml.XMLDocument):
 
         return self.xml()
 
+    def add_output(self, output):
+        if self.process_outputs is None:
+            self.process_outputs = []
+
+        self.process_outputs.append(output)
+
 class ExecuteRequest(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
@@ -257,7 +263,12 @@ class GetCapabilitiesResponse(xml.XMLDocument):
     #def operations_metadata(self):
     #    pass
 
-    @xml.Element(namespace=ns.WPS, value_type=metadata.Process, output_list=True, maximum=None, combine=True)
+    @xml.Element(path='ProcessOfferings',
+            namespace=ns.WPS,
+            nsmap={'ProcessOfferings': ns.WPS},
+            value_type=metadata.Process,
+            output_list=True,
+            maximum=None)
     def process_offerings(self):
         pass
 
