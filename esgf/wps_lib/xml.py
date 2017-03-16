@@ -101,7 +101,7 @@ class XMLDocumentMarkupType(type):
             if hasattr(value, 'metadata'):
                 metadata = value.metadata
 
-                if metadata.value_type in (list, tuple):
+                if metadata.output_list:
                     setattr(cls, key, [])
                 else:
                     setattr(cls, key, None)
@@ -125,11 +125,15 @@ class ValidationError(Exception):
     pass
 
 class XMLDocument(object):
-    def __init__(self, namespace=None, nsmap=None, tag=None, translator=None):
+    def __init__(self, namespace=None, nsmap=None, tag=None, translator=None, **kwargs):
         self.namespace = namespace
         self.nsmap = nsmap
         self.tag = tag
         self.translator = translator
+
+        for key, value in kwargs.iteritems():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     @classmethod
     def from_xml(cls, data):
