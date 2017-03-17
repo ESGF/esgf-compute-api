@@ -14,7 +14,7 @@ install:
 - conda info -a
 - conda create -q -n test-environment -c conda-forge python=$TRAVIS_PYTHON_VERSION lxml
 - source activate test-environment
-- pip install setuptools
+- pip install setuptools pytest
 - pip install -r requirements.txt
 - python setup.py install
 
