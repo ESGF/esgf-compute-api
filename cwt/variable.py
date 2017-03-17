@@ -2,8 +2,8 @@
 Variable module.
 """
 
-from esgf import domain
-from esgf import parameter
+from cwt import domain
+from cwt import parameter
 
 class Variable(parameter.Parameter):
     """ Variable.

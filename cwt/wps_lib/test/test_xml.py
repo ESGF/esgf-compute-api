@@ -4,7 +4,7 @@ import unittest
 
 from lxml import etree
 
-from esgf.wps_lib import xml
+from cwt.wps_lib import xml
 
 class ChildXML(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType

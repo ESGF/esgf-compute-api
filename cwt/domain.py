@@ -2,9 +2,9 @@
 Domain Module.
 """
 
-from esgf import dimension
-from esgf import mask
-from esgf import parameter
+from cwt import dimension
+from cwt import mask
+from cwt import parameter
 
 class Domain(parameter.Parameter):
     """ Domain.

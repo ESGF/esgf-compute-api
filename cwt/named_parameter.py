@@ -2,7 +2,7 @@
 NamedParameter Module.
 """
 
-from esgf import parameter
+from cwt import parameter
 
 class NamedParameter(parameter.Parameter):
     """ Named Parameter.

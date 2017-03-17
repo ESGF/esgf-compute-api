@@ -2,10 +2,10 @@
 
 from unittest import TestCase
 
-from esgf import Mask
-from esgf import Domain
-from esgf import Dimension
-from esgf import ParameterError
+from cwt import Mask
+from cwt import Domain
+from cwt import Dimension
+from cwt import ParameterError
 
 MASK = Mask('clt.nc', 'clt', 'var_data<0.5')
 

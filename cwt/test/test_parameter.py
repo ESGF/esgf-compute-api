@@ -4,7 +4,7 @@ Unittest for parameter class.
 
 from unittest import TestCase
 
-from esgf import Parameter
+from cwt import Parameter
 
 class TestImpl(Parameter):
     """ Test class for overriding method. """

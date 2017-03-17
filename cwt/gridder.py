@@ -2,7 +2,7 @@
 Gridder Module.
 """
 
-from esgf import parameter
+from cwt import parameter
 
 class Gridder(parameter.Parameter):
     """ Gridder.

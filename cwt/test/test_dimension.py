@@ -4,9 +4,9 @@ Unittest for Dimension class.
 
 import unittest
 
-from esgf import CRS
-from esgf import Dimension
-from esgf import ParameterError
+from cwt import CRS
+from cwt import Dimension
+from cwt import ParameterError
 
 class TestDimension(unittest.TestCase):
 

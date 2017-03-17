@@ -3,8 +3,8 @@
 from functools import partial
 import re
 
-from esgf.wps_lib import namespace as ns
-from esgf.wps_lib import xml
+from cwt.wps_lib import namespace as ns
+from cwt.wps_lib import xml
 
 # Element bounds
 zero_one_element = partial(xml.Element, minimum=0)

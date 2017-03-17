@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from esgf.wps_lib import metadata
+from cwt.wps_lib import metadata
 
 identification = metadata.ServiceIdentification()
 identification.service_type = 'WPS'

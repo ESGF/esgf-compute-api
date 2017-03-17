@@ -5,11 +5,11 @@ import unittest
 import os
 from lxml import etree
 
-from esgf.wps_lib import metadata as md
-from esgf.wps_lib import namespace as ns
-from esgf.wps_lib import operations as ops
-from esgf.wps_lib import xml
-from esgf.wps_lib.test import metadata
+from cwt.wps_lib import metadata as md
+from cwt.wps_lib import namespace as ns
+from cwt.wps_lib import operations as ops
+from cwt.wps_lib import xml
+from cwt.wps_lib.test import metadata
 
 def read_file(filename):
     d = os.path.dirname(__file__)
