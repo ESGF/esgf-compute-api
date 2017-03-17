@@ -1,6 +1,1 @@
-OWSLib==0.11.2
-pyproj==1.9.5.1
-python-dateutil==2.5.3
-pytz==2016.6.1
-requests==2.10.0
-six==1.10.0
+requests
