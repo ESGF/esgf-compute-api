@@ -112,6 +112,9 @@ class XMLDocumentMarkupType(type):
 
         return cls
 
+class XMLParseError(Exception):
+    pass
+
 class ValueConversionError(Exception):
     pass
 
@@ -221,7 +224,7 @@ class XMLDocument(object):
                 try:
                     target = [x for x in metadata.value_type if x.__name__ == raw_name][0]
                 except IndexError:
-                    raise WPSError('Failed to find value_type for {0}'.format(raw_name))
+                    raise XMLParseError('Failed to find value_type for {0}'.format(raw_name))
 
                 value = target.from_element(node, self.translator)
             elif issubclass(metadata.value_type, XMLDocument):
@@ -341,7 +344,7 @@ class XMLDocument(object):
                         (metadata.output_list and
                             issubclass(metadata.value_type, XMLDocument) and
                             metadata.path is not None) or
-                        metadata.path is not None):
+                        isinstance(metadata.value_type, (list, tuple))):
                     for c in node.getchildren():
                         stack.append(c)
                 else:
@@ -360,7 +363,14 @@ class XMLDocument(object):
 
                     for ename, emeta in self.elements.iteritems():
                         if emeta.store_value:
-                            setattr(self, ename, node.text)
+                            children = node.getchildren()
+
+                            if len(children) > 0:
+                                value = '\n'.join(etree.tostring(x, pretty_print=True) for x in children)
+
+                                setattr(self, ename, value)
+                            else:
+                                setattr(self, ename, node.text)
 
                             handled = True
 

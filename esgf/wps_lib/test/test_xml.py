@@ -30,11 +30,11 @@ class ChildXML2(xml.XMLDocument):
     def test_child_element(self):
         pass
 
-class TestXML(xml.XMLDocument):
+class XMLTest(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
     def __init__(self):
-        super(TestXML, self).__init__()
+        super(XMLTest, self).__init__()
 
     @xml.Attribute()
     def test_attribute(self):
@@ -111,7 +111,7 @@ class TestXML(xml.XMLDocument):
 class XMLDocumentTest(unittest.TestCase):
 
     def setUp(self):
-        test_doc = TestXML()
+        test_doc = XMLTest()
         test_doc.test_element = 'ELEMENT'
         test_doc.test_attribute = 'ATTRIBUTE'
         test_doc.path_element = 'PATH'
@@ -200,9 +200,9 @@ class XMLDocumentTest(unittest.TestCase):
     def test_child_xml_list(self):
         tree = etree.fromstring(self.doc)
 
-        self.assertEqual(len(tree.xpath('/TestXML/ChildXML2')), 2)
+        self.assertEqual(len(tree.xpath('/XMLTest/ChildXML2')), 2)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertIsInstance(d.child_xml_list, list)
         self.assertEqual(len(d.child_xml_list), 2)
@@ -215,9 +215,9 @@ class XMLDocumentTest(unittest.TestCase):
     def test_child_xml(self):
         tree = etree.fromstring(self.doc)
         
-        self.assertEqual(len(tree.xpath('/TestXML/ChildXML')), 1)
+        self.assertEqual(len(tree.xpath('/XMLTest/ChildXML')), 1)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertIsInstance(d.child_xml, ChildXML)
         self.assertEqual(d.child_xml.test_child_element, 'test1')
@@ -286,11 +286,11 @@ class XMLDocumentTest(unittest.TestCase):
     def test_attribute_attach(self):
         tree = etree.fromstring(self.doc)
 
-        result = tree.xpath('/TestXML/step1/step2/@attribute_attach')
+        result = tree.xpath('/XMLTest/step1/step2/@attribute_attach')
 
         self.assertEqual(len(result), 1)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertEqual(d.attribute_attach, 'ATTACH')
 
@@ -323,7 +323,7 @@ class XMLDocumentTest(unittest.TestCase):
         self.assertEqual(len(tree.xpath('/StoreValue/@read')), 1)
 
     def test_value_type(self):
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertEqual(d.element_float, 3.12)
         self.assertEqual(d.element_bool, True)
@@ -338,84 +338,84 @@ class XMLDocumentTest(unittest.TestCase):
     def test_value_as_attribute(self):
         tree = etree.fromstring(self.doc)
 
-        result = tree.xpath('/TestXML/attribute_element/@test')
+        result = tree.xpath('/XMLTest/attribute_element/@test')
 
         self.assertEqual(len(result), 1)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertEqual(d.attribute_element, 'VALUE_AS_ATTRIBUTE')
 
     def test_list_child_tag(self):
         tree = etree.fromstring(self.doc)
 
-        result = tree.xpath('/TestXML/list_child_tag/item')
+        result = tree.xpath('/XMLTest/list_child_tag/item')
 
         self.assertEqual(len(result), 4)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertItemsEqual(['5', '6', '7', '8'], d.list_child_tag)
 
     def test_child_tag(self):
         tree = etree.fromstring(self.doc)
 
-        result = tree.xpath('/TestXML/child_tag/item')
+        result = tree.xpath('/XMLTest/child_tag/item')
 
         self.assertEqual(len(result), 1)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertEqual(d.child_tag, 'CHILD')
 
     def test_output_list(self):
         tree = etree.fromstring(self.doc)
 
-        result = tree.xpath('/TestXML/item_element')
+        result = tree.xpath('/XMLTest/item_element')
 
         self.assertEqual(len(result), 4)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertItemsEqual(['1', '2', '3', '4'], d.item_element)
 
     def test_path(self):
         tree = etree.fromstring(self.doc)
 
-        result = tree.xpath('/TestXML/step1/step2/step3/path_element')
+        result = tree.xpath('/XMLTest/step1/step2/step3/path_element')
 
         self.assertEqual(len(result), 1)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertEqual(d.path_element, 'PATH')
 
     def test_attribute(self):
         tree = etree.fromstring(self.doc)
 
-        result = tree.xpath('/TestXML/@test_attribute')
+        result = tree.xpath('/XMLTest/@test_attribute')
 
         self.assertEqual(len(result), 1)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertEqual(d.test_attribute, 'ATTRIBUTE')
 
     def test_element(self):
         tree = etree.fromstring(self.doc)
 
-        result = tree.xpath('/TestXML/test_element')
+        result = tree.xpath('/XMLTest/test_element')
 
         self.assertEqual(len(result), 1)
 
-        d = TestXML.from_xml(self.doc)
+        d = XMLTest.from_xml(self.doc)
 
         self.assertEqual(d.test_element, 'ELEMENT')
 
     def test_root(self):
         tree = etree.fromstring(self.doc)
 
-        result = tree.xpath('/TestXML')
+        result = tree.xpath('/XMLTest')
 
         self.assertEqual(len(result), 1)
 

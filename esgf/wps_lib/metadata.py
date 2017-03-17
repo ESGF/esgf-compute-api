@@ -208,141 +208,6 @@ class BoundingBoxData(xml.XMLDocument):
     def dimensions(self):
         pass
 
-class OutputReference(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(OutputReference, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
-    @xml.Attribute()
-    def format(self):
-        pass
-
-    @xml.Attribute()
-    def encoding(self):
-        pass
-
-    @xml.Attribute()
-    def schema(self):
-        pass
-
-    @xml.Attribute(required=True)
-    def href(self):
-        pass
-
-class Output(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(Output, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
-    @ows_element()
-    def identifier(self):
-        pass
-
-    @ows_element()
-    def title(self):
-        pass
-
-    @ows_zero_one_element()
-    def abstract(self):
-        pass
-
-    @wps_zero_one_element(value_type=OutputReference)
-    def reference(self):
-        pass
-
-    @zero_one_element(namespace=ns.WPS,
-            value_type=(ComplexData, LiteralData, BoundingBoxData))
-    def data(self):
-        pass
-
-class DocumentOutputDefinition(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(DocumentOutputDefinition, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
-    @ows_zero_one_element()
-    def mime_type(self):
-        pass
-
-    @ows_zero_one_element()
-    def encoding(self):
-        pass
-
-    @ows_zero_one_element()
-    def schema(self):
-        pass
-
-    @ows_zero_one_element()
-    def uom(self):
-        pass
-
-    @xml.Attribute(default_value=False)
-    def as_reference(self):
-        pass
-
-    @ows_element()
-    def identifier(self):
-        pass
-
-    @ows_zero_one_element()
-    def title(self):
-        pass
-
-    @ows_zero_one_element()
-    def abstract(self):
-        pass
-
-class ResponseDocument(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(ResponseDocument, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
-    @xml.Attribute(value_type=bool, default_value=False)
-    def store_execute_resposne(self):
-        pass
-
-    @xml.Attribute(value_type=bool, default_value=False)
-    def lineage(self):
-        pass
-
-    @xml.Attribute(value_type=bool, default_value=False)
-    def status(self):
-        pass
-
-    @zero_many_element(value_type=DocumentOutputDefinition)
-    def output(self):
-        pass
-
-class RawDataOutput(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(RawDataOutput, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
-    @ows_element()
-    def identifier(self):
-        pass
-
-    @ows_zero_one_element()
-    def mime_type(self):
-        pass
-    
-    @ows_zero_one_element()
-    def encoding(self):
-        pass
-
-    @ows_zero_one_element()
-    def schema(self):
-        pass
-
-    @ows_zero_one_element()
-    def uom(self):
-        pass
-
 class Reference(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
@@ -379,6 +244,120 @@ class Reference(xml.XMLDocument):
 
     @wps_zero_one_element()
     def body_reference(self):
+        pass
+
+
+class Output(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self, **kwargs):
+        super(Output, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+    @ows_element()
+    def identifier(self):
+        pass
+
+    @ows_element()
+    def title(self):
+        pass
+
+    @ows_zero_one_element()
+    def abstract(self):
+        pass
+
+    @wps_zero_one_element(value_type=Reference)
+    def reference(self):
+        pass
+
+    @zero_one_element(namespace=ns.WPS,
+            value_type=(ComplexData, LiteralData, BoundingBoxData))
+    def data(self):
+        pass
+
+class OutputDefinitions(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self, **kwargs):
+        super(OutputDefinitions, self).__init__(tag='Output', namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+    @ows_zero_one_element()
+    def mime_type(self):
+        pass
+
+    @ows_zero_one_element()
+    def encoding(self):
+        pass
+
+    @ows_zero_one_element()
+    def schema(self):
+        pass
+
+    @ows_zero_one_element()
+    def uom(self):
+        pass
+
+    @xml.Attribute(default_value=False)
+    def reference(self):
+        pass
+
+    @ows_element()
+    def identifier(self):
+        pass
+
+    @ows_zero_one_element()
+    def title(self):
+        pass
+
+    @ows_zero_one_element()
+    def abstract(self):
+        pass
+
+class ResponseDocument(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self, **kwargs):
+        super(ResponseDocument, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+    @xml.Attribute(value_type=bool, default_value=False)
+    def store_execute_resposne(self):
+        pass
+
+    @xml.Attribute(value_type=bool, default_value=False)
+    def lineage(self):
+        pass
+
+    @xml.Attribute(value_type=bool, default_value=False)
+    def status(self):
+        pass
+
+    @zero_many_element(value_type=OutputDefinitions)
+    def output(self):
+        pass
+
+class RawDataOutput(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self, **kwargs):
+        super(RawDataOutput, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+    @ows_element()
+    def identifier(self):
+        pass
+
+    @ows_zero_one_element()
+    def mime_type(self):
+        pass
+    
+    @ows_zero_one_element()
+    def encoding(self):
+        pass
+
+    @ows_zero_one_element()
+    def schema(self):
+        pass
+
+    @ows_zero_one_element()
+    def uom(self):
         pass
 
 class Input(xml.XMLDocument):

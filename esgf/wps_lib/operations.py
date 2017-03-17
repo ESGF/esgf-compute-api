@@ -56,15 +56,15 @@ class ExecuteResponse(xml.XMLDocument):
     @metadata.wps_zero_many_element(path='DataInputs',
             nsmap={'DataInputs':ns.WPS},
             value_type=metadata.Input)
-    def input(self):
+    def data_inputs(self):
         pass
 
-    @metadata.wps_zero_many_element(value_type=metadata.DocumentOutputDefinition)
+    @metadata.wps_zero_many_element(value_type=metadata.OutputDefinitions)
     def output_definitions(self):
         pass
 
     @metadata.wps_zero_many_element(value_type=metadata.Output)
-    def process_outputs(self):
+    def output(self):
         pass
 
     def __call__(self, **kwargs):
@@ -258,10 +258,8 @@ class GetCapabilitiesResponse(xml.XMLDocument):
             nsmap={'OperationsMetadata': ns.OWS},
             value_type=metadata.Operation,
             output_list=True)
-    def operation(self):
+    def operations_metadata(self):
         pass
-    #def operations_metadata(self):
-    #    pass
 
     @xml.Element(path='ProcessOfferings',
             namespace=ns.WPS,
