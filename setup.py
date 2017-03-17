@@ -21,7 +21,7 @@ class PyTest(TestCommand):
 
 setup(
     name='esgf-compute-api',
-    version=esgf.__version__,
+    version=cwt.__version__,
     url='http://github.com/ESGF/esgf-compute-api',
     author='Jason Boutte',
     test_require=['pytest'],
