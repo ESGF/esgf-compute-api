@@ -12,15 +12,11 @@ install:
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-- conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION lxml
+- conda create -q -n test-environment -c conda-forge python=$TRAVIS_PYTHON_VERSION lxml
 - source activate test-environment
-- pip install mock pylint coverage setuptools coveralls
+- pip install setuptools
 - pip install -r requirements.txt
 - python setup.py install
 
 script:
-- coverage run --source=esgf -m esgf.test.runtests
-- python -m esgf.test.runtests
-
-after_success:
-- coveralls
+- python setup.py test
