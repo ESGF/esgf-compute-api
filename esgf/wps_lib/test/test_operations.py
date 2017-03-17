@@ -2,6 +2,7 @@
 
 import unittest
 
+import os
 from lxml import etree
 
 from esgf.wps_lib import metadata as md
@@ -11,6 +12,10 @@ from esgf.wps_lib import xml
 from esgf.wps_lib.test import metadata
 
 def read_file(filename):
+    d = os.path.dirname(__file__)
+
+    filename = os.path.join(d, '..', filename)
+
     with open(filename, 'r') as infile:
         return infile.read()
 
@@ -24,16 +29,16 @@ class ExecuteResponseTest(unittest.TestCase):
         self.assertEqual(c.status_location,
                 'http://foo.bar/execute_response_url.xml')
         self.assertIsInstance(c.process, md.Process)
-        self.assertIsInstance(c.status, str)
-        self.assertIsInstance(c.input, list)
-        self.assertEqual(len(c.input), 2)
+        self.assertIsInstance(c.status, md.ProcessSucceeded)
+        self.assertIsInstance(c.data_inputs, list)
+        self.assertEqual(len(c.data_inputs), 2)
         self.assertIsInstance(c.output_definitions, list)
         self.assertEqual(len(c.output_definitions), 1)
-        self.assertIsInstance(c.output_definitions[0], md.DocumentOutputDefinition)
-        self.assertIsInstance(c.process_outputs, list)
-        self.assertEqual(len(c.process_outputs), 1)
-        self.assertIsInstance(c.process_outputs[0], md.Output)
-        self.assertIsInstance(c.process_outputs[0].reference, md.OutputReference)
+        self.assertIsInstance(c.output_definitions[0], md.OutputDefinitions)
+        self.assertIsInstance(c.output, list)
+        self.assertEqual(len(c.output), 1)
+        self.assertIsInstance(c.output[0], md.Output)
+        self.assertIsInstance(c.output[0].reference, md.Reference)
 
 class ExecuteRequestTest(unittest.TestCase):
 
@@ -45,11 +50,14 @@ class ExecuteRequestTest(unittest.TestCase):
         self.assertEqual(c.service, 'WPS')
         self.assertEqual(c.version, '1.0.0')
         self.assertEqual(c.identifier, 'Reclassification')
-        self.assertIsInstance(c.input, list)
-        self.assertEqual(len(c.input), 2)
-        self.assertIsInstance(c.input[0], md.Input)
-        self.assertIsInstance(c.input[0].data, md.ComplexData)
-        self.assertIsInstance(c.input[0].data.value, list)
+        self.assertIsInstance(c.data_inputs, list)
+        self.assertEqual(len(c.data_inputs), 2)
+
+        inp = c.data_inputs[0]
+
+        self.assertIsInstance(inp, md.Input)
+        self.assertIsInstance(inp.data, md.ComplexData)
+        self.assertIsInstance(inp.data.value, str)
         self.assertIsInstance(c.response_form, md.ResponseDocument)
 
     def test_parse_response_document2(self):
@@ -60,9 +68,9 @@ class ExecuteRequestTest(unittest.TestCase):
         self.assertEqual(c.service, 'WPS')
         self.assertEqual(c.version, '1.0.0')
         self.assertEqual(c.identifier, 'Buffer')
-        self.assertIsInstance(c.input, list)
-        self.assertEqual(len(c.input), 2)
-        self.assertIsInstance(c.input[0], md.Input)
+        self.assertIsInstance(c.data_inputs, list)
+        self.assertEqual(len(c.data_inputs), 2)
+        self.assertIsInstance(c.data_inputs[0], md.Input)
         self.assertIsInstance(c.response_form, md.ResponseDocument)
 
     def test_parse_response_document(self):
@@ -73,26 +81,25 @@ class ExecuteRequestTest(unittest.TestCase):
         self.assertEqual(c.service, 'WPS')
         self.assertEqual(c.version, '1.0.0')
         self.assertEqual(c.identifier, 'Buffer')
-        self.assertIsInstance(c.input, list)
-        self.assertEqual(len(c.input), 2)
-        self.assertIsInstance(c.input[0], md.Input)
+        self.assertIsInstance(c.data_inputs, list)
+        self.assertEqual(len(c.data_inputs), 2)
+        self.assertIsInstance(c.data_inputs[0], md.Input)
         self.assertIsInstance(c.response_form, md.ResponseDocument)
         self.assertIsInstance(c.response_form.output, list)        
         self.assertEqual(len(c.response_form.output), 1)
         self.assertEqual(c.response_form.output[0].identifier, 'BufferedPolygon')
 
     def test_parse_raw_data_output(self):
-        with open('./test/data/50_wpsExecute_request_RawDataOutput.xml') as infile:
-            data = infile.read()
+        data = read_file('./test/data/50_wpsExecute_request_RawDataOutput.xml')
 
         c = ops.ExecuteRequest.from_xml(data)
 
         self.assertEqual(c.service, 'WPS')
         self.assertEqual(c.version, '1.0.0')
         self.assertEqual(c.identifier, 'Buffer')
-        self.assertIsInstance(c.input, list)
-        self.assertEqual(len(c.input), 2)
-        self.assertIsInstance(c.input[0], md.Input)
+        self.assertIsInstance(c.data_inputs, list)
+        self.assertEqual(len(c.data_inputs), 2)
+        self.assertIsInstance(c.data_inputs[0], md.Input)
         self.assertIsInstance(c.response_form, md.RawDataOutput)
         self.assertEqual(c.response_form.identifier, 'BufferedPolygon')
 
@@ -136,8 +143,8 @@ class GetCapabilitiesResponseTest(unittest.TestCase):
         self.assertEqual(c.update_sequence, '1')
         self.assertIsInstance(c.service_identification, md.ServiceIdentification)
         self.assertIsInstance(c.service_provider, md.ServiceProvider)
-        self.assertIsInstance(c.operation, list)
-        self.assertEqual(len(c.operation), 3)
+        self.assertIsInstance(c.operations_metadata, list)
+        self.assertEqual(len(c.operations_metadata), 3)
         self.assertIsInstance(c.process_offerings, list)
         self.assertEqual(len(c.process_offerings), 1)
         self.assertIsInstance(c.languages, md.Languages)
