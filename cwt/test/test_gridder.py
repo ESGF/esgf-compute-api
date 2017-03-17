@@ -4,9 +4,9 @@ Gridder Unittest
 
 from unittest import TestCase
 
-from esgf import Gridder
-from esgf import Domain
-from esgf import Variable
+from cwt import Gridder
+from cwt import Domain
+from cwt import Variable
 
 class TestGridder(TestCase):
     """ Gridder Test Case. """

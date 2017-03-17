@@ -2,7 +2,7 @@
 Dimension module.
 """
 
-from esgf import parameter
+from cwt import parameter
 
 # pylint: disable=too-few-public-methods
 class CRS(object):

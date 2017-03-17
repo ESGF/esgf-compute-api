@@ -7,10 +7,10 @@ import sys
 import requests
 from lxml import etree
 
-from esgf import named_parameter
-from esgf import process
-from esgf.wps_lib import metadata
-from esgf.wps_lib import operations
+from cwt import named_parameter
+from cwt import process
+from cwt.wps_lib import metadata
+from cwt.wps_lib import operations
 
 logger = logging.getLogger()
 

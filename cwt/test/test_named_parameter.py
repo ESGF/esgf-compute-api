@@ -2,9 +2,9 @@
 
 from unittest import TestCase
 
-from esgf import Domain
-from esgf import Dimension
-from esgf import NamedParameter
+from cwt import Domain
+from cwt import Dimension
+from cwt import NamedParameter
 
 class TestNamedParameter(TestCase):
     """ NamedParameter Test Case. """

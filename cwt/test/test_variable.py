@@ -4,9 +4,9 @@ import json
 
 from unittest import TestCase
 
-from esgf import Domain
-from esgf import Variable
-from esgf import ParameterError
+from cwt import Domain
+from cwt import Variable
+from cwt import ParameterError
 
 class TestVariable(TestCase):
     """ Variable Test Case. """

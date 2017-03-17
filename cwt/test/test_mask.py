@@ -4,7 +4,7 @@ Mask Unittest.
 
 from unittest import TestCase
 
-from esgf import Mask
+from cwt import Mask
 
 class TestMask(TestCase):
     """ Mask Test Case. """

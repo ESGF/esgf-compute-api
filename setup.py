@@ -3,7 +3,7 @@
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
-import esgf
+import cwt
 
 class PyTest(TestCommand):
     def finalize_options(self):
@@ -29,5 +29,5 @@ setup(
     cmdclass={'test': PyTest},
     author_email='boutte3@llnl.gov',
     description='ESGF CWT End-user API',
-    packages=['esgf']
+    packages=['cwt']
 )

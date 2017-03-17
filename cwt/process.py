@@ -4,9 +4,9 @@ Process Module.
 
 import requests
 
-from esgf import parameter
-from esgf.wps_lib import metadata
-from esgf.wps_lib import operations
+from cwt import parameter
+from cwt.wps_lib import metadata
+from cwt.wps_lib import operations
 
 class ProcessError(Exception):
     pass
