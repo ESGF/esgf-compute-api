@@ -2,11 +2,15 @@
 Process Module.
 """
 
+import logging
+
 import requests
 
 from cwt import parameter
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
+
+logger = logging.getLogger(__name__)
 
 class ProcessError(Exception):
     pass
@@ -56,7 +60,7 @@ class Process(parameter.Parameter):
     @property
     def error(self):
         return True if (self.__response is not None and
-                isinstance(self.__response, metadata.ExceptionReport)) else False
+                isinstance(self.status, metadata.ProcessFailed)) else False
 
     def update_status(self):
         if self.__response is None or self.status_location is None:
@@ -70,6 +74,10 @@ class Process(parameter.Parameter):
             raise ProcessError('Error retrieving job status')
 
         self.__response = operations.ExecuteResponse.from_xml(response.text)
+
+        if isinstance(self.status, metadata.ProcessFailed):
+            raise ProcessError('Process failed with exception report:\n{}'
+                               .format(str(self.status.exception_report)))
 
     def parameterize(self):
         params = {

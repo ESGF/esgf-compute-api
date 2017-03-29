@@ -48,36 +48,6 @@ class WPSTranslator(xml.Translator):
 
         return '_'.join(x.lower() for x in matches)
 
-class ProcessAccepted(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(ProcessAccepted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
-class ProcessStarted(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(ProcessStarted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
-class ProcessPaused(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(ProcessPaused, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
-class ProcessSucceeded(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(ProcessSucceeded, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
-class ProcessFailed(xml.XMLDocument):
-    __metaclass__ = xml.XMLDocumentMarkupType
-
-    def __init__(self, **kwargs):
-        super(ProcessFailed, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
-
 MissingParameterValue = 'MissingParameterValue'
 InvalidParameterValue = 'InvalidParameterValue'
 VersionNegotiationFailed = 'VersionNegotiationFailed'
@@ -145,6 +115,40 @@ class ExceptionReport(xml.XMLDocument):
         return 'Verson {0}\n{1}'.format(
                 self.version,
                 '\n'.join(str(x) for x in self.exception))
+
+class ProcessAccepted(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self, **kwargs):
+        super(ProcessAccepted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+class ProcessStarted(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self, **kwargs):
+        super(ProcessStarted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+class ProcessPaused(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self, **kwargs):
+        super(ProcessPaused, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+class ProcessSucceeded(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self, **kwargs):
+        super(ProcessSucceeded, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+class ProcessFailed(xml.XMLDocument):
+    __metaclass__ = xml.XMLDocumentMarkupType
+
+    def __init__(self, **kwargs):
+        super(ProcessFailed, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+    @ows_zero_one_element(value_type=ExceptionReport)
+    def exception_report(self):
+        pass
 
 class ComplexData(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
