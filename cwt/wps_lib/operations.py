@@ -88,15 +88,15 @@ class ExecuteResponse(xml.XMLDocument):
 
         self.output_definitions = kwargs.get('output_definitions')
 
-        self.process_outputs = kwargs.get('process_outputs')
+        self.output = kwargs.get('output')
 
         return self.xml()
 
     def add_output(self, output):
-        if self.process_outputs is None:
-            self.process_outputs = []
+        if self.output is None:
+            self.output = []
 
-        self.process_outputs.append(output)
+        self.output.append(output)
 
 class ExecuteRequest(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
