@@ -128,17 +128,26 @@ class ProcessStarted(xml.XMLDocument):
     def __init__(self, **kwargs):
         super(ProcessStarted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
+    def __str__(self):
+        return self.__class__.__name__
+
 class ProcessPaused(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
     def __init__(self, **kwargs):
         super(ProcessPaused, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
+    def __str__(self):
+        return self.__class__.__name__
+
 class ProcessSucceeded(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
     def __init__(self, **kwargs):
         super(ProcessSucceeded, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
+
+    def __str__(self):
+        return self.__class__.__name__
 
 class ProcessFailed(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
@@ -149,6 +158,9 @@ class ProcessFailed(xml.XMLDocument):
     @ows_zero_one_element(value_type=ExceptionReport)
     def exception_report(self):
         pass
+
+    def __str__(self):
+        return self.__class__.__name__
 
 class ComplexData(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
