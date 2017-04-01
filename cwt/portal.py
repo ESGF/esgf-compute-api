@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-
+import xml.etree.ElementTree as ET
 from cwt import named_parameter
 from cwt import process
 from cwt.wps_lib import metadata
@@ -14,6 +14,8 @@ class PortalError(Exception):
     pass
 
 class Portal(object):
+    namespaces = {'owl': 'http://www.opengis.net/ows/1.1', "wps": "http://www.opengis.net/wps/1.0.0"}
+
     def __init__(self, host="localhost", request_port=4356, response_port=4357, **kwargs):
         self.__capabilities = None
         self.resultType = kwargs.get( "resultType" , "xml" )
@@ -105,18 +107,38 @@ class Portal(object):
         rId = self.portal.sendMessage( "execute", [ "CDSpark.workflow", datainputs, { "result": self.resultType } ] )
         responses = self.response_manager.getResponses(rId)
         for response in responses: print " ----------------- Response: ----------------- \n" + str(response)
-        return [ self.__parse_response(response, operations.ExecuteResponse) for response in responses ]
+        return [ ET.fromstring(response) for response in responses ]
+
+    @classmethod
+    def getFilePath( cls, response ):
+        refs = result.findall( "./wps:ProcessOutputs/wps:Output/wps:Reference", cls.namespaces )
+        for ref in refs:
+            if( ref.attrib.get('id',' ') == 'file' ):
+                return ref.attrib.get('href','')
+        return ''
 
 
 if __name__ == '__main__':
     from variable import Variable
     from cwt import Domain, Dimension, CRS
+    import cdms2, vcs, genutil, cdutil, EzTemplate, sys
 
-    portal = Portal( resultType="cdms" )
+    portal = Portal( resultType="file" )
     domain = Domain( [ Dimension( 'time', 0, 10, CRS('indices') ) ] )
     tas = Variable('collection:/giss_r1i1p1', 'tas', domains=domain )
     process = portal.get_process('CDSpark.max')
     results = portal.execute( process, [tas], [domain], axes="t" )
+    M = EzTemplate.Multi(rows=len(results), columns=1)
+    for result in results:
+        filePath = Portal.getFilePath( result )
+        print( "Plotting File at: " + filePath )
+        cdmsfile = cdms2.open( filePath )
+        t = M.get(legend='local')
+        cl = cdmsfile( "Nd4jMaskedTensor" )
+        x = vcs.init()
+        plot = x.createboxfill()
+        x.plot(cl, t, plot )
+
 
 
 
