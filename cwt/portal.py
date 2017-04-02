@@ -1,6 +1,7 @@
 import json
 import logging
 import sys
+import cdms2, genutil, cdutil, sys
 import xml.etree.ElementTree as ET
 from cwt import named_parameter
 from cwt import process
@@ -13,8 +14,42 @@ logger = logging.getLogger()
 class PortalError(Exception):
     pass
 
-class Portal(object):
+class PortalExeResponse(object):
     namespaces = {'owl': 'http://www.opengis.net/ows/1.1', "wps": "http://www.opengis.net/wps/1.0.0"}
+
+    def __init__(self, responseStr ):
+        self._element = ET.fromstring(responseStr)
+        self._references = self._element.findall( "./wps:ProcessOutputs/wps:Output/wps:Reference", self.namespaces )
+
+    def getReferenceValue(self, type, field ):
+        for ref in self._references:
+            if( ref.attrib.get('id', '') == type ):
+                return ref.attrib.get(field, '')
+        return ''
+
+    def getFilePath( self ):
+        return self.getReferenceValue( 'file', 'href' )
+
+    def subaxis(self, axis, range ):
+        return axis.subaxis( range[0], range[1] )
+
+    def getVariable(self):
+        filePath = result.getFilePath()
+        print( "Plotting File at: " + filePath )
+        cdmsfile = cdms2.open( filePath )
+        vardata = cdmsfile( "Nd4jMaskedTensor" )
+        # gridFile = cdms2.open( vardata.gridfile )
+        # global_axes = [ gridFile.axes.get(dim) for dim in vardata.dimensions.split(',') ]
+        # roiSpec = [ toks.split(',') for toks in vardata.roi.split('+') ]
+        # roi = dict([ (spec[0],(int(spec[1]),int(spec[2]))) for spec in roiSpec ])
+        # axes = [ self.subaxis( axis, roi.get(axis.axis)) for axis in global_axes ]
+        # variable = cdms2.createVariable( vardata, vardata.dtype, True, False, None, vardata.missing, vardata.getGrid(), axes, vardata.attributes, vardata.name )
+        # gridFile.close()
+        cdmsfile.close()
+        return vardata
+
+
+class Portal(object):
 
     def __init__(self, host="localhost", request_port=4356, response_port=4357, **kwargs):
         self.__capabilities = None
@@ -107,37 +142,30 @@ class Portal(object):
         rId = self.portal.sendMessage( "execute", [ "CDSpark.workflow", datainputs, { "result": self.resultType } ] )
         responses = self.response_manager.getResponses(rId)
         for response in responses: print " ----------------- Response: ----------------- \n" + str(response)
-        return [ ET.fromstring(response) for response in responses ]
+        return [ PortalExeResponse(response) for response in responses ]
 
-    @classmethod
-    def getFilePath( cls, response ):
-        refs = result.findall( "./wps:ProcessOutputs/wps:Output/wps:Reference", cls.namespaces )
-        for ref in refs:
-            if( ref.attrib.get('id',' ') == 'file' ):
-                return ref.attrib.get('href','')
-        return ''
+
 
 
 if __name__ == '__main__':
     from variable import Variable
     from cwt import Domain, Dimension, CRS
-    import cdms2, vcs, genutil, cdutil, EzTemplate, sys
+    import vcs, EzTemplate
 
     portal = Portal( resultType="file" )
     domain = Domain( [ Dimension( 'time', 0, 10, CRS('indices') ) ] )
     tas = Variable('collection:/giss_r1i1p1', 'tas', domains=domain )
     process = portal.get_process('CDSpark.max')
     results = portal.execute( process, [tas], [domain], axes="t" )
-    M = EzTemplate.Multi(rows=len(results), columns=1)
+    M = EzTemplate.Multi( rows=len(results), columns=1 )
     for result in results:
-        filePath = Portal.getFilePath( result )
-        print( "Plotting File at: " + filePath )
-        cdmsfile = cdms2.open( filePath )
         t = M.get(legend='local')
-        cl = cdmsfile( "Nd4jMaskedTensor" )
+        var = result.getVariable()
         x = vcs.init()
         plot = x.createboxfill()
-        x.plot(cl, t, plot )
+        x.plot(var, t, plot )
+        x.interact()
+
 
 
 
