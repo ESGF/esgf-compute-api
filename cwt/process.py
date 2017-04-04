@@ -7,6 +7,7 @@ import logging
 import requests
 
 from cwt import parameter
+from cwt import named_parameter
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
 
@@ -21,8 +22,35 @@ class Process(parameter.Parameter):
 
         self.__process = process
         self.__response = None
-        self.__inputs = None
-        self.__params = None
+        self.__params = {}
+
+        self.inputs = []
+
+    @classmethod
+    def from_dict(cls, data, inputs):
+        obj = cls(None, data.get('result'))
+
+        proc_inputs = []
+            
+        for i in data.get('input', []):
+            if i not in inputs:
+                raise ProcessError('Input "{}" is not present in the input dictionary'.format(i))
+
+            proc_inputs.append(inputs[i])
+
+        obj.inputs = proc_inputs
+
+        known_keys = ('name', 'input', 'result')
+
+        proc_params = []
+
+        for key in data.keys():
+            if key not in known_keys:
+                proc_params.append(named_parameter.NamedParameter(key, *data[key].split('|')))
+
+        obj.parameters = proc_params
+
+        return obj
 
     def __getattr__(self, name):
         if hasattr(self.__process, name):
@@ -33,15 +61,13 @@ class Process(parameter.Parameter):
         
         raise AttributeError(name)
 
-    def __set_inputs(self, inputs):
-        self.__inputs = [x.name for x in inputs]
-
-    inputs = property(None, __set_inputs)
+    def __get_parameters(self):
+        return self.__params.values()
 
     def __set_parameters(self, params):
-        self.__params = [x.parameterize() for x in params]
+        self.__params = dict((x.name, x) for x in params)
 
-    parameters = property(None, __set_parameters)
+    parameters = property(__get_parameters, __set_parameters)
 
     def __set_response(self, response):
         self.__response = response
@@ -81,37 +107,13 @@ class Process(parameter.Parameter):
 
     def parameterize(self):
         params = {
-                'name': self.__process.identifier,
-                'input': self.__inputs,
-                'result': self.name
-                }
+            'name': self.__process.identifier,
+            'input': [x.name for x in self.inputs],
+            'result': self.name
+        }
 
         if self.__params is not None:
-            for p in self.__params:
-                params.update(p)
+            for _, p in self.__params.iteritems():
+                params.update(p.parameterize())
 
         return params
-
-#if __name__ == '__main__':
-#    import wps
-#
-#    w = wps.WPS('http://0.0.0.0:8000/wps')
-#
-#    p = w.get_process('CDSpark.min')
-#
-#    import variable
-#
-#    tas = variable.Variable('file:///data/tas_6h.nc', 'tas')
-#
-#    w.execute(p, inputs=[tas], axes=['x', 'y'])
-#
-#    import time
-#
-#    print 'STARTED', p.status
-#
-#    while p.processing:
-#        print 'Processing'
-#
-#        time.sleep(1)
-#
-#    print 'DONE', p.status

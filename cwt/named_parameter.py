@@ -46,6 +46,9 @@ class NamedParameter(parameter.Parameter):
 
         return {self.name: value}
 
+    def __eq__(self, other):
+        return self.name == other.name and self.values == other.values
+
     def __repr__(self):
         return 'NamedParameter(name=%r, values=%r)' % (
             self.name,
