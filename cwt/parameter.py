@@ -34,9 +34,3 @@ class Parameter(object):
     def parameterize(self):
         """ Return a representation of this parameter. """
         raise NotImplementedError
-
-    def __repr__(self):
-        return 'Parameter(name=%r)' % self.name
-
-    def __str__(self):
-        return 'name=%s' % self.name
