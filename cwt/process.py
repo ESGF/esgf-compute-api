@@ -8,6 +8,7 @@ import requests
 
 from cwt import parameter
 from cwt import named_parameter
+from cwt import variable
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
 
@@ -24,21 +25,14 @@ class Process(parameter.Parameter):
         self.__response = None
         self.__params = {}
 
+        self.processed = False
         self.inputs = []
 
     @classmethod
-    def from_dict(cls, data, inputs):
+    def from_dict(cls, data):
         obj = cls(None, data.get('result'))
 
-        proc_inputs = []
-            
-        for i in data.get('input', []):
-            if i not in inputs:
-                raise ProcessError('Input "{}" is not present in the input dictionary'.format(i))
-
-            proc_inputs.append(inputs[i])
-
-        obj.inputs = proc_inputs
+        obj.inputs = data.get('input', [])
 
         known_keys = ('name', 'input', 'result')
 
@@ -87,6 +81,44 @@ class Process(parameter.Parameter):
     def error(self):
         return True if (self.__response is not None and
                 isinstance(self.status, metadata.ProcessFailed)) else False
+
+    def resolve_inputs(self, inputs, operations):
+        temp = dict((x, None) for x in self.inputs)
+
+        for key in temp.keys():
+            if key in inputs:
+                temp[key] = inputs[key]
+            elif key in operations:
+                if operations[key].processed:
+                    raise ProcessError('Found circular loop in execution tree')
+
+                temp[key] = operations[key]
+
+                temp[key].processed = True
+
+                temp[key].resolve_inputs(inputs, operations)
+            else:
+                raise ProcessError('Input "{}" not found'.format(key))
+
+        self.inputs = temp.values()
+
+    def collect_input_processes(self, processes=None, inputs=None):
+        if processes is None:
+            processes = []
+
+        if inputs is None:
+            inputs = []
+
+        new_processes = [x for x in self.inputs if isinstance(x, Process)]
+
+        inputs.extend([x for x in self.inputs if isinstance(x, variable.Variable)])
+
+        for p in new_processes:
+            p.collect_input_processes(processes, inputs)
+
+        processes.extend(new_processes)
+
+        return processes, inputs
 
     def update_status(self):
         if self.__response is None or self.status_location is None:

@@ -2,13 +2,16 @@
 
 import json
 import logging
+import re
 import sys
 
 import requests
 from lxml import etree
 
+from cwt import domain
 from cwt import named_parameter
 from cwt import process
+from cwt import variable
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
 
@@ -183,8 +186,22 @@ class WPS(object):
 
         return desc
 
+    @staticmethod
+    def parse_data_inputs(data_inputs):
+        match = re.search('\[(.*)\]', data_inputs)
+
+        kwargs = dict((x.split('=')[0], json.loads(x.split('=')[1])) for x in match.group(1).split(';'))
+
+        variables = [variable.Variable.from_dict(x) for x in kwargs.get('variable', [])]
+
+        domains = [domain.Domain.from_dict(x) for x in kwargs.get('domain', [])]
+
+        operation = [process.Process.from_dict(x) for x in kwargs.get('operation', [])]
+
+        return operation, domains, variables
+
     def __prepare_data_inputs(self, process, inputs, domains, **kwargs):
-        variables = [x.parameterize() for x in inputs]
+        variables = [x.parameterize() for x in inputs if isinstance(x, variable.Variable)]
 
         domains = [x.parameterize() for x in domains]
 
@@ -193,8 +210,12 @@ class WPS(object):
         process.inputs = inputs
 
         process.parameters = parameters
-        
-        operation = [process.parameterize()]
+
+        processes, add_inputs = process.collect_input_processes()
+
+        operation = [process.parameterize()] + [x.parameterize() for x in processes]
+
+        variables.extend([x.parameterize() for x in add_inputs])
 
         return {'variable': variables, 'domain': domains, 'operation': operation}
 
