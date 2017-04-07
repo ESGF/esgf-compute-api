@@ -158,7 +158,7 @@ class WPS(object):
         except IndexError:
             logger.debug('Failed to find process with identifier "%s"', identifier)
 
-            return None
+            raise Exception('Failed to find process with identifier "{}"'.format(identifier))
 
     def describe(self, process, method='GET'):
         params = {
