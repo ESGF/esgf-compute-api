@@ -201,8 +201,6 @@ class WPS(object):
         return operation, domains, variables
 
     def __prepare_data_inputs(self, process, inputs, domains, **kwargs):
-        variables = [x.parameterize() for x in inputs if isinstance(x, variable.Variable)]
-
         domains = [x.parameterize() for x in domains]
 
         parameters = [named_parameter.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
@@ -211,11 +209,11 @@ class WPS(object):
 
         process.parameters = parameters
 
-        processes, add_inputs = process.collect_input_processes()
+        processes, variables = process.collect_input_processes()
+
+        variables = [x.parameterize() for x in variables]
 
         operation = [process.parameterize()] + [x.parameterize() for x in processes]
-
-        variables.extend([x.parameterize() for x in add_inputs])
 
         return {'variable': variables, 'domain': domains, 'operation': operation}
 
