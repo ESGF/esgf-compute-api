@@ -22,6 +22,7 @@ class Process(parameter.Parameter):
         super(Process, self).__init__(name)
 
         self.__process = process
+        self.__identifier = None
         self.__response = None
         self.__params = {}
 
@@ -33,6 +34,8 @@ class Process(parameter.Parameter):
         obj = cls(None, data.get('result'))
 
         obj.inputs = data.get('input', [])
+
+        obj.identifier = data.get('name')
 
         known_keys = ('name', 'input', 'result')
 
@@ -54,6 +57,14 @@ class Process(parameter.Parameter):
             return getattr(self.__response, name)
         
         raise AttributeError(name)
+
+    def __get_identifier(self):
+        return self.__process.identifier if self.__process is not None else self.__identifier
+
+    def __set_identifier(self, value):
+        self.__identifier = value
+
+    identifier = property(__get_identifier, __set_identifier)
 
     def __get_parameters(self):
         return self.__params.values()
