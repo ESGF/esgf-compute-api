@@ -94,6 +94,8 @@ class Process(parameter.Parameter):
                 isinstance(self.status, metadata.ProcessFailed)) else False
 
     def resolve_inputs(self, inputs, operations):
+        logger.info('Proccess {} resolving inputs {}'.format(self.identifier, self.inputs))
+
         temp = dict((x, None) for x in self.inputs)
 
         for key in temp.keys():
