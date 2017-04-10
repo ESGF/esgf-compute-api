@@ -217,6 +217,12 @@ class WPS(object):
 
         return {'variable': variables, 'domain': domains, 'operation': operation}
 
+    def prepare_data_inputs(self, process, inputs, domains, **kwargs):
+        data_inputs = self.__prepare_data_inputs(process, inputs, domains, **kwargs)
+
+        return '[{}]'.format(';'.join('{}={}'.format(x, json.dumps(y))
+            for x, y in data_inputs.iteritems()))
+
     def __execute_post_data(self, data_inputs, base_params):
         request = operations.ExecuteRequest()
 
@@ -251,14 +257,16 @@ class WPS(object):
                 'identifier': process.identifier,
                 }
 
-        data_inputs = self.__prepare_data_inputs(process, inputs, domains, **kwargs)
 
         if method.lower() == 'get':
-            params['datainputs'] = '[{0}]'.format(';'.join('{0}={1}'.format(x, json.dumps(y))
-                for x, y in data_inputs.iteritems()))
+            params['datainputs'] = self.prepare_data_inputs(process, inputs, domains, **kwargs)
+            #params['datainputs'] = '[{0}]'.format(';'.join('{0}={1}'.format(x, json.dumps(y))
+            #    for x, y in data_inputs.iteritems()))
 
             response = self.__request(method, params=params)
         elif method.lower() == 'post':
+            data_inputs = self.__prepare_data_inputs(process, inputs, domains, **kwargs)
+
             data = self.__execute_post_data(data_inputs, params)
 
             response = self.__request(method, data=data)
