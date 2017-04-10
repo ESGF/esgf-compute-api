@@ -150,7 +150,7 @@ class Process(parameter.Parameter):
 
     def parameterize(self):
         params = {
-            'name': self.__process.identifier,
+            'name': self.identifier,
             'input': [x.name for x in self.inputs],
             'result': self.name
         }
