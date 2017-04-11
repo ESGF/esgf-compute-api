@@ -40,9 +40,8 @@ class NamedParameter(parameter.Parameter):
         """ Parameterizes NamedParameter for GET request. """
         if all(isinstance(x, (str, unicode)) for x in self.values):
             value = '|'.join(self.values)
-        elif (len(self.values) == 1 and
-              isinstance(self.values[0], parameter.Parameter)):
-            value = self.values[0].name
+        else:
+            raise parameter.ParameterError('Unknow value type {}'.format(type(self.values[0])))
 
         return {self.name: value}
 

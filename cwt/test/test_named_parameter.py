@@ -1,24 +1,33 @@
 """ NamedParameter Unittest. """
 
-from unittest import TestCase
+import unittest
 
-from cwt import Domain
-from cwt import Dimension
-from cwt import NamedParameter
+import cwt
 
-class TestNamedParameter(TestCase):
+class TestNamedParameter(unittest.TestCase):
     """ NamedParameter Test Case. """
 
+    def test_bad_type(self):
+        o = type('X', (object,), dict(test=1))
+
+        p = cwt.NamedParameter('x', o)
+
+        with self.assertRaises(cwt.ParameterError):
+            p.parameterize()
+
     def test_from_list(self):
-        p = NamedParameter.from_list('axes', ['x', 'y'])
+        p = cwt.NamedParameter.from_list('axes', ['x', 'y'])
 
         self.assertIsInstance(p.values, list)
         self.assertEqual(len(p.values), 2)
         self.assertItemsEqual(p.values, ['x', 'y'])
 
     def test_from_string(self):
-        p = NamedParameter.from_string('axes', 'x|y')
+        p = cwt.NamedParameter.from_string('axes', 'x|y')
 
         self.assertIsInstance(p.values, list)
         self.assertEqual(len(p.values), 2)
         self.assertItemsEqual(p.values, ['x', 'y'])
+
+if __name__ == '__main__':
+    unittest.main()
