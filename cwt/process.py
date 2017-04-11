@@ -26,6 +26,7 @@ class Process(parameter.Parameter):
         self.__response = None
         self.__params = {}
 
+        self.response = None
         self.processed = False
         self.inputs = []
 
@@ -43,7 +44,7 @@ class Process(parameter.Parameter):
 
         for key in data.keys():
             if key not in known_keys:
-                proc_params.append(named_parameter.NamedParameter(key, *data[key].split('|')))
+                proc_params.append(named_parameter.NamedParameter.from_string(key, data.get(key)))
 
         obj.parameters = proc_params
 
@@ -53,8 +54,8 @@ class Process(parameter.Parameter):
         if hasattr(self.__process, name):
             return getattr(self.__process, name)
 
-        if hasattr(self.__response, name):
-            return getattr(self.__response, name)
+        if hasattr(self.response, name):
+            return getattr(self.response, name)
         
         raise AttributeError(name)
 
@@ -74,14 +75,6 @@ class Process(parameter.Parameter):
 
     parameters = property(__get_parameters, __set_parameters)
 
-    def __set_response(self, response):
-        self.__response = response
-
-    def __get_response(self):
-        return self.__response
-
-    response = property(__get_response, __set_response)
-
     @property
     def processing(self):
         self.update_status()
@@ -90,8 +83,9 @@ class Process(parameter.Parameter):
 
     @property
     def error(self):
-        return True if (self.__response is not None and
-                isinstance(self.status, metadata.ProcessFailed)) else False
+        return True if (self.response is None or
+                        (self.response is not None and
+                         isinstance(self.status, metadata.ProcessFailed))) else False
 
     def resolve_inputs(self, inputs, operations):
         logger.info('Proccess {} resolving inputs {}'.format(self.identifier, self.inputs))
@@ -120,21 +114,22 @@ class Process(parameter.Parameter):
             processes = []
 
         if inputs is None:
-            inputs = []
+            inputs = {}
 
         new_processes = [x for x in self.inputs if isinstance(x, Process)]
 
-        inputs.extend([x for x in self.inputs if isinstance(x, variable.Variable)])
+        inputs.update(dict((x.name, x) for x in self.inputs
+                           if isinstance(x, variable.Variable)))
 
         for p in new_processes:
             p.collect_input_processes(processes, inputs)
 
         processes.extend(new_processes)
 
-        return processes, inputs
+        return processes, inputs.values()
 
     def update_status(self):
-        if self.__response is None or self.status_location is None:
+        if self.response is None or self.status_location is None:
             raise ProcessError('Process does not support status updates')
 
         try:
@@ -144,7 +139,7 @@ class Process(parameter.Parameter):
 
             raise ProcessError('Error retrieving job status')
 
-        self.__response = operations.ExecuteResponse.from_xml(response.text)
+        self.response = operations.ExecuteResponse.from_xml(response.text)
 
         if isinstance(self.status, metadata.ProcessFailed):
             raise ProcessError('Process failed with exception report:\n{}'

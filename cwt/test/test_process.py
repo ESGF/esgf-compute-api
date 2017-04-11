@@ -10,125 +10,102 @@ class TestProcess(unittest.TestCase):
     """ Process Test Case. """
 
     def setUp(self):
-        self.parameters = [cwt.NamedParameter(x, 'v1', 'v2') for x in ('bins', 'axes')]
+        self.avg = cwt.Process(type('Process', (object,), dict(identifier='CDAT.avg')), name='avg')
 
-        self.inputs = [cwt.Variable('path', 'tas', name='tas{}'.format(x))
-                       for x in range(4)]
+        self.sum = cwt.Process(type('Process', (object,), dict(identifier='CDAT.sum')), name='sum')
 
-        self.process = cwt.Process(type('x', (object,), dict(identifier='test')), name='test')
+        self.tas = cwt.Variable('file:///tas.nc', 'tas', name='tas')
 
-    def test_resolve_inputs_missing(self):
-        proc_sum = cwt.Process(type('Process', (object,), {}), name='sum')
+        self.clt = cwt.Variable('file:///clt.nc', 'clt', name='clt')
 
-        proc_avg = cwt.Process(type('Process', (object,), {}), name='avg')
-
-        proc_sum.inputs = ['avg']
-
-        with self.assertRaises(cwt.ProcessError):
-            proc_sum.resolve_inputs({}, {})
-
-    def test_resolve_inputs_circle(self):
-        proc_sum = cwt.Process(type('Process', (object,), {}), name='sum')
-
-        proc_avg = cwt.Process(type('Process', (object,), {}), name='avg')
-
-        proc_sum.inputs = ['avg']
-
-        proc_avg.inputs = ['sum']
-
-        with self.assertRaises(cwt.ProcessError):
-            proc_avg.resolve_inputs({}, {'sum': proc_sum, 'avg': proc_avg})
-
-    def test_resolve_inputs(self):
-        proc_sum = cwt.Process(type('Process', (object,), {}), name='sum')
-
-        proc_sum.inputs = ['tas0']
-
-        proc_avg = cwt.Process(type('Process', (object,), {}), name='avg')
-
-        proc_avg.inputs = ['sum', 'tas1']
-
-        inputs = dict((x.name, x) for x in self.inputs)
-
-        operations = { 'sum' : proc_sum }
-
-        proc_avg.resolve_inputs(inputs, operations)
-
-        find_input = lambda x, y: [z for z in x if z.name == y][0]
-
-        test_input_1 = find_input(proc_avg.inputs, 'tas1')
-
-        self.assertIsInstance(test_input_1, cwt.Variable)
-
-        test_input_2 = find_input(proc_avg.inputs, 'sum')
-
-        self.assertIsInstance(test_input_2, cwt.Process)
-
-        test_input_3 = find_input(proc_sum.inputs, 'tas0')
-
-        self.assertIsInstance(test_input_3, cwt.Variable)
-
-    def test_input_process(self):
-        proc_avg = cwt.Process(type('Process', (object,), dict(identifier='avg')))
-
-        proc_sum = cwt.Process(type('Process', (object,), dict(identifier='sum')))
-
-        proc_sum.inputs = [proc_avg]
-
-        data = proc_sum.parameterize()
-
+    def test_parameterize(self):
         expected = {
-                    'name': 'sum',
-                    'input': [ proc_avg.name ],
-                    'result': proc_sum.name
+                    'input': ['tas', 'sum'],
+                    'axes': 'x|y', 
+                    'name': 'CDAT.avg',
+                    'result': 'avg'
                    }
 
-        self.assertEqual(data, expected)
+        self.sum.inputs = [self.clt, self.tas]
+
+        self.avg.inputs = [self.tas, self.sum]
+
+        self.avg.parameters = [cwt.NamedParameter('axes', 'x', 'y')]
+
+        self.assertDictContainsSubset(expected, self.avg.parameterize())
+
+    def test_collect_input_processes(self):
+        self.sum.inputs = [self.clt, self.tas]
+
+        self.avg.inputs = [self.tas, self.sum]
+
+        processes, inputs = self.avg.collect_input_processes()
+
+        self.assertIsInstance(processes, list)
+        self.assertEqual(len(processes), 1)
+        self.assertEqual(processes[0], self.sum)
+
+        self.assertIsInstance(inputs, list)
+        self.assertEqual(len(inputs), 2)
+        self.assertItemsEqual(inputs, [self.tas, self.clt])
+
+    def test_resolve_inputs_missing(self):
+        self.avg.inputs = ['tas']
+
+        with self.assertRaises(cwt.ProcessError):
+            self.avg.resolve_inputs(dict(), dict())
+
+    def test_resolve_inputs_circular(self):
+        self.avg.inputs = ['avg']
+
+        with self.assertRaises(cwt.ProcessError):
+            self.avg.resolve_inputs(dict(), dict(avg=self.avg))
+
+    def test_resolve_inputs(self):
+        self.avg.inputs = ['sum', 'tas']
+
+        self.avg.resolve_inputs(dict(tas=self.tas), dict(sum=self.sum))
+
+        self.assertIsInstance(self.avg.inputs, list)
+        self.assertEqual(len(self.avg.inputs), 2)
+        self.assertItemsEqual(self.avg.inputs, [self.sum, self.tas])
+
+    def test_error(self):
+        self.assertTrue(self.avg.error)
+
+    def test_processing(self):
+        with self.assertRaises(cwt.ProcessError):
+            self.avg.processing
+
+    def test_parameters_property(self):
+        axes = cwt.NamedParameter('axes', 'x', 'y')
+
+        self.avg.parameters = [axes]
+
+        self.assertEqual(axes, self.avg.parameters[0])
+
+    def test_identifier_property(self):
+        self.assertEqual(self.avg.identifier, 'CDAT.avg')
+
+    def test_missing_attribute(self):
+        with self.assertRaises(AttributeError):
+            self.avg.results
 
     def test_from_dict(self):
         data = {
-                'name': 'test',
-                'result': 'avg',
-                'input': ['tas0', 'tas2'],
-                'axes': 'v1|v2'
+                'result': 'avg1',
+                'input': ['tas1'],
+                'name': 'CDAT.avg',
+                'axes': 'x|y',
                }
 
         proc = cwt.Process.from_dict(data)
 
-        self.assertEqual(proc.name, 'avg')
-        self.assertItemsEqual(proc.inputs, ['tas0', 'tas2'])
-        self.assertEqual(len(proc.parameters), 1)
-        self.assertEqual(proc.parameters[0], self.parameters[1])
-
-    def test_parameters(self):
-        self.process.parameters = self.parameters
-
-        self.assertItemsEqual(self.process.parameters, self.parameters)
-
-    def test_parameterize(self):
-        self.process.inputs = self.inputs
-
-        self.process.parameters = self.parameters
-
-        data = self.process.parameterize()
-
-        expected = {
-                    'input': ['tas0', 'tas1', 'tas2', 'tas3'],
-                    'name': 'test',
-                    'result': 'test',
-                    'axes': 'v1|v2',
-                    'bins': 'v1|v2',
-                   }
-
-        self.assertDictContainsSubset(data, expected)
-
-    def test_update_status_no_response(self):
-        with self.assertRaises(cwt.ProcessError):
-            self.process.update_status()
-
-    def test_bad_property(self):
-        with self.assertRaises(AttributeError):
-            self.process.doesnt_exist
+        self.assertEqual(proc.name, 'avg1')
+        self.assertIsInstance(proc.inputs, list)
+        self.assertItemsEqual(proc.inputs, ['tas1'])
+        self.assertIsInstance(proc.parameters, list)
+        self.assertEqual(proc.identifier, 'CDAT.avg')
 
 if __name__ == '__main__':
     unittest.main()
