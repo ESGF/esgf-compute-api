@@ -4,62 +4,68 @@ Unittest for Dimension class.
 
 import unittest
 
-from cwt import CRS
-from cwt import Dimension
-from cwt import ParameterError
+import cwt
 
 class TestDimension(unittest.TestCase):
 
-    def test_from_dict_float(self):
-        d = Dimension.from_dict('lat', {'start': '1.45', 'end': '2.36', 'crs': 'values'})
+    def test_parameterize(self):
+        expected = {'start': 0, 'end': 90, 'crs': 'values', 'step': 1}
 
-        self.assertEqual(d.start, 1.45)
-        self.assertEqual(d.end, 2.36)
+        dim = cwt.Dimension('lat', 0, 90)
 
-    def test_from_dict_int(self):
-        d = Dimension.from_dict('lat', {'start': '1', 'end': '2', 'crs': 'values'})
+        self.assertEqual(dim.parameterize(), expected)
 
-        self.assertEqual(d.start, 1)
-        self.assertEqual(d.end, 2)
+    def test_from_single_value(self):
+        dim = cwt.Dimension.from_single_value('lat', 1000)
+
+        self.assertEqual(dim.start, 1000)
+        self.assertEqual(dim.end, 1000)
+        self.assertEqual(dim.crs, cwt.CRS('values'))
+
+
+    def test_from_single_index(self):
+        dim = cwt.Dimension.from_single_index('lat', 1000)
+
+        self.assertEqual(dim.start, 1000)
+        self.assertEqual(dim.end, 1000)
+        self.assertEqual(dim.crs, cwt.CRS('indices'))
 
     def test_from_dict_missing_crs(self):
-        with self.assertRaises(ParameterError):
-            d = Dimension.from_dict('lat', {'start': 1})
+        data = { 'start': 0 }
+
+        with self.assertRaises(cwt.ParameterError):
+            cwt.Dimension.from_dict(data, 'lat')
 
     def test_from_dict_missing_start(self):
-        with self.assertRaises(ParameterError):
-            d = Dimension.from_dict('lat', {})
+        data = { }
 
-    def test_parameterize(self):
-        data = {
-                'start': 1,
-                'end': 2,
-                'crs': 'values',
-                'step': 10
-                }
-
-        d = Dimension.from_dict('lat', data)
-
-        self.assertDictContainsSubset(data, d.parameterize())
+        with self.assertRaises(cwt.ParameterError):
+            cwt.Dimension.from_dict(data, 'lat')
 
     def test_from_dict(self):
         data = {
-                'start': 1,
-                'end': 2,
+                'start': 0,
+                'end': 90,
                 'crs': 'values',
-                'step': 10
-                }
+                'step': 2,
+               }
 
-        d = Dimension.from_dict('lat', data)
+        dim = cwt.Dimension.from_dict(data, 'lat')
 
-        self.assertEqual(d.name, 'lat')
-        self.assertEqual(d.start, 1)
-        self.assertEqual(d.end, 2)
-        self.assertEqual(d.step, 10)
+        self.assertEqual(dim.name, 'lat')
+        self.assertEqual(dim.start, 0)
+        self.assertEqual(dim.end, 90)
+        self.assertEqual(dim.crs, cwt.CRS('values'))
+        self.assertEqual(dim.step, 2)
 
 class TestCRS(unittest.TestCase):
-    
-    def test_custom(self):
-        c = CRS('test')
 
-        self.assertEqual(c.name, 'test')
+    def test_equal(self):
+        crs1 = cwt.CRS('test')
+
+        crs2 = cwt.CRS('test')
+
+        self.assertTrue(crs1 == crs2)
+
+if __name__ == '__main__':
+    unittest.main()

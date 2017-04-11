@@ -15,15 +15,13 @@ class CRS(object):
     """
     def __init__(self, name):
         """ CRS init. """
-        self._name = name
+        self.name = name
 
-    @property
-    def name(self):
-        """ Read-only name property. """
-        return self._name
+    def __eq__(self, other):
+        return self.name == other.name
 
     def __repr__(self):
-        return 'CRS(name=%r)' % (self._name,)
+        return 'CRS(name={})'.format(self.name)
 
 VALUES = CRS('values')
 INDICES = CRS('indices')
@@ -81,7 +79,7 @@ class Dimension(parameter.Parameter):
         self.crs = crs
 
     @classmethod
-    def from_dict(cls, name, data):
+    def from_dict(cls, data, name):
         """ Create dimension from dict representation. """
         if 'start' in data:
             if isinstance(data['start'], str):
