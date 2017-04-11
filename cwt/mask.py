@@ -36,14 +36,14 @@ class Mask(object):
     """
     def __init__(self, uri, var_name, operation, name=None):
         """ Mask Init. """
-        self._uri = uri
-        self._var_name = var_name
-        self._operation = operation
+        self.uri = uri
+        self.var_name = var_name
+        self.operation = operation
 
         if not name:
             name = str(uuid())
 
-        self._name = name
+        self.name = name
 
     @classmethod
     def from_dict(cls, data):
@@ -69,48 +69,21 @@ class Mask(object):
 
         return cls(uri, var_name, operation, name)
 
-    @property
-    def uri(self):
-        """ URI property. """
-        return self._uri
-
-    @property
-    def var_name(self):
-        """ Variable name. """
-        return self._var_name
-
-    @property
-    def operation(self):
-        """ Mask operation. """
-        return self._operation
-
-    @property
-    def name(self):
-        """ Mask name. """
-        return self._name
-
     def parameterize(self):
         """ Create a parameter from mask. """
-        param_id = self._var_name
+        param_id = self.var_name
 
-        if self._name:
-            param_id += '|' + self._name
+        if self.name:
+            param_id += '|' + self.name
 
         return {
-            'uri': self._uri,
+            'uri': self.uri,
             'id': param_id,
-            'operation': self._operation,
+            'operation': self.operation,
         }
 
     def __repr__(self):
         return 'Mask(uri=%r, var_name=%r, operation=%r, name=%r)' % (
-            self._uri,
-            self._var_name,
-            self._operation,
-            self._name)
-
-    def __str__(self):
-        return 'uri=%s var_name=%s operation=%s name=%s' % (
             self._uri,
             self._var_name,
             self._operation,

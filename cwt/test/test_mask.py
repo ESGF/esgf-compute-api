@@ -2,55 +2,36 @@
 Mask Unittest.
 """
 
-from unittest import TestCase
+import unittest
 
-from cwt import Mask
+import cwt
 
-class TestMask(TestCase):
+class TestMask(unittest.TestCase):
     """ Mask Test Case. """
 
-    def test_repr(self):
-        """ Test repr value. """
-
-        mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='North')
-
-        self.assertEqual(repr(mask),
-                         "Mask(uri='file://test.nc', var_name='ta', "
-                         "operation='var_data>mask_data', name='North')")
-
-    def test_str(self):
-        """ Test str value. """
-
-        mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='North')
-
-        self.assertEqual(str(mask),
-                         "uri=file://test.nc var_name=ta "
-                         "operation=var_data>mask_data name=North")
-
-    def test_from_dict(self):
-        """ Create Mask from dict representation. """
-        valid = {"uri": "/test.nc", "id": "tas|m0", "operation": "test_op"}
-
-        mask = Mask.from_dict(valid)
-
-        self.assertEqual(mask.uri, '/test.nc')
-        self.assertEqual(mask.name, 'm0')
-        self.assertEqual(mask.var_name, 'tas')
-        self.assertEqual(mask.operation, 'test_op')
-
-    # pylint: disable=protected-access
-    def test_mask(self):
-        """ Check mask parameterization. """
-        mask = Mask('file://test.nc', 'ta', 'var_data>mask_data')
-
-        self.assertIsNotNone(mask._name)
-
-        mask = Mask('file://test.nc', 'ta', 'var_data>mask_data', name='test')
-
+    def parameterize(self):
         expected = {
-            'uri': 'file://test.nc',
-            'id': 'ta|test',
-            'operation': 'var_data>mask_data',
-        }
+                    'uri': 'file:///test.nc',
+                    'id': 'tas|tas1',
+                    'operation': 'var_data>0.5'
+                   }
 
-        self.assertEqual(mask.parameterize(), expected)
+        mask = cwt.Mask('file:///test.nc', 'tas', 'var_data>0.5', 'tas1')
+
+        self.assertDictContainsSubset(expected, mask.parameterize())
+    
+    def test_from_dict(self):
+        data = {
+                'uri': 'file:///test.nc',
+                'id': 'tas|tas1',
+                'operation': 'var_data>0.5',
+               }
+
+        mask = cwt.Mask.from_dict(data)
+
+        self.assertEqual(mask.uri, 'file:///test.nc')
+        self.assertEqual(mask.var_name, 'tas')
+        self.assertEqual(mask.operation, 'var_data>0.5')
+
+if __name__ == '__main__':
+    unittest.main()
