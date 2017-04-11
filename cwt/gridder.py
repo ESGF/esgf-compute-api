@@ -32,23 +32,13 @@ class Gridder(parameter.Parameter):
         """ Gridder Init. """
         super(Gridder, self).__init__('gridder')
 
-        self._tool = tool
-        self._method = method
+        self.tool = tool
+        self.method = method
         self.grid = grid
 
     @classmethod
     def from_dict(cls, data):
         return cls(**data)
-
-    @property
-    def tool(self):
-        """ Tool property. """
-        return self._tool
-
-    @property
-    def method(self):
-        """ Method property. """
-        return self._method
 
     def parameterize(self):
         """ Parameterizes a gridder. """
@@ -60,19 +50,13 @@ class Gridder(parameter.Parameter):
             grid = self.grid.name
 
         return {
-            'tool': self._tool,
-            'method': self._method,
+            'tool': self.tool,
+            'method': self.method,
             'grid': grid,
         }
 
     def __repr__(self):
         return 'Gridder(tool=%r, method=%r, grid=%r)' % (
-            self._tool,
-            self._method,
-            self.grid)
-
-    def __str__(self):
-        return 'tool=%s method=%s grid=%s' % (
             self._tool,
             self._method,
             self.grid)
