@@ -37,7 +37,7 @@ class Domain(parameter.Parameter):
             dimensions = []
 
         self.dimensions = dimensions
-        self._mask = mask
+        self.mask = mask
 
     @classmethod
     def from_dict(cls, data):
@@ -55,7 +55,7 @@ class Domain(parameter.Parameter):
 
         for key, value in data.iteritems():
             if key not in blacklist:
-                dimensions.append(dimension.Dimension.from_dict(key, value))
+                dimensions.append(dimension.Dimension.from_dict(value, key))
 
         mask_data = None
 
@@ -63,11 +63,6 @@ class Domain(parameter.Parameter):
             mask_data = mask.Mask.from_dict(data['mask'])
 
         return cls(dimensions=dimensions, mask=mask_data, name=name)
-
-    @property
-    def mask(self):
-        """ Returns associated mask. """
-        return self._mask
 
     def get_dimension(self, name):
         for dim in self.dimensions:
@@ -89,11 +84,11 @@ class Domain(parameter.Parameter):
         for dimension in self.dimensions:
             param[dimension.name] = dimension.parameterize()
 
-        if self._mask:
-            param['mask'] = self._mask.parameterize()
+        if self.mask:
+            param['mask'] = self.mask.parameterize()
 
         return param
 
     def __repr__(self):
         return ('Domain(dimensions=%r, mask=%r, name=%r)' %
-                (self.dimensions, self._mask, self.name))
+                (self.dimensions, self.mask, self.name))

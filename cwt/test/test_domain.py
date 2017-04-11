@@ -1,44 +1,65 @@
 """ Domain Unittest """
 
-from unittest import TestCase
+import unittest
 
-from cwt import Mask
-from cwt import Domain
-from cwt import Dimension
-from cwt import ParameterError
+import cwt
 
-MASK = Mask('clt.nc', 'clt', 'var_data<0.5')
-
-LAT = Dimension('lat', 0, 90)
-LON = Dimension('lon', 0, 180)
-
-class TestDomain(TestCase):
+class TestDomain(unittest.TestCase):
     """ Domain Test Case """
 
-    def test_from_dict_missing_name(self):
-        with self.assertRaises(ParameterError):
-            d = Domain.from_dict({})
+    def test_parameterize(self):
+        expected = { 'id': 'd0', 'lat': { 'start': 0, 'end': 90, 'step': 1, 'crs': 'values' } }
+
+        dom = cwt.Domain([cwt.Dimension('lat', 0, 90)], name='d0')
+
+        self.assertDictContainsSubset(expected, dom.parameterize())
+
+    def test_add_dimension(self):
+        dom = cwt.Domain()
+
+        dom.add_dimension(cwt.Dimension('lat', 0, 90))
+
+        self.assertEqual(len(dom.dimensions), 1)
+
+    def test_get_dimension(self):
+        dom = cwt.Domain([cwt.Dimension('lat', 0, 90)])
+
+        dimension = dom.get_dimension('lat')
+
+        self.assertIsNotNone(dimension)
+
+    def test_from_dict_missing_id(self):
+        data = { }
+
+        with self.assertRaises(cwt.ParameterError):
+            cwt.Domain.from_dict(data)
 
     def test_from_dict(self):
-        d = Domain.from_dict({
-            'id': 'test',
-            'mask': MASK.parameterize(),
-            'lon': {
-                'start': 0,
-                'crs': 'values',
-                }
-            })
+        data = {
+                'id': 'd0',
+                'mask': 'var_data>0.5',
+                'lat': {
+                        'start': 0,
+                        'end': 90,
+                        'crs': 'values',
+                        'step': 2
+                       }
+               }
 
-        self.assertEqual(d.name, 'test')
-        self.assertIsInstance(d.mask, Mask)
-        self.assertIsInstance(d.dimensions, list)
-        self.assertEqual(len(d.dimensions), 1)
-        self.assertIsInstance(d.dimensions[0], Dimension)
+        dom = cwt.Domain.from_dict(data)
 
-    def test_parameterize(self):
-        d = Domain([LAT, LON], MASK, 'test')
+        self.assertEqual(dom.name, 'd0')
+        self.assertIsInstance(dom.dimensions, list)
+        self.assertEqual(len(dom.dimensions), 1)
+        self.assertIsInstance(dom.mask, cwt.Mask)
+        
 
-        data = d.parameterize()
+    def test_empty_domain(self):
+        expected = {}
 
-        self.assertEqual(data['id'], 'test')
-        self.assertItemsEqual(data.keys(), ('lat', 'lon', 'mask', 'id'))
+        dom = cwt.Domain()
+
+        self.assertDictContainsSubset(expected, dom.parameterize())
+
+if __name__ == '__main__':
+    unittest.main()
