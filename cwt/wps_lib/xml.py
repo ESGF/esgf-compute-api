@@ -468,7 +468,7 @@ class XMLDocument(object):
         # Validate that we're parsing the correct class
         if not (cls_name == self.__class__.__name__ or
                 (self.tag is not None and cls_name == self.tag)):
-            raise ValidationError('XML does not match class definition')
+            raise ValidationError('XML does not match class definition: {} {} {}'.format(cls_name, self.tag, self.__class__.__name__))
 
         logger.debug('%s BEGIN PARSING "%s" %s', '#'*6, re.sub('^{.*}', '', root.tag), '#'*6)
         logger.debug(etree.tostring(root, pretty_print=True))

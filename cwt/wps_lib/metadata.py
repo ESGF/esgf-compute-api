@@ -420,13 +420,13 @@ class ComplexDataDescription(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
     def __init__(self, **kwargs):
-        super(ComplexDataDescription, self).__init__(nsmap=ns.NSMAP, **kwargs)
+        super(ComplexDataDescription, self).__init__(nsmap=ns.NSMAP, tag='ComplexOutput', **kwargs)
 
     @xml.Element(path='Default', value_type=Format)
     def default(self):
         pass
 
-    @xml.Element(maximum=None, value_type=Format, output_list=True)
+    @xml.Element(path='Supported', maximum=None, value_type=Format, output_list=True)
     def supported(self):
         pass
 
@@ -545,7 +545,7 @@ class InputDescription(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
     def __init__(self, **kwargs):
-        super(InputDescription, self).__init__(nsmap=ns.NSMAP, **kwargs)
+        super(InputDescription, self).__init__(nsmap=ns.NSMAP, tag='Input', **kwargs)
 
     @ows_element()
     def identifier(self):
