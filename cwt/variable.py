@@ -24,7 +24,7 @@ class Variable(parameter.Parameter):
         super(Variable, self).__init__(kwargs.get('name', None))
 
         self.uri = uri
-        self._var_name = var_name
+        self.var_name = var_name
 
         domains = kwargs.get('domains', None)
 
@@ -32,7 +32,7 @@ class Variable(parameter.Parameter):
             domains = [domains]
 
         self.domains = domains
-        self._mime_type = kwargs.get('mime_type', None)
+        self.mime_type = kwargs.get('mime_type', None)
 
     @classmethod
     def from_dict(cls, data):
@@ -70,15 +70,18 @@ class Variable(parameter.Parameter):
 
         return cls(uri, var_name, domains=domains, name=name, mime_type=mime_type)
 
-    @property
-    def var_name(self):
-        """ Variable name in uri. """
-        return self._var_name
+    def resolve_domains(self, domains):
+        """ Resolves the domain identifiers to objects. """
+    
+        new_domains = []
 
-    @property
-    def mime_type(self):
-        """ Mime-type of uri. """
-        return self._mime_type
+        for d in self.domains:
+            if d not in domains:
+                raise Exception('Could not find domain {}'.format(d))
+
+            new_domains.append(domains[d])
+
+        self.domains = new_domains
 
     def parameterize(self):
         """ Parameterize variable for GET request. """
@@ -100,5 +103,5 @@ class Variable(parameter.Parameter):
 
     def __repr__(self):
         return ('Variable(name=%r, uri=%r, var_name=%r, domains=%r, '
-                'mime_type=%r)' % (self.name, self.uri, self._var_name,
-                                   self.domains, self._mime_type))
+                'mime_type=%r)' % (self.name, self.uri, self.var_name,
+                                   self.domains, self.mime_type))
