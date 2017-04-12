@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 SUPPORTED_CONVERSION = (str, float, bool, int, long)
 
+class XMLError(Exception):
+    pass
+
 class Translator(object):
     """ Base translator class.
 
@@ -259,7 +262,10 @@ class XMLDocument(object):
     def from_xml(cls, data):
         doc = cls()
 
-        tree = etree.fromstring(data)
+        try:
+            tree = etree.fromstring(data)
+        except Exception:
+            raise XMLError('Failed to parse xml')
 
         doc.parse_xml(tree)
 

@@ -5,6 +5,8 @@ Process Unittest.
 import unittest
 
 import cwt
+import mock
+from cwt.wps_lib.xml import XMLError
 
 class TestProcess(unittest.TestCase):
     """ Process Test Case. """
@@ -17,6 +19,26 @@ class TestProcess(unittest.TestCase):
         self.tas = cwt.Variable('file:///tas.nc', 'tas', name='tas')
 
         self.clt = cwt.Variable('file:///clt.nc', 'clt', name='clt')
+
+    @mock.patch.object(cwt.wps.requests, 'get')
+    def test_update_status_malformed_execute_response(self, mock_get):
+        # Mock the response object with text property
+        mock_get.return_value = mock.Mock(text='</xml>')
+
+        self.avg.response = type('Process', (object,), dict(status_location='http://doesnotexist'))
+
+        with self.assertRaises(XMLError):
+            self.avg.update_status()
+
+    def test_update_status_location_does_not_exist(self):
+        self.avg.response = type('Process', (object,), dict(status_location='http://doesnotexist'))
+
+        with self.assertRaises(cwt.ProcessError):
+            self.avg.update_status()
+
+    def test_update_status(self):
+        with self.assertRaises(cwt.ProcessError):
+            self.avg.update_status()
 
     def test_parameterize(self):
         expected = {
