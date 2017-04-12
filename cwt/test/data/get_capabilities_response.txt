@@ -1,0 +1,190 @@
+<wps:Capabilities xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lang="en-US" version="1.0.0" updateSequence="0" service="WPS">
+  <ows:ServiceIdentification>
+    <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+    <ows:Title>LLNL WPS</ows:Title>
+    <ows:ServiceType>WPS</ows:ServiceType>
+    <ows:Keywords/>
+  </ows:ServiceIdentification>
+  <wps:Processofferings>
+    <wps:Process>
+      <wps:Title>Space/Time Minimum</wps:Title>
+      <wps:Abstract> Computes minimum element value from input variable data over specified axes and roi </wps:Abstract>
+      <wps:Identifier>CDSpark.min</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Regridder</wps:Title>
+      <wps:Abstract> Regrids the inputs using UVCDAT </wps:Abstract>
+      <wps:Identifier>cdmsmodule.regrid</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Maximum</wps:Title>
+      <wps:Abstract> Computes the maximun of the array elements along the given axes. </wps:Abstract>
+      <wps:Identifier>numpymodule.max</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Time Binning</wps:Title>
+      <wps:Abstract> Aggregates data into bins over time using specified reduce function and binning specifications </wps:Abstract>
+      <wps:Identifier>CDSpark.timeBin</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Space/Time Subset</wps:Title>
+      <wps:Abstract> Extracts a subset of element values from input variable data over the specified axes and roi </wps:Abstract>
+      <wps:Identifier>CDSpark.subset</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Element-wise Minimum</wps:Title>
+      <wps:Abstract> Computes element-wise minimum values for a pair of input variables data over specified roi </wps:Abstract>
+      <wps:Identifier>CDSpark.min2</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Variance</wps:Title>
+      <wps:Abstract> Computes the variance of the array elements along the given axes. </wps:Abstract>
+      <wps:Identifier>numpymodule.var</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Standard Deviation</wps:Title>
+      <wps:Abstract> Computes the standard deviation of the array elements along the given axes. </wps:Abstract>
+      <wps:Identifier>numpymodule.std</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Element-wise Maximum</wps:Title>
+      <wps:Abstract> Computes element-wise maximum values for a pair of input variables data over specified roi </wps:Abstract>
+      <wps:Identifier>CDSpark.max2</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Sum</wps:Title>
+      <wps:Abstract> Computes the sum of the array elements along the given axes. </wps:Abstract>
+      <wps:Identifier>numpymodule.sum</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Minimum</wps:Title>
+      <wps:Abstract> Computes the minimun of the array elements along the given axes. </wps:Abstract>
+      <wps:Identifier>numpymodule.min</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Element-wise Maximum</wps:Title>
+      <wps:Abstract> Computes element-wise sums for a pair of input variables data over specified roi </wps:Abstract>
+      <wps:Identifier>CDSpark.sum2</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Ensemble Mean</wps:Title>
+      <wps:Abstract> Computes point-by-point average over intputs withing specified ROI </wps:Abstract>
+      <wps:Identifier>CDSpark.multiAverage</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Maximum (Serial)</wps:Title>
+      <wps:Abstract> Computes the maximun of the array elements along the given axes without parallelization (for testing). </wps:Abstract>
+      <wps:Identifier>numpymodule.maxSer</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Peak to Peak</wps:Title>
+      <wps:Abstract> Computes the peak to peak (maximum - minimum) value the along given axes. </wps:Abstract>
+      <wps:Identifier>numpymodule.ptp</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Element-wise Division</wps:Title>
+      <wps:Abstract> Computes element-wise divisions for a pair of input variables data over specified roi </wps:Abstract>
+      <wps:Identifier>CDSpark.div2</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Space/Time Sum</wps:Title>
+      <wps:Abstract> Computes sums of element values from input variable data over specified axes and roi </wps:Abstract>
+      <wps:Identifier>CDSpark.sum</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Maximum (Serial)</wps:Title>
+      <wps:Abstract> Computes the maximun of the array elements along the given axes without parallelization (for testing). </wps:Abstract>
+      <wps:Identifier>numpymodule.maxCustRed</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Mean</wps:Title>
+      <wps:Abstract> Computes the mean of the array elements along the given axes. </wps:Abstract>
+      <wps:Identifier>numpymodule.mean</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Element-wise Product</wps:Title>
+      <wps:Abstract> Computes element-wise products for a pair of input variables data over specified roi </wps:Abstract>
+      <wps:Identifier>CDSpark.mult2</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Space/Time Mean</wps:Title>
+      <wps:Abstract> Computes (weighted) means of element values from input variable data over specified axes and roi </wps:Abstract>
+      <wps:Identifier>CDSpark.average</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Space/Time Maximum</wps:Title>
+      <wps:Abstract> Computes maximum element value from input variable data over specified axes and roi </wps:Abstract>
+      <wps:Identifier>CDSpark.max</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Element-wise Difference</wps:Title>
+      <wps:Abstract> Computes element-wise diffs for a pair of input variables over specified roi </wps:Abstract>
+      <wps:Identifier>CDSpark.diff2</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Average</wps:Title>
+      <wps:Abstract> Averages the inputs using UVCDAT with area weighting by default </wps:Abstract>
+      <wps:Identifier>cdmsmodule.ave</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Cdat.Avg</wps:Title>
+      <wps:Abstract></wps:Abstract>
+      <wps:Identifier>CDAT.avg</wps:Identifier>
+    </wps:Process>
+    <wps:Process>
+      <wps:Title>Cdat.Workflow</wps:Title>
+      <wps:Abstract></wps:Abstract>
+      <wps:Identifier>CDAT.workflow</wps:Identifier>
+    </wps:Process>
+  </wps:Processofferings>
+  <wps:Languages>
+    <wps:Default>
+      <wps:Language>en-CA</wps:Language>
+    </wps:Default>
+    <wps:Supported>
+      <wps:Language>en-CA</wps:Language>
+    </wps:Supported>
+  </wps:Languages>
+  <ows:Operationsmetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:Dcp>
+        <ows:Http>
+          <ows:Post>http://0.0.0.0:8000/wps</ows:Post>
+        </ows:Http>
+      </ows:Dcp>
+      <ows:Dcp>
+        <ows:Http>
+          <ows:Get>http://0.0.0.0:8000/wps</ows:Get>
+        </ows:Http>
+      </ows:Dcp>
+    </ows:Operation>
+    <ows:Operation name="DescribeProcess">
+      <ows:Dcp>
+        <ows:Http>
+          <ows:Post>http://0.0.0.0:8000/wps</ows:Post>
+        </ows:Http>
+      </ows:Dcp>
+      <ows:Dcp>
+        <ows:Http>
+          <ows:Get>http://0.0.0.0:8000/wps</ows:Get>
+        </ows:Http>
+      </ows:Dcp>
+    </ows:Operation>
+    <ows:Operation name="Execute">
+      <ows:Dcp>
+        <ows:Http>
+          <ows:Post>http://0.0.0.0:8000/wps</ows:Post>
+        </ows:Http>
+      </ows:Dcp>
+      <ows:Dcp>
+        <ows:Http>
+          <ows:Get>http://0.0.0.0:8000/wps</ows:Get>
+        </ows:Http>
+      </ows:Dcp>
+    </ows:Operation>
+  </ows:Operationsmetadata>
+  <ows:ServiceProvider>
+    <ows:ProviderSite>https://llnl.gov</ows:ProviderSite>
+    <ows:ProviderName>Lawerence Livermore National Laboratory</ows:ProviderName>
+  </ows:ServiceProvider>
+</wps:Capabilities>

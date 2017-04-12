@@ -1,0 +1,75 @@
+<wps:ProcessDescriptions xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lang="en-US" version="1.0.0" service="WPS">
+  <wps:ProcessDescription wps:processVersion="1.0.0" statusSupported="True" storeSupported="True">
+    <ows:Title>Cdat.Avg</ows:Title>
+    <ows:Abstract></ows:Abstract>
+    <DataInputs>
+      <Input maxOccurs="1" minOccurs="1">
+        <ows:Identifier>variable</ows:Identifier>
+        <ComplexOutput maximumMegabytes="0">
+          <Default>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Default>
+          <Supported>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Supported>
+        </ComplexOutput>
+        <ows:Title>Variable</ows:Title>
+      </Input>
+      <Input maxOccurs="1" minOccurs="1">
+        <ows:Identifier>domain</ows:Identifier>
+        <ComplexOutput maximumMegabytes="0">
+          <Default>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Default>
+          <Supported>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Supported>
+        </ComplexOutput>
+        <ows:Title>Domain</ows:Title>
+      </Input>
+      <Input maxOccurs="1" minOccurs="1">
+        <ows:Identifier>operation</ows:Identifier>
+        <ComplexOutput maximumMegabytes="0">
+          <Default>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Default>
+          <Supported>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Supported>
+        </ComplexOutput>
+        <ows:Title>Operation</ows:Title>
+      </Input>
+    </DataInputs>
+    <ProcessOutputs>
+      <OutputDescription>
+        <ows:Identifier>output</ows:Identifier>
+        <ComplexOutput maximumMegabytes="0">
+          <Default>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Default>
+          <Supported>
+            <Format>
+              <MimeType>text/json</MimeType>
+            </Format>
+          </Supported>
+        </ComplexOutput>
+        <ows:Title>Output</ows:Title>
+      </OutputDescription>
+    </ProcessOutputs>
+    <ows:Identifier>CDAT.avg</ows:Identifier>
+  </wps:ProcessDescription>
+</wps:ProcessDescriptions>

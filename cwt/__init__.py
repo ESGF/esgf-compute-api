@@ -24,4 +24,4 @@ from .dimension import Dimension
 from .parameter import Parameter
 from .parameter import ParameterError
 
-from .wps import WPS
+from .wps import *

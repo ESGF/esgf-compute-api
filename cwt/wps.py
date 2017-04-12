@@ -8,14 +8,11 @@ import sys
 import requests
 from lxml import etree
 
-from cwt import domain
-from cwt import named_parameter
-from cwt import process
-from cwt import variable
+import cwt
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class WPSError(Exception):
     pass
@@ -57,22 +54,17 @@ class WPS(object):
                 file_handler.setFormatter(formatter)
 
                 logger.addHandler(file_handler)
+        else:
+            logger.addHandler(logging.NullHandler())
     
     @property
     def capabilities(self):
+        if self.__capabilities == None:
+            self.__capabilites = self.__get_capabilities()
+
         return self.__capabilities
 
-    def __request(self, method, params=None, data=None):
-        url = self.__url
-
-        if method.lower() == 'post' and self.__url[-1] != '/':
-            url = '{0}/'.format(self.__url)
-
-        headers = {}
-
-        if self.__csrf_token is not None:
-            headers['X-CSRFToken'] = self.__csrf_token
-        
+    def __http_request(self, method, url, params, data, headers):
         try:
             response = self.__client.request(method, url, params=params, data=data, headers=headers)
         except requests.RequestException:
@@ -93,13 +85,30 @@ class WPS(object):
             raise WPSHTTPError('{0} response failed with status code '
                     '{1} {2}'.format(method, response.status_code, response.content))
 
+        return response.text
+
+    def __request(self, method, params=None, data=None):
+        url = self.__url
+
+        if method.lower() == 'post' and self.__url[-1] != '/':
+            url = '{0}/'.format(self.__url)
+
+        headers = {}
+
+        if self.__csrf_token is not None:
+            headers['X-CSRFToken'] = self.__csrf_token
+       
+        response = self.__http_request(method, url, params, data, headers)
+
+        logger.info('{}'.format(response))
+
         return response
 
     def __parse_response(self, response, response_type):
         data = None
 
         try:
-            data = response_type.from_xml(response.text)
+            data = response_type.from_xml(response)
         except Exception:
             logger.exception('Failed to parse CDAS2 response.')
         else:
@@ -107,7 +116,7 @@ class WPS(object):
 
         if data is None:
             try:
-                data = metadata.ExceptionReport.from_xml(response.text)
+                data = metadata.ExceptionReport.from_xml(response)
             except Exception:
                 logger.exception('Failed to parse ExceptionReport')
 
@@ -146,14 +155,14 @@ class WPS(object):
         if self.__capabilities is None or refresh:
             self.__capabilities = self.__get_capabilities(method)
 
-        return [process.Process(x) for x in self.__capabilities.process_offerings]
+        return [cwt.Process(x) for x in self.__capabilities.process_offerings]
 
     def get_process(self, identifier, method='GET'):
         if self.__capabilities is None:
             self.__capabilities = self.__get_capabilities(method)
 
         try:
-            return [process.Process(x) for x in self.__capabilities.process_offerings
+            return [cwt.Process(x) for x in self.__capabilities.process_offerings
                     if x.identifier == identifier][0]
         except IndexError:
             logger.debug('Failed to find process with identifier "%s"', identifier)
@@ -161,11 +170,16 @@ class WPS(object):
             raise Exception('Failed to find process with identifier "{}"'.format(identifier))
 
     def describe(self, process, method='GET'):
+        if isinstance(process, cwt.Process):
+            identifier = process.identifier
+        else:
+            identifier = process
+
         params = {
                 'service': 'wps',
                 'request': 'describeprocess',
                 'version': '1.0.0',
-                'identifier': process.identifier,
+                'identifier': identifier,
                 }
 
         if self.__language is not None:
@@ -192,18 +206,18 @@ class WPS(object):
 
         kwargs = dict((x.split('=')[0], json.loads(x.split('=')[1])) for x in match.group(1).split(';'))
 
-        variables = [variable.Variable.from_dict(x) for x in kwargs.get('variable', [])]
+        variables = [cwt.Variable.from_dict(x) for x in kwargs.get('variable', [])]
 
-        domains = [domain.Domain.from_dict(x) for x in kwargs.get('domain', [])]
+        domains = [cwt.Domain.from_dict(x) for x in kwargs.get('domain', [])]
 
-        operation = [process.Process.from_dict(x) for x in kwargs.get('operation', [])]
+        operation = [cwt.Process.from_dict(x) for x in kwargs.get('operation', [])]
 
         return operation, domains, variables
 
     def __prepare_data_inputs(self, process, inputs, domains, **kwargs):
         domains = [x.parameterize() for x in domains]
 
-        parameters = [named_parameter.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
+        parameters = [cwt.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
 
         process.inputs = inputs
 
@@ -257,7 +271,6 @@ class WPS(object):
                 'identifier': process.identifier,
                 }
 
-
         if method.lower() == 'get':
             params['datainputs'] = self.prepare_data_inputs(process, inputs, domains, **kwargs)
             #params['datainputs'] = '[{0}]'.format(';'.join('{0}={1}'.format(x, json.dumps(y))
@@ -274,15 +287,3 @@ class WPS(object):
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
         process.response = self.__parse_response(response, operations.ExecuteResponse)
-
-if __name__ == '__main__':
-    w = WPS('http://0.0.0.0:8000/wps')
-
-    from variable import Variable
-
-    tas = Variable('file:///data/tas_6h.nc', 'tas')
-
-    p = w.get_process('CDSpark.min')
-
-    w.describe(p)
-    #w.execute(p, inputs=[tas])
