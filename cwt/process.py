@@ -24,11 +24,11 @@ class Process(parameter.Parameter):
         self.__process = process
         self.__identifier = None
         self.__response = None
-        self.__params = {}
 
         self.response = None
         self.processed = False
         self.inputs = []
+        self.parameters = {}
 
     @classmethod
     def from_dict(cls, data):
@@ -67,14 +67,6 @@ class Process(parameter.Parameter):
 
     identifier = property(__get_identifier, __set_identifier)
 
-    def __get_parameters(self):
-        return self.__params.values()
-
-    def __set_parameters(self, params):
-        self.__params = dict((x.name, x) for x in params)
-
-    parameters = property(__get_parameters, __set_parameters)
-
     @property
     def processing(self):
         self.update_status()
@@ -86,6 +78,21 @@ class Process(parameter.Parameter):
         return True if (self.response is None or
                         (self.response is not None and
                          isinstance(self.status, metadata.ProcessFailed))) else False
+
+    def add_parameters(self, *args, **kwargs):
+        for a in args:
+            if isinstance(a, named_parameter.NamedParameter):
+                self.parameters[a.name] = a
+            else:
+                raise ProcessError('Cannot add parameter of type {}'.format(type(a)))
+
+        for k, v in kwargs.iteritems():
+            if isinstance(v, (list, tuple)):
+                self.parameters[k] = named_parameter.NamedParameter(k, *v)
+            elif isinstance(v, str):
+                self.parameters[k] = cwt.NamedParameter.from_string(k, v)
+            else:
+                raise ProcessError('Cannot add parameter of type {}'.format(type(v)))
 
     def set_inputs(self, *args):
         self.inputs.extend(args)
@@ -155,8 +162,8 @@ class Process(parameter.Parameter):
             'result': self.name
         }
 
-        if self.__params is not None:
-            for _, p in self.__params.iteritems():
+        if self.parameters is not None:
+            for _, p in self.parameters.iteritems():
                 params.update(p.parameterize())
 
         return params

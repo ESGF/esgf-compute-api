@@ -221,7 +221,7 @@ class WPS(object):
 
         process.inputs.extend(inputs)
 
-        process.parameters.extend(parameters)
+        process.add_parameters(*parameters)
 
         processes, variables = process.collect_input_processes()
 
