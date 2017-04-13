@@ -87,6 +87,9 @@ class Process(parameter.Parameter):
                         (self.response is not None and
                          isinstance(self.status, metadata.ProcessFailed))) else False
 
+    def set_inputs(self, *args):
+        self.inputs.extend(args)
+
     def resolve_inputs(self, inputs, operations):
         logger.info('Proccess {} resolving inputs {}'.format(self.identifier, self.inputs))
 

@@ -20,6 +20,11 @@ class TestProcess(unittest.TestCase):
 
         self.clt = cwt.Variable('file:///clt.nc', 'clt', name='clt')
 
+    def test_set_inputs(self):
+        self.avg.set_inputs(self.tas, self.clt)
+
+        self.assertItemsEqual(self.avg.inputs, [self.tas, self.clt])
+
     @mock.patch.object(cwt.wps.requests, 'get')
     def test_update_status_malformed_execute_response(self, mock_get):
         # Mock the response object with text property
