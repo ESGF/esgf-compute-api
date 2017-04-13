@@ -28,6 +28,21 @@ class TestWPS(unittest.TestCase):
         
         self.data_inputs = '[variable=[{"uri": "file:///data/tas_6h.nc", "id": "tas|tas1"}];domain=[{"id": "d0"}];operation=[{"input": ["tas1"], "name": "CDAT.avg", "result": "avg"}]]'
 
+    def test_combine_inputs(self):
+        inputs = [cwt.Variable('file:///tas.nc', 'tas{}'.format(x)) for x in range(2)]
+
+        avg = cwt.Process(type('Process', (object,), dict(identifier='CDAT.avg')))
+
+        avg.set_inputs(inputs[0])
+
+        with mock.patch.object(self.wps, '_WPS__request') as m:
+            m.return_value = self.execute_data
+
+            self.wps.execute(avg, inputs=[inputs[1]])
+
+            self.assertIn('tas0|', m.call_args_list[0][1]['data'])
+            self.assertIn('tas1|', m.call_args_list[0][1]['data'])
+
     def test_execute(self):
         with mock.patch.object(self.wps, '_WPS__request') as m:
             m.return_value = self.execute_data

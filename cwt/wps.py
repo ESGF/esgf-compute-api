@@ -219,9 +219,9 @@ class WPS(object):
 
         parameters = [cwt.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
 
-        process.inputs = inputs
+        process.inputs.extend(inputs)
 
-        process.parameters = parameters
+        process.parameters.extend(parameters)
 
         processes, variables = process.collect_input_processes()
 
