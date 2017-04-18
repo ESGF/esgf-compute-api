@@ -125,6 +125,9 @@ class ProcessAccepted(xml.XMLDocument):
     def __str__(self):
         return self.__class__.__name__
 
+    def __eq__(self, other):
+        return str(self) == str(other)
+
 class ProcessStarted(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
@@ -133,6 +136,9 @@ class ProcessStarted(xml.XMLDocument):
 
     def __str__(self):
         return self.__class__.__name__
+
+    def __eq__(self, other):
+        return str(self) == str(other)
 
 class ProcessPaused(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
@@ -143,6 +149,9 @@ class ProcessPaused(xml.XMLDocument):
     def __str__(self):
         return self.__class__.__name__
 
+    def __eq__(self, other):
+        return str(self) == str(other)
+
 class ProcessSucceeded(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
@@ -151,6 +160,9 @@ class ProcessSucceeded(xml.XMLDocument):
 
     def __str__(self):
         return self.__class__.__name__
+
+    def __eq__(self, other):
+        return str(self) == str(other)
 
 class ProcessFailed(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
@@ -164,6 +176,9 @@ class ProcessFailed(xml.XMLDocument):
 
     def __str__(self):
         return self.__class__.__name__
+
+    def __eq__(self, other):
+        return str(self) == str(other)
 
 class ComplexData(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
