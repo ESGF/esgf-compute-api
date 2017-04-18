@@ -122,6 +122,9 @@ class ProcessAccepted(xml.XMLDocument):
     def __init__(self, **kwargs):
         super(ProcessAccepted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
+    def __str__(self):
+        return self.__class__.__name__
+
 class ProcessStarted(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
