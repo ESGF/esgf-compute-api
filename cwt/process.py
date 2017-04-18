@@ -40,11 +40,11 @@ class Process(parameter.Parameter):
 
         known_keys = ('name', 'input', 'result')
 
-        proc_params = []
+        proc_params = {}
 
         for key in data.keys():
             if key not in known_keys:
-                proc_params.append(named_parameter.NamedParameter.from_string(key, data.get(key)))
+                proc_params[key] = named_parameter.NamedParameter.from_string(key, data.get(key))
 
         obj.parameters = proc_params
 
@@ -158,9 +158,18 @@ class Process(parameter.Parameter):
     def parameterize(self):
         params = {
             'name': self.identifier,
-            'input': [x.name for x in self.inputs],
             'result': self.name
         }
+
+        inputs = []
+
+        for i in self.inputs:
+            if isinstance(i, (str, unicode)):
+                inputs.append(i)
+            else:
+                inputs.append(i.name)
+
+        params['input'] = inputs
 
         if self.parameters is not None:
             for _, p in self.parameters.iteritems():
