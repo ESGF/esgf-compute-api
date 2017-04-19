@@ -4,6 +4,8 @@ Gridder Module.
 
 from cwt import parameter
 
+__all__ = ['Gridder']
+
 class Gridder(parameter.Parameter):
     """ Gridder.
     

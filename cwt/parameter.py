@@ -4,6 +4,8 @@ Parameter module.
 
 from uuid import uuid4 as uuid
 
+__all__ = ['ParameterError', 'Parameter']
+
 class ParameterError(Exception):
     pass
 

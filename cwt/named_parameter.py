@@ -4,6 +4,8 @@ NamedParameter Module.
 
 from cwt import parameter
 
+__all__ = ['NamedParameter']
+
 class NamedParameter(parameter.Parameter):
     """ Named Parameter.
 

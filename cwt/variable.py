@@ -5,6 +5,8 @@ Variable module.
 from cwt import domain
 from cwt import parameter
 
+__all__ = ['Variable']
+
 class Variable(parameter.Parameter):
     """ Variable.
     

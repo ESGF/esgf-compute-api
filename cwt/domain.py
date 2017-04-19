@@ -6,6 +6,8 @@ from cwt import dimension
 from cwt import mask
 from cwt import parameter
 
+__all__ = ['Domain']
+
 class Domain(parameter.Parameter):
     """ Domain.
 

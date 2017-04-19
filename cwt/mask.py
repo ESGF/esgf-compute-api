@@ -4,6 +4,8 @@ Mask Module.
 
 from uuid import uuid4 as uuid
 
+__all__ = ['Mask']
+
 # pylint: disable=too-few-public-methods
 class Mask(object):
     """ Mask.

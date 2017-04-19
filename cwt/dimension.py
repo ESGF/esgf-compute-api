@@ -4,6 +4,8 @@ Dimension module.
 
 from cwt import parameter
 
+__all__ = ['CRS', 'VALUES', 'INDICES', 'Dimension']
+
 # pylint: disable=too-few-public-methods
 class CRS(object):
     """ Coordinate Reference System (CRS).

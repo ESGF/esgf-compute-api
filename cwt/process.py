@@ -14,6 +14,8 @@ from cwt.wps_lib import operations
 
 logger = logging.getLogger(__name__)
 
+__all__ = ['ProcessError', 'Process']
+
 class ProcessError(Exception):
     pass
 
