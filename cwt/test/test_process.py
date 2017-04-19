@@ -57,7 +57,7 @@ class TestProcess(unittest.TestCase):
 
         self.avg.inputs = [self.tas, self.sum]
 
-        self.avg.parameters = [cwt.NamedParameter('axes', 'x', 'y')]
+        self.avg.add_parameters(cwt.NamedParameter('axes', 'x', 'y'))
 
         self.assertDictContainsSubset(expected, self.avg.parameterize())
 
@@ -131,7 +131,7 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(proc.name, 'avg1')
         self.assertIsInstance(proc.inputs, list)
         self.assertItemsEqual(proc.inputs, ['tas1'])
-        self.assertIsInstance(proc.parameters, list)
+        self.assertIsInstance(proc.parameters, dict)
         self.assertEqual(proc.identifier, 'CDAT.avg')
 
 if __name__ == '__main__':
