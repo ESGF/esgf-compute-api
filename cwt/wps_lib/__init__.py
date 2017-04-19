@@ -25,3 +25,10 @@ from .metadata import FileSizeExceeded
 from .metadata import StorageNotSupported
 
 from .metadata import ExceptionReport
+
+from .operations import ExecuteResponse
+from .operations import ExecuteRequest
+from .operations import DescribeProcessResponse
+from .operations import DescribeProcessRequest
+from .operations import GetCapabilitiesResponse
+from .operations import GetCapabilitiesRequest
