@@ -30,6 +30,7 @@ class WPS(object):
         self.__password = password
         self.__version = kwargs.get('version')
         self.__language = kwargs.get('laanguage')
+        self.__api_key = kwargs.get('api_key')
         self.__capabilities = None 
         self.__csrf_token = None
         self.__client = requests.Session()
@@ -65,6 +66,12 @@ class WPS(object):
         return self.__capabilities
 
     def __http_request(self, method, url, params, data, headers):
+        if self.__api_key is not None:
+            if params is None:
+                params = {}
+
+            params['api_key'] = self.__api_key
+
         try:
             response = self.__client.request(method, url, params=params, data=data, headers=headers)
         except requests.RequestException:
