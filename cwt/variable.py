@@ -74,6 +74,9 @@ class Variable(parameter.Parameter):
 
     def resolve_domains(self, domains):
         """ Resolves the domain identifiers to objects. """
+
+        if self.domains is None:
+            return
     
         new_domains = []
 
