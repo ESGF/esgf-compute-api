@@ -134,8 +134,18 @@ class ProcessStarted(xml.XMLDocument):
     def __init__(self, **kwargs):
         super(ProcessStarted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
+        self.percent_completed = 0
+
+    @xml.Attribute()
+    def percent_completed(self):
+        pass
+
+    @wps_zero_one_element(store_value=True)
+    def value(self):
+        pass
+
     def __str__(self):
-        return self.__class__.__name__
+        return '{} {} {} %'.format(self.__class__.__name__, self.value, self.percent_completed)
 
     def __eq__(self, other):
         return str(self) == str(other)
