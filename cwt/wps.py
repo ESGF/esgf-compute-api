@@ -225,6 +225,8 @@ class WPS(object):
         domains = []
 
         if domain is not None:
+            process.domain = domain
+
             domains.append(domain.parameterize())
 
         parameters = [cwt.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
