@@ -166,6 +166,9 @@ class Process(parameter.Parameter):
             'result': self.name
         }
 
+        if self.domain is not None:
+            params['domain'] = self.domain.name
+
         inputs = []
 
         for i in self.inputs:
