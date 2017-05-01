@@ -2,6 +2,10 @@
 Variable module.
 """
 
+import os
+
+import requests
+
 from cwt import domain
 from cwt import parameter
 
@@ -87,6 +91,21 @@ class Variable(parameter.Parameter):
             new_domains.append(domains[d])
 
         self.domains = new_domains
+
+    def localize(self, filename=None):
+        if filename is None:
+            filename = 'output.nc'
+
+        try:
+            response = requests.get(self.uri)
+        except requests.ConnectionError:
+            raise Exception('Failed to localize file.')
+
+        path = os.path.join(os.getcwd(), filename)
+
+        with open(path, 'w') as f:
+            for chunk in response.iter_content(512000):
+                f.write(chunk)
 
     def parameterize(self):
         """ Parameterize variable for GET request. """
