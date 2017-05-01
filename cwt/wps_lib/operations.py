@@ -6,8 +6,6 @@ from cwt.wps_lib import metadata
 from cwt.wps_lib import namespace as ns
 from cwt.wps_lib import xml
 
-from cwt.wps_lib.test import metadata as md
-
 class ExecuteResponse(xml.XMLDocument):
     __metaclass__ = xml.XMLDocumentMarkupType
 
