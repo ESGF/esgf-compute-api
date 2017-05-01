@@ -167,7 +167,10 @@ class Process(parameter.Parameter):
         }
 
         if self.domain is not None:
-            params['domain'] = self.domain.name
+            if isinstance(self.domain, (str, unicode)):
+                params['domain'] = self.domain
+            else:
+                params['domain'] = self.domain.name
 
         inputs = []
 
