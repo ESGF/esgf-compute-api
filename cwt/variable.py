@@ -107,6 +107,8 @@ class Variable(parameter.Parameter):
             for chunk in response.iter_content(512000):
                 f.write(chunk)
 
+        return path
+
     def parameterize(self):
         """ Parameterize variable for GET request. """
         params = {
