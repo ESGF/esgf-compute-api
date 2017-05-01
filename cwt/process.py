@@ -26,7 +26,6 @@ class Process(parameter.Parameter):
 
         self.__process = process
         self.__identifier = None
-        self.__response = None
 
         self.response = None
         self.processed = False
@@ -87,13 +86,13 @@ class Process(parameter.Parameter):
 
     @property
     def output(self):
-        if self.__response is None:
+        if self.response is None:
             return None
 
-        if self.__response.output is None or len(self.__response.output) == 0:
+        if self.response.output is None or len(self.response.output) == 0:
             return None
 
-        data = json.loads(self.__response.output[0].data.value)
+        data = json.loads(self.response.output[0].data.value)
 
         var = variable.Variable.from_dict(data)
 
