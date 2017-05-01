@@ -3,7 +3,9 @@
 
 **/*.pyc
 
+*.nc
 *.log
+*.ipynb*
 
 build/
 dist/
