@@ -31,6 +31,7 @@ class Process(parameter.Parameter):
         self.processed = False
         self.inputs = []
         self.parameters = {}
+        self.domain = None
 
     @classmethod
     def from_dict(cls, data):
@@ -39,6 +40,8 @@ class Process(parameter.Parameter):
         obj.inputs = data.get('input', [])
 
         obj.identifier = data.get('name')
+
+        obj.domain = data.get('domain')
 
         known_keys = ('name', 'input', 'result')
 
