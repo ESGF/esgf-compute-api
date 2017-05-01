@@ -2,6 +2,7 @@
 Process Module.
 """
 
+import json
 import logging
 
 import requests
@@ -83,6 +84,20 @@ class Process(parameter.Parameter):
         return True if (self.response is None or
                         (self.response is not None and
                          isinstance(self.status, metadata.ProcessFailed))) else False
+
+    @property
+    def output(self):
+        if self.__response is None:
+            return None
+
+        if self.__response.output is None or len(self.__response.output) == 0:
+            return None
+
+        data = json.loads(self.__response.output[0].data.value)
+
+        var = variable.Variable.from_dict(data)
+
+        return var
 
     def add_parameters(self, *args, **kwargs):
         for a in args:
