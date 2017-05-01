@@ -1,33 +1,13 @@
 #!/usr/bin/env python
 
-from setuptools import setup
-from setuptools.command.test import test as TestCommand
-
 import cwt
+from distutils.core import setup
 
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-
-        self.test_args = []
-
-    def run_tests(self):
-        import sys
-        import pytest
-
-        errcode = pytest.main(self.test_args)
-
-        sys.exit(errcode)
-
-setup(
-    name='esgf-compute-api',
-    version=cwt.__version__,
-    url='http://github.com/ESGF/esgf-compute-api',
-    author='Jason Boutte',
-    test_require=['pytest'],
-    install_requires=['requests'],
-    cmdclass={'test': PyTest},
-    author_email='boutte3@llnl.gov',
-    description='ESGF CWT End-user API',
-    packages=['cwt']
+setup(name='esgf-compute-api',
+      version=cwt.__version__,
+      description='Compute Working Team End-User API',
+      author='Jason Boutte',
+      author_email='boutte3@llnl.gov',
+      url='https://github.com/ESGF/esgf-compute-api',
+      packages=['cwt', 'cwt.wps_lib'],
 )
