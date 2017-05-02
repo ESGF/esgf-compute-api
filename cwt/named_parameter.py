@@ -23,11 +23,14 @@ class NamedParameter(parameter.Parameter):
         name: Name of the parameter.
         *args: Values of the parameter.
     """
-    def __init__(self, name, *args):
+    def __init__(self, name, args):
         """ NamedParameter init. """
         super(NamedParameter, self).__init__(name)
 
-        self.values = list(args)
+        if isinstance(args, (str, unicode)):
+            self.values = args.split('|')
+        else:
+            self.values = args
 
     @classmethod
     def from_string(cls, name, values):
@@ -40,8 +43,10 @@ class NamedParameter(parameter.Parameter):
 
     def parameterize(self):
         """ Parameterizes NamedParameter for GET request. """
-        if all(isinstance(x, (str, unicode)) for x in self.values):
+        if isinstance(self.values, (list, tuple)) and all(isinstance(x, (str, unicode)) for x in self.values):
             value = '|'.join(self.values)
+        elif isinstance(self.values, parameter.Parameter):
+            value = self.values.parameterize()
         else:
             raise parameter.ParameterError('Unknow value type {}'.format(type(self.values[0])))
 

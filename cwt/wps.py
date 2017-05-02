@@ -229,7 +229,7 @@ class WPS(object):
 
             domains.append(domain.parameterize())
 
-        parameters = [cwt.NamedParameter(x, *y) for x, y in kwargs.iteritems()]
+        parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
         process.inputs.extend(inputs)
 

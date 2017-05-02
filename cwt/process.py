@@ -10,6 +10,7 @@ import requests
 from cwt import parameter
 from cwt import named_parameter
 from cwt import variable
+from cwt import gridder
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
 
@@ -49,7 +50,13 @@ class Process(parameter.Parameter):
 
         for key in data.keys():
             if key not in known_keys:
-                proc_params[key] = named_parameter.NamedParameter.from_string(key, data.get(key))
+                d = data.get(key)
+
+                if isinstance(d, (dict)):
+                    if key == 'gridder':
+                        proc_params[key] = gridder.Gridder.from_dict(d)
+                else:
+                    proc_params[key] = named_parameter.NamedParameter.from_string(key, d)
 
         obj.parameters = proc_params
 

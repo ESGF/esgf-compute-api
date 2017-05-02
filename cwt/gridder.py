@@ -46,7 +46,7 @@ class Gridder(parameter.Parameter):
         """ Parameterizes a gridder. """
         # Handle different types of grids
         # pylint: disable=no-member
-        if isinstance(self.grid, str):
+        if isinstance(self.grid, (str, unicode)):
             grid = self.grid
         else:
             grid = self.grid.name
