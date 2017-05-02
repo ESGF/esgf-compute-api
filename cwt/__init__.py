@@ -15,11 +15,11 @@ from .process import *
 from .variable import *
 from .wps import *
 
-T21 = Gridder(grid='gaussian~32'
-T42 = Gridder(grid='gaussian~64'
-T63 = Gridder(grid='gaussian~128'
+T21 = Gridder(grid='gaussian~32')
+T42 = Gridder(grid='gaussian~64')
+T63 = Gridder(grid='gaussian~96')
 
-UF25 = Gridder(grid='uniform~.25'
-UF5 = Gridder(grid='uniform~.5'
-U1 = Gridder(grid='uniform~1'
-U2 = Gridder(grid='uniform~2'
+UF25 = Gridder(grid='uniform~.25')
+UF5 = Gridder(grid='uniform~.5')
+U1 = Gridder(grid='uniform~1')
+U2 = Gridder(grid='uniform~2')
