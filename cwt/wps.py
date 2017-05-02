@@ -255,6 +255,8 @@ class WPS(object):
         base_params['data_inputs'] = []
 
         for key, value in data_inputs.iteritems():
+            logger.info('Setting input {} to {}'.format(key, value))
+
             inp = metadata.Input()
 
             inp.identifier = key

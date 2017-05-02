@@ -204,7 +204,7 @@ class Process(parameter.Parameter):
         params['input'] = inputs
 
         if self.parameters is not None:
-            for _, p in self.parameters.iteritems():
-                params.update(p.parameterize())
+            for k, p in self.parameters.iteritems():
+                params[k] = p.parameterize()
 
         return params

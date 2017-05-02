@@ -40,7 +40,13 @@ class Gridder(parameter.Parameter):
 
     @classmethod
     def from_dict(cls, data):
-        return cls(**data)
+        tool = data.get('tool')
+
+        method = data.get('method')
+
+        grid = data.get('grid')
+
+        return cls(tool, method, grid)
 
     def parameterize(self):
         """ Parameterizes a gridder. """
@@ -59,6 +65,6 @@ class Gridder(parameter.Parameter):
 
     def __repr__(self):
         return 'Gridder(tool=%r, method=%r, grid=%r)' % (
-            self._tool,
-            self._method,
+            self.tool,
+            self.method,
             self.grid)

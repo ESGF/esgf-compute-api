@@ -50,7 +50,7 @@ class NamedParameter(parameter.Parameter):
         else:
             raise parameter.ParameterError('Unknow value type {}'.format(type(self.values[0])))
 
-        return {self.name: value}
+        return value
 
     def __eq__(self, other):
         return self.name == other.name and self.values == other.values
