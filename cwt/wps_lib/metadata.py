@@ -144,8 +144,11 @@ class ProcessStarted(xml.XMLDocument):
     def value(self):
         pass
 
-    def __str__(self):
+    def format(self):
         return '{} {} {} %'.format(self.__class__.__name__, self.value, self.percent_completed)
+
+    def __str__(self):
+        return self.__class__.__name__
 
     def __eq__(self, other):
         return str(self) == str(other)
