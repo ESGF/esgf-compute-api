@@ -68,7 +68,7 @@ class Dimension(parameter.Parameter):
 
         self.start = start
 
-        if end:
+        if end is not None:
             self.end = end
         else:
             self.end = None
