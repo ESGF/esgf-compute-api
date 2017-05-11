@@ -57,7 +57,7 @@ class TestProcess(unittest.TestCase):
 
         self.avg.inputs = [self.tas, self.sum]
 
-        self.avg.add_parameters(cwt.NamedParameter('axes', 'x', 'y'))
+        self.avg.add_parameters(cwt.NamedParameter('axes', ('x', 'y')))
 
         self.assertDictContainsSubset(expected, self.avg.parameterize())
 
@@ -105,7 +105,7 @@ class TestProcess(unittest.TestCase):
             self.avg.processing
 
     def test_parameters_property(self):
-        axes = cwt.NamedParameter('axes', 'x', 'y')
+        axes = cwt.NamedParameter('axes', ('x', 'y'))
 
         self.avg.parameters = [axes]
 

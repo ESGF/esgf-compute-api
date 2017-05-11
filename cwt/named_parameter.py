@@ -35,11 +35,7 @@ class NamedParameter(parameter.Parameter):
     @classmethod
     def from_string(cls, name, values):
         """ Creates NamedParameter from string value. """
-        return cls(name, *values.split('|'))
-
-    @classmethod
-    def from_list(cls, name, values):
-        return cls(name, *values)
+        return cls(name, values.split('|'))
 
     def parameterize(self):
         """ Parameterizes NamedParameter for GET request. """
@@ -48,7 +44,7 @@ class NamedParameter(parameter.Parameter):
         elif isinstance(self.values, parameter.Parameter):
             value = self.values.parameterize()
         else:
-            raise parameter.ParameterError('Unknow value type {}'.format(type(self.values[0])))
+            raise parameter.ParameterError('Unknow value type {}'.format(type(self.values)))
 
         return value
 

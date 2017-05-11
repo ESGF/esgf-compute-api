@@ -26,7 +26,7 @@ class TestWPS(unittest.TestCase):
         with open(test_path('data/execute_cdat_avg_response.txt'), 'r') as infile:
             self.execute_data = infile.read()
         
-        self.data_inputs = '[variable=[{"uri": "file:///data/tas_6h.nc", "id": "tas|tas1"}];domain=[{"id": "d0"}];operation=[{"input": ["tas1"], "name": "CDAT.avg", "result": "avg"}]]'
+        self.data_inputs = '[variable=[{"uri": "file:///data/tas_6h.nc", "id": "tas|tas1"}];domain=[{"id": "d0"}];operation=[{"input": ["tas1"], "domain": "d0", "name": "CDAT.avg", "result": "avg"}]]'
 
     def test_combine_inputs(self):
         inputs = [cwt.Variable('file:///tas.nc', 'tas{}'.format(x)) for x in range(2)]
@@ -60,7 +60,7 @@ class TestWPS(unittest.TestCase):
 
         d0 = cwt.Domain(name='d0')
 
-        data_inputs = self.wps.prepare_data_inputs(proc, [tas], [d0])
+        data_inputs = self.wps.prepare_data_inputs(proc, [tas], d0)
        
         self.assertEqual(self.data_inputs, data_inputs)
 

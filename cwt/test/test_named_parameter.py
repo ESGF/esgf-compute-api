@@ -15,13 +15,6 @@ class TestNamedParameter(unittest.TestCase):
         with self.assertRaises(cwt.ParameterError):
             p.parameterize()
 
-    def test_from_list(self):
-        p = cwt.NamedParameter.from_list('axes', ['x', 'y'])
-
-        self.assertIsInstance(p.values, list)
-        self.assertEqual(len(p.values), 2)
-        self.assertItemsEqual(p.values, ['x', 'y'])
-
     def test_from_string(self):
         p = cwt.NamedParameter.from_string('axes', 'x|y')
 
