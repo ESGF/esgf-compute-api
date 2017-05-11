@@ -66,9 +66,12 @@ class Domain(parameter.Parameter):
 
         return cls(dimensions=dimensions, mask=mask_data, name=name)
 
-    def get_dimension(self, name):
+    def get_dimension(self, names):
+        if not isinstance(names, (list, tuple)):
+            names = [names]
+
         for dim in self.dimensions:
-            if dim.name == name:
+            if dim.name in names:
                 return dim
 
         return None
