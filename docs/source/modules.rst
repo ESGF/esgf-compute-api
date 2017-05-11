@@ -1,7 +1,7 @@
-esgf
-====
+cwt
+===
 
 .. toctree::
    :maxdepth: 4
 
-   esgf
+   cwt

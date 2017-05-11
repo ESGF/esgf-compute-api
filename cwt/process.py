@@ -22,6 +22,14 @@ class ProcessError(Exception):
     pass
 
 class Process(parameter.Parameter):
+    """ A WPS Process
+
+    Wraps a WPS Process.
+
+    Arguments:
+        process: A DescribeProcessResponse object.
+        name: A string name for the process to be used as the input of another process.
+    """
     def __init__(self, process, name=None):
         super(Process, self).__init__(name)
 
@@ -36,6 +44,7 @@ class Process(parameter.Parameter):
 
     @classmethod
     def from_dict(cls, data):
+        """ Attempts to load a process from a dict. """
         obj = cls(None, data.get('result'))
 
         obj.inputs = data.get('input', [])
@@ -63,6 +72,12 @@ class Process(parameter.Parameter):
         return obj
 
     def __getattr__(self, name):
+        """ Fallthrough attribute lookup.
+
+        If the attribute is not contained in the current object then we search
+        the __process and response objects.
+
+        """
         if hasattr(self.__process, name):
             return getattr(self.__process, name)
 
@@ -72,27 +87,39 @@ class Process(parameter.Parameter):
         raise AttributeError(name)
 
     def __get_identifier(self):
+        """ Returns the processes identifier. """
         return self.__process.identifier if self.__process is not None else self.__identifier
 
     def __set_identifier(self, value):
+        """ Sets the processes identifier. """
         self.__identifier = value
 
     identifier = property(__get_identifier, __set_identifier)
 
     @property
     def processing(self):
+        """ Checks if the process is still working.
+
+        This will update the wrapper with the latest status and return
+        True if the process is waiting or running.
+
+        Returns:
+            A boolean denoting whether the process is still working.
+        """
         self.update_status()
 
         return self.status.__class__ in (metadata.ProcessAccepted, metadata.ProcessStarted)
 
     @property
     def error(self):
+        """ Check if the process has errored. """
         return True if (self.response is None or
                         (self.response is not None and
                          isinstance(self.status, metadata.ProcessFailed))) else False
 
     @property
     def output(self):
+        """ Return the output of the process if done. """
         if self.response is None:
             return None
 
@@ -106,6 +133,17 @@ class Process(parameter.Parameter):
         return var
 
     def add_parameters(self, *args, **kwargs):
+        """ Add a parameter.
+
+        kwargs can contain two formats.
+
+        k=v where v is a NamedParameter
+        k=v where v is a string in the format of 'x|y|z'
+        
+        Args:
+            args: A list of NamedParameter objects.
+            kwargs: A dict of NamedParameter objects or k=v where k is the name and v is string.
+        """
         for a in args:
             if isinstance(a, named_parameter.NamedParameter):
                 self.parameters[a.name] = a
@@ -121,9 +159,23 @@ class Process(parameter.Parameter):
                 raise ProcessError('Cannot add parameter of type {}'.format(type(v)))
 
     def set_inputs(self, *args):
+        """ Set the inputs of the Process. 
+        
+        Args:
+            args: A list of Process/Variable objects.
+        """
         self.inputs.extend(args)
 
     def resolve_inputs(self, inputs, operations):
+        """ Attempts to resolve the process inputs.
+
+        Resolves the processes inputs from strings to Process/Variable objects.
+
+        Args:
+            inputs: A dict of Variables where the key is name.
+            operations: A dict of Processes where the key is name.
+
+        """
         logger.info('Proccess {} resolving inputs {}'.format(self.identifier, self.inputs))
 
         temp = dict((x, None) for x in self.inputs)
@@ -146,6 +198,18 @@ class Process(parameter.Parameter):
         self.inputs = temp.values()
 
     def collect_input_processes(self, processes=None, inputs=None):
+        """ Aggregates the process trees inputs.
+
+        A DFS to collect the trees inputs into two lists, Operations and Variables.
+
+        Args:
+            processes: A list of current processes discovered.
+            inputs: A list of Process/Variables to processes.
+
+        Returns:
+            A two lists, one of Processes and the other of Variables.
+        """
+
         if processes is None:
             processes = []
 
@@ -165,6 +229,7 @@ class Process(parameter.Parameter):
         return processes, inputs.values()
 
     def update_status(self):
+        """ Retrieves the latest process status. """
         if self.response is None or self.status_location is None:
             raise ProcessError('Process does not support status updates')
 
@@ -182,6 +247,7 @@ class Process(parameter.Parameter):
                                .format(str(self.status.exception_report)))
 
     def parameterize(self):
+        """ Create a dictionary representation of the Process. """
         params = {
             'name': self.identifier,
             'result': self.name
