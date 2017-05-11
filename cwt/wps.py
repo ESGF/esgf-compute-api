@@ -75,8 +75,6 @@ class WPS(object):
         try:
             response = self.__client.request(method, url, params=params, data=data, headers=headers)
         except requests.RequestException:
-            logger.exception('%s request failed', method)
-
             raise WPSHTTPError('{0} request failed'.format(method))
 
         logger.debug('%s request succeeded', method)
@@ -117,7 +115,7 @@ class WPS(object):
         try:
             data = response_type.from_xml(response)
         except Exception:
-            logger.exception('Failed to parse CDAS2 response.')
+            raise
         else:
             return data
 
@@ -125,8 +123,6 @@ class WPS(object):
             try:
                 data = metadata.ExceptionReport.from_xml(response)
             except Exception:
-                logger.exception('Failed to parse ExceptionReport')
-
                 raise WPSError('Failed to parse server response')
             else:
                 raise WPSError(data)
