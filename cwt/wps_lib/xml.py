@@ -8,7 +8,7 @@ import logging
 import re
 import sys
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('cwt.wps_lib.xml')
 
 SUPPORTED_CONVERSION = (str, float, bool, int, long)
 

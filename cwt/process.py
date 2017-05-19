@@ -14,7 +14,7 @@ from cwt import gridder
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('cwt.process')
 
 __all__ = ['ProcessError', 'Process']
 
