@@ -18,7 +18,7 @@ from .wps import *
 NorthernHemisphere = Dimension('latitude', 0, 90)
 SouthernHemisphere = Dimension('latitude', -90, 0)
 Tropics = Dimension('latitude', -23.4, 23.4)
-ArticZone = Dimesnion('latitude', 66.6, 90.0)
+ArticZone = Dimension('latitude', 66.6, 90.0)
 AntarcticZone = Dimension('latitude', -90, -66.6)
 
 T21 = Gridder(grid='gaussian~32')
