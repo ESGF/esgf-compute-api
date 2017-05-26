@@ -132,6 +132,27 @@ class Process(parameter.Parameter):
 
         return var
 
+    def get_parameter(self, name, required=False):
+        """ Retrieves a parameter
+
+        Args:
+            name: A string name of the parameter.
+            required: A boolean flag denoting whether the parameter is required.
+
+        Returns:
+            A NamedParameter object.
+
+        Raises:
+            Exception: The parameter is required and not present.
+        """
+        if name not in self.parameters and required:
+            raise Exception('The parameter {} is not present and is required.'.format(name))
+
+        if name in self.parameters:
+            return self.parameters[name]
+
+        return None
+
     def add_parameters(self, *args, **kwargs):
         """ Add a parameter.
 
