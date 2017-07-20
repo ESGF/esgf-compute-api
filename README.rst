@@ -12,7 +12,7 @@ Installation
 ============
 :: 
     
-    conda install -c conda-forge -c jasonb857 esgf-compute-api
+    conda install -c uvcdat esgf-compute-api
 
 or
 
@@ -27,6 +27,8 @@ or
 
 Quickstart
 ==========
+`Getting Started <https://github.com/ESGF/esgf-compute-api/blob/master/examples/1_getting_started.ipynb`_
+
 ::
 
     >>> import cwt
@@ -56,4 +58,4 @@ Documentation can be found on `readthedocs <http://esgf-compute-api.readthedocs.
 Compatibility
 =============
 
-:doc:`cwt.compat`
+Compatibility document can be found on `readthedocs <https://esgf-compute-api.readthedocs.io/en/latest/cwt.compat.html>`_
