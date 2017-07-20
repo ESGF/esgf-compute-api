@@ -27,7 +27,7 @@ or
 
 Quickstart
 ==========
-`Getting Started <https://github.com/ESGF/esgf-compute-api/blob/master/examples/1_getting_started.ipynb`_
+`Getting Started <https://github.com/ESGF/esgf-compute-api/blob/master/examples/1_getting_started.ipynb>`_
 
 ::
 
