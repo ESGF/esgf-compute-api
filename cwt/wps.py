@@ -411,3 +411,6 @@ class WPS(object):
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
         process.response = self.__parse_response(response, operations.ExecuteResponse)
+
+        if isinstance(process.response.status, metadata.ProcessFailed):
+            raise Exception(process.response.status.exception_report)
