@@ -134,7 +134,8 @@ class ProcessStarted(xml.XMLDocument):
     def __init__(self, **kwargs):
         super(ProcessStarted, self).__init__(namespace=ns.WPS, nsmap=ns.NSMAP, **kwargs)
 
-        self.percent_completed = 0
+        if kwargs.get('percent_completed') is None:
+            self.percent_completed = 0
 
     @xml.Attribute()
     def percent_completed(self):
