@@ -15,7 +15,7 @@ class TestWorkflow:
         op =  cwt.Process.from_dict( { 'name': "CDSpark.average" } )
         op.set_inputs( inputs )
 
-        wps = cwt.WPS( 'http://localhost:5327/wps', log=True, log_file=os.path.expanduser("~/esgf_api.log") );  """:type : cwt.WPS """
+        wps = cwt.WPS( 'http://localhost:5327/wps', log=True, log_file=os.path.expanduser("~/esgf_api.log") )
         wps.execute( op, domain=d0 )
 
 executor = TestWorkflow()
