@@ -10,12 +10,13 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
+        inputs =  [ cwt.Variable("file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml", "tas", domain="d0", axes="xy" ) ]
+
         op =  cwt.Process.from_dict( { 'name': "CDSpark.average" } )
-        op.set_inputs( [ cwt.Variable("file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml", "tas", domain="d0", axes="xy" ) ] )
+        op.set_inputs( inputs )
 
         wps = cwt.WPS( 'http://localhost:5327/wps', log=True, log_file=os.path.expanduser("~/esgf_api.log") );  """:type : cwt.WPS """
-        process = cwt.Process( wps, op );                    """:type : cwt.Process """
-        process.execute( None, d0, [], True, True, "GET" )
+        wps.execute( op, inputs=inputs, domain=d0 )
 
 executor = TestWorkflow()
 executor.run()
