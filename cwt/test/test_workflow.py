@@ -10,7 +10,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs =  [ cwt.Variable("file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml", "tas", domain="d0", axes="xy" ) ]
+        inputs = cwt.Variable("file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml", "tas", domain="d0", axes="xy" )
 
         op =  cwt.Process.from_dict( { 'name': "CDSpark.average" } )
         op.set_inputs( inputs )
