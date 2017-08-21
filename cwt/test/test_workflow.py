@@ -14,7 +14,6 @@ class TestWorkflow:
         op.set_inputs( [ cwt.Variable("file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml", "tas", domain="d0", axes="xy" ) ] )
 
         wps = cwt.WPS( 'http://localhost:5327/wps', log=True, log_file=os.path.expanduser("~/esgf_api.log") );  """:type : cwt.WPS """
-        wps.init()
         process = cwt.Process( wps, op );                    """:type : cwt.Process """
         process.execute( None, d0, [], True, True, "GET" )
 
