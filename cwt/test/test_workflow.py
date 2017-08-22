@@ -16,7 +16,7 @@ class TestWorkflow:
         op.set_inputs( inputs )
 
         wps = cwt.WPS( 'http://localhost:9000/wps', log=True, log_file=os.path.expanduser("~/esgf_api.log") )
-        wps.execute( op, domain=d0, method="GET" )
+        wps.execute( op, domain=d0, status=True, method="GET" )
 
 executor = TestWorkflow()
 executor.run()

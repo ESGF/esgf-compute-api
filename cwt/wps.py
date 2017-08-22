@@ -379,7 +379,7 @@ class WPS(object):
 
         return request(**base_params)
 
-    def execute(self, process, inputs=None, domain=None, method='POST', **kwargs):
+    def execute(self, process, inputs=None, domain=None, status=True, method='GET', **kwargs):
         """ Execute the process on the WPS server. 
         
         Args:
@@ -396,6 +396,7 @@ class WPS(object):
                 'request': 'Execute',
                 'version': '1.0.0',
                 'identifier': process.identifier,
+                'status': str(status).lower()
                 }
 
         if method.lower() == 'get':
