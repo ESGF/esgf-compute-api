@@ -104,9 +104,10 @@ class WPS(object):
             params['api_key'] = self.__api_key
 
         try:
+            logger.debug( "Sending request to url: {0}, params = {1}, data = {2}, headers={3}".format(url,str(params),str(data),str(headers)))
             response = self.__client.request(method, url, params=params, data=data, headers=headers)
-        except requests.RequestException:
-            raise WPSHTTPError('{0} request failed'.format(method))
+        except requests.RequestException, err:
+            raise WPSHTTPError('{0} request failed: {1}'.format(method,str(err)))
 
         logger.debug('%s request succeeded', method)
 

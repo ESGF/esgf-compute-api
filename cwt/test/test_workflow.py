@@ -10,9 +10,9 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs = cwt.Variable("file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml", "tas", domain="d0", axes="xy" )
+        inputs = cwt.Variable("file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml", "tas", domain="d0" )
 
-        op =  cwt.Process.from_dict( { 'name': "CDSpark.average" } )
+        op =  cwt.Process.from_dict( { 'name': "CDSpark.average", 'axes': "xy" } )
         op.set_inputs( inputs )
 
         wps = cwt.WPS( 'http://localhost:9000/wps', log=True, log_file=os.path.expanduser("~/esgf_api.log") )
