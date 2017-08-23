@@ -379,13 +379,14 @@ class WPS(object):
 
         return request(**base_params)
 
-    def execute(self, process, inputs=None, domain=None, status=True, method='GET', **kwargs):
+    def execute(self, process, inputs=None, domain=None, async=True, method='GET', **kwargs):
         """ Execute the process on the WPS server. 
         
         Args:
             process: A Process object to be executed on the WPS server.
             inputs: A list in Variables/Processes.
             domain: A Domain object to be used.
+            async:  A bool determining async (True) or sync (False) execution.
             kwargs: A dict containing additional arguments.
         """
         if inputs is None:
@@ -396,7 +397,8 @@ class WPS(object):
                 'request': 'Execute',
                 'version': '1.0.0',
                 'identifier': process.identifier,
-                'status': str(status).lower()
+                'responseForm': "wps",                  # Syntax of response: 'wps' or 'generic' (simplified)
+                'status': str(async).lower()
                 }
 
         if method.lower() == 'get':
