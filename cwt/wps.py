@@ -397,7 +397,6 @@ class WPS(object):
                 'request': 'Execute',
                 'version': '1.0.0',
                 'identifier': process.identifier,
-                'responseForm': "wps",                  # Syntax of response: 'wps' or 'generic' (simplified)
                 'status': str(async).lower()
                 }
 
