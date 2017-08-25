@@ -29,5 +29,5 @@ setup(
     cmdclass={'test': PyTest},
     author_email='boutte3@llnl.gov',
     description='ESGF CWT End-user API',
-    packages=['cwt',"cwt.wps_lib"]
+    packages=['cwt',"cwt.wps_lib","cwt.wps_lib.test","cwt.test"]
 )
