@@ -4,6 +4,9 @@ import cwt, os
 # variable=[{"uri":"file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml","name":"tas:v1","domain":"d0"}],
 # operation=[{"name":"CDSpark.average","input":"v1","domain":"d0","axes":"xy"}]]"""
 
+# host = 'http://localhost:9000/wps'
+host = 'https://dptomcat03-int:9000/wps'
+
 class TestWorkflow:
 
     def run( self ):
@@ -15,8 +18,9 @@ class TestWorkflow:
         op =  cwt.Process.from_dict( { 'name': "CDSpark.average", 'axes': "xy" } )
         op.set_inputs( inputs )
 
-        wps = cwt.WPS( 'http://localhost:9000/wps', log=True, log_file=os.path.expanduser("~/esgf_api.log") )
+        wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log") )
         wps.execute( op, domain=d0, async=True )
+
 
 executor = TestWorkflow()
 executor.run()
