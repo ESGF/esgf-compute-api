@@ -15,7 +15,8 @@ class TestWorkflow:
 
         inputs = cwt.Variable("file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml", "tas", domain="d0" )
 
-        op =  cwt.Process.from_dict( { 'name': "CDSpark.average", 'axes': "xy" } )
+        op_data =  { 'name': "CDSpark.average", 'axes': "xy" }
+        op =  cwt.Process.from_dict( op_data )
         op.set_inputs( inputs )
 
         wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log") )
