@@ -5,7 +5,7 @@ import cwt, os
 # operation=[{"name":"CDSpark.average","input":"v1","domain":"d0","axes":"xy"}]]"""
 
 # host = 'http://localhost:9000/wps'
-host = 'https://dptomcat03-int:9000/wps'
+host = 'https://dptomcat03-int:9000/wps/cwt'
 
 class TestWorkflow:
 
