@@ -45,11 +45,9 @@ class Process(parameter.Parameter):
     @classmethod
     def from_dict(cls, data):
         """ Attempts to load a process from a dict. """
-        obj = cls(None, data.get('result'))
+        obj = cls(data.get('name'), None, data.get('result'))
 
         obj.inputs = data.get('input', [])
-
-        obj.identifier = data.get('name')
 
         obj.domain = data.get('domain')
 
