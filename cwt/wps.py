@@ -40,6 +40,7 @@ class WPS(object):
             version: A string version of the WPS server.
             language: A string language code for the WPS server to communicate in.
             log: A boolean flag to enable logging
+            verify: A boolean flag to enable checking of certificates (default = True)
             log_file: A string path for a log file.
         """
         self.__url = url
@@ -48,6 +49,7 @@ class WPS(object):
         self.__version = kwargs.get('version')
         self.__language = kwargs.get('language')
         self.__api_key = kwargs.get('api_key')
+        self.__verify = kwargs.get('verify',True)
         self.__capabilities = None 
         self.__csrf_token = None
         self.__client = requests.Session()
@@ -105,7 +107,7 @@ class WPS(object):
 
         try:
             logger.debug( "Sending request to url: {0}, params = {1}, data = {2}, headers={3}".format(url,str(params),str(data),str(headers)))
-            response = self.__client.request(method, url, params=params, data=data, headers=headers)
+            response = self.__client.request(method, url, params=params, data=data, headers=headers, verify=self.__verify )
         except requests.RequestException, err:
             raise WPSHTTPError('{0} request failed: {1}'.format(method,str(err)))
 
