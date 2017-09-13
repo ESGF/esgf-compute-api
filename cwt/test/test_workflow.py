@@ -4,8 +4,8 @@ import cwt, os
 # variable=[{"uri":"file:///dass/nobackup/tpmaxwel/.edas/cache/collections/NCML/MERRA_TAS1hr.ncml","name":"tas:v1","domain":"d0"}],
 # operation=[{"name":"CDSpark.average","input":"v1","domain":"d0","axes":"xy"}]]"""
 
-# host = 'http://localhost:9000/wps'
-host = 'https://dptomcat03-int/wps/cwt'
+host = 'http://localhost:9000/wps/wps/cwt'
+#host = 'https://dptomcat03-int/wps/cwt'
 
 class TestWorkflow:
 
@@ -21,6 +21,9 @@ class TestWorkflow:
         op.set_inputs( inputs )
 
         wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
+
+        wps.capabilities
+
         wps.execute( op, domain=d0, async=True )
 
 

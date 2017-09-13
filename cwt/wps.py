@@ -85,6 +85,9 @@ class WPS(object):
 
         return self.__capabilities
 
+    def getCapabilities( self, cap_type="" ):
+        return self.__get_capabilities( identifier=cap_type ) if( cap_type ) else self.capabilities
+
     def __http_request(self, method, url, params, data, headers):
         """ HTTP request
 
@@ -185,12 +188,14 @@ class WPS(object):
             else:
                 raise WPSError(data)
 
-    def __get_capabilities(self, method='GET'):
+    def __get_capabilities(self, method='GET', identifier=''):
         """ Builds and attempts a GetCapabilities request. """
         params = {
                 'service': 'WPS',
                 'request': 'GetCapabilities',
                 }
+        if( identifier ):
+            params['identifier'] = identifier
 
         if self.__version is not None:
             params['acceptversions'] = self.__version
