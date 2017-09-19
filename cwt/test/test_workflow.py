@@ -1,7 +1,7 @@
 import cwt, os
 
-host = 'http://localhost:9000/wps/cwt'
-#host = 'https://dptomcat03-int/wps/cwt'
+#host = 'http://localhost:9000/wps/cwt'
+host = 'https://dptomcat03-int/wps/cwt'
 
 class TestWorkflow:
 
