@@ -6,10 +6,10 @@ host = 'https://dptomcat03-int/wps/cwt'
 class TestWorkflow:
 
     def run( self ):
-        domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'level': {'start':5, 'end':5, 'crs':'indices'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
+        domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs = cwt.Variable("collection://cip_merra2_mon_ta", "ta", domain="d0" )
+        inputs = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain="d0" )
 
         op_data =  { 'name': "CDSpark.average", 'axes': "xy" }
         op =  cwt.Process.from_dict( op_data )
