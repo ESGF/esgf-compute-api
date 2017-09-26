@@ -21,8 +21,7 @@ class TestWorkflow:
         wps.execute( op, domain=d0, async=True )
 
         hrefs = {}
-        ns = { 'wps': 'http://www.opengis.net/wps/1.0.0' }
-        for ref in op.response.findall( '{wps}Reference', ns ):
+        for ref in op.response.iter( '{http://www.opengis.net/wps/1.0.0}Reference' ):
             hrefs[ ref.attrib.get('id') ] = ref.attrib.get('href')
 
         logger.info( "HREFS: " + str(hrefs) )
