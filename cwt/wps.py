@@ -129,13 +129,15 @@ class WPS(object):
 
         return response.text
 
-    def status( self, process ):
-        process.status =  self.__status()
+    def status( self, process, jobId ):
+        params = {}
+        params['identifier'] = jobId
+        process.status =  self.__status( params )
 
-    def __status(self):
+    def __status( self, params ):
         url = self.__url + "/status"
         headers = {}
-        response = self.__http_request("get", url, None, None, headers)
+        response = self.__http_request("get", url, params, None, headers)
         logger.info('{}'.format(response))
         return response
 
