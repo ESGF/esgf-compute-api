@@ -21,8 +21,8 @@ class TestWorkflow:
         wps.execute( op, domain=d0, async=True )
 
         for output in op.response.output:
-            logger.info( "REF: " + str( output.reference ) )
-            
+            logger.info( "REF: " + str( output.reference.href ) )
+
 
         # logger.info( "STATUS: " +  op.status )
         #
