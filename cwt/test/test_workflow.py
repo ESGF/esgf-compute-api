@@ -25,7 +25,7 @@ class TestWorkflow:
         for ref in op.response.findall( '{wps}Reference', ns ):
             hrefs[ ref.attrib.get('id') ] = ref.attrib.get('href')
 
-        logger.info( "HREFS: " + hrefs )
+        logger.info( "HREFS: " + str(hrefs) )
 
 
 
