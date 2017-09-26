@@ -129,6 +129,16 @@ class WPS(object):
 
         return response.text
 
+    def status( self, process ):
+        process.status =  self.__status()
+
+    def __status(self):
+        url = self.__url + "/status"
+        headers = {}
+        response = self.__http_request("get", url, None, None, headers)
+        logger.info('{}'.format(response))
+        return response
+
     def __request(self, method, params=None, data=None):
         """ WPS Request
 
