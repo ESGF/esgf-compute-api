@@ -20,17 +20,8 @@ class TestWorkflow:
         wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
         wps.execute( op, domain=d0, async=True )
 
-#        result_file = op.download_result()
-
-        status = wps.status( op )
-        logger.info( "STATUS: " +  status )
-        while status == "QUEUED" or status == "EXECUTING":
-            time.sleep(1)
-            status = wps.status( op )
-            logger.info( "STATUS: " +  status )
-
-
-
+        result_file = wps.download_result(op)
+        logger.info( "result_file: " +  result_file )
 
         # logger.info( "STATUS: " +  op.status )
         #

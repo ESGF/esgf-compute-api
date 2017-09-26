@@ -3,9 +3,9 @@
 import json
 import logging
 import re
-import sys
+import sys, urllib
 import xml.etree.ElementTree
-
+import time
 import requests
 from lxml import etree
 
@@ -402,6 +402,21 @@ class WPS(object):
             base_params['data_inputs'].append(inp) 
 
         return request(**base_params)
+
+    def s:
+        status = self.status( op )
+        logger.info( "STATUS: " +  status )
+        while status == "QUEUED" or status == "EXECUTING":
+            time.sleep(1)
+            status = self.status( op )
+            logger.info( "STATUS: " +  status )
+        file_href = op.hrefs.get("file")
+        file_href_toks = file_href.split('/')
+        file_name = file_href_toks[ file_href_toks.lenght-1 ]
+        file_path = "/tmp/" + file_name
+        urllib.urlretrieve (file_href, file_path )
+        return file_path
+
 
     def execute(self, process, inputs=None, domain=None, async=True, method='GET', **kwargs):
         """ Execute the process on the WPS server. 
