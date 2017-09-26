@@ -411,9 +411,7 @@ class WPS(object):
             status = self.status( op )
             logger.info( "STATUS: " +  status )
         file_href = op.hrefs.get("file")
-        file_href_toks = file_href.split('/')
-        file_name = file_href_toks[ file_href_toks.length-1 ]
-        file_path = "/tmp/" + file_name
+        file_path = "/tmp/" + file_href.split('/')[ -1 ]
         urllib.urlretrieve (file_href, file_path )
         return file_path
 
