@@ -1,9 +1,7 @@
-import cwt, os
+import cwt, os, time
 import logging
 
-#host = 'http://localhost:9000/wps/cwt'
-host = 'https://dptomcat03-int/wps/cwt'
-
+host = 'https://www-proxy-dev.nccs.nasa.gov/edas/wps'
 
 class TestWorkflow:
 
@@ -20,8 +18,20 @@ class TestWorkflow:
 
         wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
         wps.execute( op, domain=d0, async=True )
-        logger.info( "RESPONSE: " + str( op.response ) )
-        logger.info( "OUTPUT: " + str( op.response.output ) )
+
+        logger.info( "OUTPUT: " + str( op.response.output.reference.href ) )
+
+        # logger.info( "STATUS: " +  op.status )
+        #
+        # while op.processing:
+        #     logger.info( "STATUS: " +  op.status )
+        #     time.sleep(1)
+        #
+        # logger.info( "STATUS: " +  op.status )
+        # logger.info( "STATUS LOC: " +  op.status_location )
+
+#        logger.info( "RESPONSE: " + str( op.response ) )
+#        logger.info( "OUTPUT: " + str( op.response.output ) )
 
 #        wps.status( op, "test" )
 #        print str( op.status )
