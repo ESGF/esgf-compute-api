@@ -1,5 +1,7 @@
 import cwt, os, time
-import logging
+import logging, cdms2, vcs
+import cdms2, datetime, matplotlib
+import matplotlib.pyplot as plt
 
 # host = 'https://www-proxy-dev.nccs.nasa.gov/edas/wps/cwt'
 host ="https://dptomcat03-int/wps/cwt"
@@ -20,8 +22,16 @@ class TestWorkflow:
         wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
         wps.execute( op, domain=d0, async=True )
 
-        result_file = wps.download_result(op)
-        logger.info( "result_file: " +  result_file )
+        dataPath = wps.download_result(op)
+        varName = "Nd4jMaskedTensor"
+        f = cdms2.openDataset(dataPath)
+        var = f( varName ) # , time=slice(0,1),level=slice(10,11) )
+        list_of_datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in var.getTime().asComponentTime()]
+        dates = matplotlib.dates.date2num(list_of_datetimes)
+        plt.plot_date(dates, var.data )
+        plt.gcf().autofmt_xdate()
+        plt.show()
+
 
         # logger.info( "STATUS: " +  op.status )
         #
