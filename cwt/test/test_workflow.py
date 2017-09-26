@@ -19,7 +19,7 @@ class TestWorkflow:
         wps.execute( op, domain=d0, async=True )
         print str( op.response )
 
-        wps.status( op )
+        wps.status( op, "test" )
         print str( op.status )
 
 executor = TestWorkflow()
