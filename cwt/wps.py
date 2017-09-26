@@ -4,6 +4,7 @@ import json
 import logging
 import re
 import sys
+import xml.etree.ElementTree
 
 import requests
 from lxml import etree
@@ -435,7 +436,8 @@ class WPS(object):
 
         logger.info( "RESPONSE: " + response )
 
-        process.response = self.__parse_response(response, operations.ExecuteResponse)
+#        process.response = self.__parse_response(response, operations.ExecuteResponse)
+        process.response = xml.etree.ElementTree.fromstring( response )
 
         if isinstance(process.response.status, metadata.ProcessFailed):
             raise Exception(process.response.status.exception_report)

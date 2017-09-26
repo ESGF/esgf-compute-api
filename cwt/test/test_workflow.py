@@ -20,8 +20,10 @@ class TestWorkflow:
         wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
         wps.execute( op, domain=d0, async=True )
 
-        for output in op.response.output:
-            logger.info( "REF: " + str( output.reference.href ) )
+        for ref in op.response.iter('Reference'):
+            logger.info( "REF: " + str( ref.attrib ) )
+
+
 
 
         # logger.info( "STATUS: " +  op.status )
