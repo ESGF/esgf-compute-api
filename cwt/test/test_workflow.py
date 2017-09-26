@@ -1,7 +1,8 @@
 import cwt, os, time
 import logging
 
-host = 'https://www-proxy-dev.nccs.nasa.gov/edas/wps'
+# host = 'https://www-proxy-dev.nccs.nasa.gov/edas/wps/cwt'
+host ="https://dptomcat03-int/wps/cwt"
 
 class TestWorkflow:
 
