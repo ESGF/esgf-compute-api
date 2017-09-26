@@ -403,7 +403,7 @@ class WPS(object):
 
         return request(**base_params)
 
-    def s:
+    def download_result( self, op ):
         status = self.status( op )
         logger.info( "STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
