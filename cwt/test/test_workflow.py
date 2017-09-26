@@ -23,12 +23,14 @@ class TestWorkflow:
         wps.execute( op, domain=d0, async=True )
 
         dataPath = wps.download_result(op)
+        logger.info( "Plotting file: " +  dataPath )
         varName = "Nd4jMaskedTensor"
         f = cdms2.openDataset(dataPath)
         var = f( varName ) # , time=slice(0,1),level=slice(10,11) )
+        timeSeries = var[:,0,0]
         list_of_datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in var.getTime().asComponentTime()]
         dates = matplotlib.dates.date2num(list_of_datetimes)
-        plt.plot_date(dates, var.data )
+        plt.plot_date(dates, timeSeries.data )
         plt.gcf().autofmt_xdate()
         plt.show()
 
