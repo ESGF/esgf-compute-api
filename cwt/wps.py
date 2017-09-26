@@ -439,5 +439,5 @@ class WPS(object):
 #        process.response = self.__parse_response(response, operations.ExecuteResponse)
         process.response = xml.etree.ElementTree.fromstring( response )
 
-        if isinstance(process.response.status, metadata.ProcessFailed):
-            raise Exception(process.response.status.exception_report)
+#        if isinstance(process.response.status, metadata.ProcessFailed):
+#            raise Exception(process.response.status.exception_report)
