@@ -24,6 +24,10 @@ class TestWorkflow:
 
         status = wps.status( op )
         logger.info( "STATUS: " +  status )
+        while status == "QUEUED" or status == "EXECUTING":
+            time.sleep(1)
+            status = wps.status( op )
+            logger.info( "STATUS: " +  status )
 
 
 
