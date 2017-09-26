@@ -132,7 +132,8 @@ class WPS(object):
     def status( self, process, jobId ):
         params = {}
         params['identifier'] = jobId
-        process.status =  self.__status( params )
+        response = self.__status( params )
+        process.status =  self.__parse_response( response, operations.ExecuteResponse )
 
     def __status( self, params ):
         url = self.__url + "/status"
