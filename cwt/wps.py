@@ -138,8 +138,11 @@ class WPS(object):
         params = { parm_toks[0]: parm_toks[1] }
         headers = {}
         response = self.__http_request("get", url, params, None, headers)
-        logger.info('STATUS: {}'.format(response))
-        return response
+        process.response = xml.etree.ElementTree.fromstring( response )
+        status = "UNKNOWN"
+        for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}ProcessStarted' ):
+            status = ref.text
+        return status
 
 
 

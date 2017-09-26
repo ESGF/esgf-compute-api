@@ -23,7 +23,7 @@ class TestWorkflow:
 #        result_file = op.download_result()
 
         status = wps.status( op )
-
+        logger.info( "STATUS: " +  status )
 
 
 
