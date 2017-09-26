@@ -130,18 +130,18 @@ class WPS(object):
 
         return response.text
 
-    def status( self, process, jobId ):
-        params = {}
-        params['identifier'] = jobId
-        response = self.__status( params )
-        process.status =  self.__parse_response( response, operations.ExecuteResponse )
-
-    def __status( self, params ):
-        url = self.__url + "/status"
+    def status( self, process ):
+        href = process.hrefs.get("status")
+        toks = href.split('?')
+        url = toks[0]
+        parm_toks = toks[1].split('=')
+        params = { parm_toks[0]: parm_toks[1] }
         headers = {}
         response = self.__http_request("get", url, params, None, headers)
-        logger.info('{}'.format(response))
+        logger.info('STATUS: {}'.format(response))
         return response
+
+
 
     def __request(self, method, params=None, data=None):
         """ WPS Request
@@ -438,6 +438,11 @@ class WPS(object):
 
 #        process.response = self.__parse_response(response, operations.ExecuteResponse)
         process.response = xml.etree.ElementTree.fromstring( response )
+
+        for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}Reference' ):
+            process.hrefs[ ref.attrib.get('id') ] = ref.attrib.get('href')
+
+        logger.info( "HREFS: " + str(process.hrefs) )
 
 #        if isinstance(process.response.status, metadata.ProcessFailed):
 #            raise Exception(process.response.status.exception_report)

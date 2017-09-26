@@ -20,11 +20,9 @@ class TestWorkflow:
         wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
         wps.execute( op, domain=d0, async=True )
 
-        hrefs = {}
-        for ref in op.response.iter( '{http://www.opengis.net/wps/1.0.0}Reference' ):
-            hrefs[ ref.attrib.get('id') ] = ref.attrib.get('href')
+#        result_file = op.download_result()
 
-        logger.info( "HREFS: " + str(hrefs) )
+        status = wps.status( op )
 
 
 

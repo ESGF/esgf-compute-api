@@ -41,6 +41,7 @@ class Process(parameter.Parameter):
         self.inputs = []
         self.parameters = {}
         self.domain = None
+        self.hrefs = {}
 
     @classmethod
     def from_dict(cls, data):
@@ -248,6 +249,11 @@ class Process(parameter.Parameter):
         processes.extend(new_processes)
 
         return processes, inputs.values()
+
+
+    def download_result(self):
+        status_href = self.hrefs.get("status")
+
 
     def update_status(self):
         """ Retrieves the latest process status. """
