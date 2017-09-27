@@ -75,16 +75,15 @@ class WPS(object):
         else:
             logger.addHandler(logging.NullHandler())
     
-    @property
-    def capabilities(self):
+    def capabilities(self, parse=True ):
         """ Attempts to retrieve and return the WPS servers capabilities document. """
         if self.__capabilities == None:
-            self.__capabilites = self.__get_capabilities()
+            self.__capabilites = self.__get_capabilities(parse=parse)
 
         return self.__capabilities
 
-    def getCapabilities( self, cap_type="" ):
-        return self.__get_capabilities( identifier=cap_type ) if( cap_type ) else self.capabilities
+    def getCapabilities( self, cap_type="", parse=True ):
+        return self.__get_capabilities( identifier=cap_type, parse=parse ) if( cap_type ) else self.capabilities(parse=parse)
 
     def __http_request(self, method, url, params, data, headers):
         """ HTTP request
@@ -202,7 +201,7 @@ class WPS(object):
             else:
                 raise WPSError(data)
 
-    def __get_capabilities(self, method='GET', identifier=''):
+    def __get_capabilities(self, method='GET', identifier='', parse=True ):
         """ Builds and attempts a GetCapabilities request. """
         params = {
                 'service': 'WPS',
@@ -228,7 +227,7 @@ class WPS(object):
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        capabilities = self.__parse_response(response, operations.GetCapabilitiesResponse)
+        capabilities = self.__parse_response(response, operations.GetCapabilitiesResponse) if(parse) else operations.GetCapabilitiesResponse
 
         return capabilities
 

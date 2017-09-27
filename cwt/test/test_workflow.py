@@ -34,7 +34,7 @@ class TestWorkflow:
         self.plotter.plotly_timeplot("/tmp/testData.nc")
 
     def testCapabilities(self):
-        print self.wps.capabilities
+        print self.wps.capabilities( False )
 
 executor = TestWorkflow()
 executor.testCapabilities()
