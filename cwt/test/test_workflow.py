@@ -11,7 +11,7 @@ host ="https://dptomcat03-int/wps/cwt"
 class TestWorkflow:
 
     def run( self ):
-        Logger.setLevel(Logger.INFO)
+        logging.getLogger().setLevel(logging.INFO)
         logger = logging.getLogger('cwt.wps')
         logger.info( "Initializing EDAS python client" )
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }

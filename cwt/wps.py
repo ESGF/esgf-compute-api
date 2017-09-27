@@ -58,9 +58,6 @@ class WPS(object):
         if kwargs.get('log') is not None:
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
 
-            # TODO make level configurable
-            logger.setLevel(logging.DEBUG)
-
             stream_handler = logging.StreamHandler(sys.stdout)
 
             stream_handler.setFormatter(formatter)
