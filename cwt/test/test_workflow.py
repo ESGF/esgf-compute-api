@@ -1,6 +1,7 @@
 
 import cwt, os, time
 import logging, cdms2, vcs
+from logging import Logger
 import cdms2, datetime, matplotlib
 import matplotlib.pyplot as plt
 
@@ -10,8 +11,9 @@ host ="https://dptomcat03-int/wps/cwt"
 class TestWorkflow:
 
     def run( self ):
-        print "Initializing EDAS python client"
+        Logger.setLevel(Logger.INFO)
         logger = logging.getLogger('cwt.wps')
+        logger.info( "Initializing EDAS python client" )
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
@@ -23,7 +25,7 @@ class TestWorkflow:
 
         wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
 
-        print "Submitting request."
+        logger.info(  "Submitting request." )
         wps.execute( op, domain=d0, async=True )
 
         dataPath = wps.download_result(op)
