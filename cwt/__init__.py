@@ -15,7 +15,7 @@ from .gridder import Gridder
 # from .variable import *
 # from .wps import *
 import urllib3, logging
-from cwt.test.plotters import PlotMgr
+from cwt.test import PlotMgr
 
 NorthernHemisphere = Dimension('latitude', 0, 90)
 SouthernHemisphere = Dimension('latitude', -90, 0)
