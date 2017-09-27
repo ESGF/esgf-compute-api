@@ -28,13 +28,16 @@ class TestWorkflow:
         self.wps.execute( op, domain=d0, async=True )
 
         dataPath = self.wps.download_result(op)
-        self.plotter.plotly_timeplot(dataPath)
+        self.plotter.mpl_timeplot(dataPath)
 
     def test_plot(self):
-        self.plotter.plotly_timeplot("/tmp/testData.nc")
+        self.plotter.mpl_timeplot("/tmp/testData.nc")
 
-    def testCapabilities(self):
+    def ListKernels(self):
+        print self.wps.getCapabilities( "", False )
+
+    def ListCollections(self):
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.testCapabilities()
+executor.test_plot()

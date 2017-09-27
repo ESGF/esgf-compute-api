@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import plotly.offline as py
 import plotly.graph_objs as go
 import pandas as pd
+import matplotlib.dates as mdates
 
 
 class PlotMgr:
@@ -18,17 +19,22 @@ class PlotMgr:
         timeSeries = f( varName, squeeze=1 ) # , time=slice(0,1),level=slice(10,11) )
         list_of_datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
         dates = matplotlib.dates.date2num(list_of_datetimes)
-        plt.plot_date(dates, timeSeries.data )
-        plt.gcf().autofmt_xdate()
+        fig, ax = plt.subplots()
+        ax.plot(dates, timeSeries.data )
+        ax.xaxis.set_major_formatter( mdates.DateFormatter('%Y') )
+        ax.grid(True)
+        fig.autofmt_xdate()
         plt.show()
 
     def plotly_timeplot( self, dataPath, varName="Nd4jMaskedTensor" ):
         self.logger.info( "Plotting file: " +  dataPath )
+        py.offline.init_notebook_mode()   # py.init_notebook_mode(connected=True)
         f = cdms2.openDataset(dataPath)
         timeSeries = f( varName, squeeze=1 )
         datetimes = pd.to_datetime(timeSeries.getTime().asdatetime())
         data = [go.Scatter(x=datetimes, y=timeSeries)]
-        print(py.plot(data, output_type='file', filename='testTimeSeries.html', auto_open=False))
+        py.iplot(data)
+#        print(py.plot(data, output_type='file', filename='testTimeSeries.html', auto_open=False))
 
 
 
