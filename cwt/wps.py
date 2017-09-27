@@ -74,7 +74,7 @@ class WPS(object):
                 logger.addHandler(file_handler)
         else:
             logger.addHandler(logging.NullHandler())
-    
+
     def capabilities(self, parse=True ):
         """ Attempts to retrieve and return the WPS servers capabilities document. """
         if self.__capabilities == None:
