@@ -5,15 +5,15 @@ from __future__ import absolute_import
 
 __version__ = '2.0.0'
 
-from .dimension import Dimension
-from .gridder import Gridder
-# from .domain import *
-# from .mask import *
-# from .named_parameter import *
-# from .parameter import *
-# from .process import *
-# from .variable import *
-# from .wps import *
+from .dimension import *
+from .gridder import *
+from .domain import *
+from .mask import *
+from .named_parameter import *
+from .parameter import *
+from .process import *
+from .variable import *
+from .wps import *
 import urllib3, logging
 from .plotters import PlotMgr
 
