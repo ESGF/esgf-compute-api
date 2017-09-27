@@ -31,7 +31,7 @@ class PlotMgr:
         f = cdms2.openDataset(dataPath)
         spatialData = f( varName, time=slice(timeIndex,timeIndex+1), squeeze=1 )
         fig, ax = plt.subplots()
-        ax.imshow(spatialData, interpolation="none", cmap='viridis')
+        ax.imshow(spatialData, interpolation="bilinear", cmap='plasma')
         plt.show()
 
     def plotly_timeplot( self, dataPath, varName="Nd4jMaskedTensor" ):
