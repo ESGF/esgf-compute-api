@@ -2,7 +2,7 @@
 import cwt, os, time
 import logging, cdms2, vcs
 from logging import Logger
-import cdms2, datetime, matplotlib
+import cdms2, datetime, matplotlib, urllib3
 import matplotlib.pyplot as plt
 
 # host = 'https://www-proxy-dev.nccs.nasa.gov/edas/wps/cwt'
@@ -12,6 +12,7 @@ class TestWorkflow:
 
     def run( self ):
         logging.getLogger().setLevel(logging.INFO)
+        urllib3.disable_warnings()
         logger = logging.getLogger('cwt.wps')
         logger.info( "Initializing EDAS python client" )
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
