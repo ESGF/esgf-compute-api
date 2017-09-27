@@ -22,8 +22,6 @@ class TestWorkflow:
 
         wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
         wps.execute( op, domain=d0, async=True )
-        response = op.response    # """:type : ExecuteResponse
-
 
         dataPath = wps.download_result(op)
         logger.info( "Plotting file: " +  dataPath )
@@ -37,21 +35,6 @@ class TestWorkflow:
         plt.gcf().autofmt_xdate()
         plt.show()
 
-
-        # logger.info( "STATUS: " +  op.status )
-        #
-        # while op.processing:
-        #     logger.info( "STATUS: " +  op.status )
-        #     time.sleep(1)
-        #
-        # logger.info( "STATUS: " +  op.status )
-        # logger.info( "STATUS LOC: " +  op.status_location )
-
-#        logger.info( "RESPONSE: " + str( op.response ) )
-#        logger.info( "OUTPUT: " + str( op.response.output ) )
-
-#        wps.status( op, "test" )
-#        print str( op.status )
 
 executor = TestWorkflow()
 executor.run()
