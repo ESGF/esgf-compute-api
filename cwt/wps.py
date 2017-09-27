@@ -446,8 +446,6 @@ class WPS(object):
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        logger.info( "RESPONSE: " + response )
-
 #        process.response = self.__parse_response(response, operations.ExecuteResponse)
         process.response = xml.etree.ElementTree.fromstring( response )
 
