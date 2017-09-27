@@ -3,8 +3,9 @@
 import json
 import logging
 import re
-import sys
-
+import sys, urllib
+import xml.etree.ElementTree
+import time
 import requests
 from lxml import etree
 
@@ -128,6 +129,22 @@ class WPS(object):
                     '{1} {2}'.format(method, response.status_code, response.content))
 
         return response.text
+
+    def status( self, process ):
+        href = process.hrefs.get("status")
+        toks = href.split('?')
+        url = toks[0]
+        parm_toks = toks[1].split('=')
+        params = { parm_toks[0]: parm_toks[1] }
+        headers = {}
+        response = self.__http_request("get", url, params, None, headers)
+        process.response = xml.etree.ElementTree.fromstring( response )
+        status = "UNKNOWN"
+        for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}ProcessStarted' ):
+            status = ref.text
+        return status
+
+
 
     def __request(self, method, params=None, data=None):
         """ WPS Request
@@ -386,6 +403,19 @@ class WPS(object):
 
         return request(**base_params)
 
+    def download_result( self, op ):
+        status = self.status( op )
+        logger.info( "STATUS: " +  status )
+        while status == "QUEUED" or status == "EXECUTING":
+            time.sleep(1)
+            status = self.status( op )
+            logger.info( "STATUS: " +  status )
+        file_href = op.hrefs.get("file")
+        file_path = "/tmp/" + file_href.split('/')[ -1 ]
+        urllib.urlretrieve (file_href, file_path )
+        return file_path
+
+
     def execute(self, process, inputs=None, domain=None, async=True, method='GET', **kwargs):
         """ Execute the process on the WPS server. 
         
@@ -420,7 +450,15 @@ class WPS(object):
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
 
-        process.response = self.__parse_response(response, operations.ExecuteResponse)
+        logger.info( "RESPONSE: " + response )
 
-        if isinstance(process.response.status, metadata.ProcessFailed):
-            raise Exception(process.response.status.exception_report)
+#        process.response = self.__parse_response(response, operations.ExecuteResponse)
+        process.response = xml.etree.ElementTree.fromstring( response )
+
+        for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}Reference' ):
+            process.hrefs[ ref.attrib.get('id') ] = ref.attrib.get('href')
+
+        logger.info( "HREFS: " + str(process.hrefs) )
+
+#        if isinstance(process.response.status, metadata.ProcessFailed):
+#            raise Exception(process.response.status.exception_report)
