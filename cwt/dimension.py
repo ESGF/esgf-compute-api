@@ -27,6 +27,7 @@ class CRS(object):
 
 VALUES = CRS('values')
 INDICES = CRS('indices')
+TIMESTAMPS = CRS('timestamps')
 
 def int_or_float(data):
     try:
@@ -83,8 +84,13 @@ class Dimension(parameter.Parameter):
     @classmethod
     def from_dict(cls, data, name):
         """ Create dimension from dict representation. """
+        if 'crs' in data:
+            crs = CRS(data['crs'])
+        else:
+            raise parameter.ParameterError('Must provide a CRS value.')
+
         if 'start' in data:
-            if isinstance(data['start'], str):
+            if isinstance(data['start'], str) and crs != TIMESTAMPS:
                 start = int_or_float(data['start'])
             else:
                 start = data['start']
@@ -94,15 +100,10 @@ class Dimension(parameter.Parameter):
         end = None
 
         if 'end' in data:
-            if isinstance(data['end'], str):
+            if isinstance(data['end'], str) and crs != TIMESTAMPS:
                 end = int_or_float(data['end'])
             else:
                 end = data['end']
-
-        if 'crs' in data:
-            crs = CRS(data['crs'])
-        else:
-            raise parameter.ParameterError('Must provide a CRS value.')
 
         step = None
 
