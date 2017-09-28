@@ -406,8 +406,8 @@ class WPS(object):
             time.sleep(1)
             status = self.status( op )
             logger.info( "STATUS: " +  status )
-        file_href = op.hrefs.get("file")
-        if( file_href ):
+        if status == "COMPLETED":
+            file_href = op.hrefs.get("file")
             file_path = "/tmp/" + file_href.split('/')[ -1 ]
             urllib.urlretrieve (file_href, file_path )
             return file_path
