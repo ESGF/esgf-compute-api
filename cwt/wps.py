@@ -412,6 +412,7 @@ class WPS(object):
             urllib.urlretrieve (file_href, file_path )
             return file_path
         else:
+            print op.response
             return ""
 
 
