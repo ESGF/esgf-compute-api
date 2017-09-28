@@ -40,6 +40,8 @@ class TestWorkflow:
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
+        op.set_inputs()
+
         self.wps.execute( op, domain=d0, async=True )
 
         dataPath = self.wps.download_result(op)

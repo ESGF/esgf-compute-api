@@ -407,9 +407,13 @@ class WPS(object):
             status = self.status( op )
             logger.info( "STATUS: " +  status )
         file_href = op.hrefs.get("file")
-        file_path = "/tmp/" + file_href.split('/')[ -1 ]
-        urllib.urlretrieve (file_href, file_path )
-        return file_path
+        if( file_href ):
+            file_path = "/tmp/" + file_href.split('/')[ -1 ]
+            urllib.urlretrieve (file_href, file_path )
+            return file_path
+        else:
+            return ""
+
 
 
     def execute(self, process, inputs=None, domain=None, async=True, method='GET', **kwargs):
