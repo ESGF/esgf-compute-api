@@ -57,4 +57,4 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.time_ave()
+executor.spatial_ave()
