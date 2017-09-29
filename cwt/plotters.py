@@ -1,10 +1,6 @@
-import os, time
-import logging, cdms2, vcs
+import logging
 import cdms2, datetime, matplotlib, urllib3
 import matplotlib.pyplot as plt
-import plotly.offline as py
-import plotly.graph_objs as go
-import pandas as pd
 import matplotlib.dates as mdates
 
 
@@ -35,18 +31,6 @@ class PlotMgr:
             fig, ax = plt.subplots()
             ax.imshow(spatialData, interpolation="bilinear", cmap='jet')
             plt.show()
-
-    def plotly_timeplot( self, dataPath, varName="Nd4jMaskedTensor" ):
-        if dataPath:
-            self.logger.info( "Plotting file: " +  dataPath )
-            py.offline.init_notebook_mode()   # py.init_notebook_mode(connected=True)
-            f = cdms2.openDataset(dataPath)
-            timeSeries = f( varName, squeeze=1 )
-            datetimes = pd.to_datetime(timeSeries.getTime().asdatetime())
-            data = [go.Scatter(x=datetimes, y=timeSeries)]
-            py.iplot(data)
-#        print(py.plot(data, output_type='file', filename='testTimeSeries.html', auto_open=False))
-
 
 
 
