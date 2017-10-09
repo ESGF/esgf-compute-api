@@ -47,6 +47,26 @@ class TestWorkflow:
         dataPath = self.wps.download_result(op)
         self.plotter.mpl_spaceplot(dataPath)
 
+    def anomaly( self ):
+
+        domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
+        d0 = cwt.Domain.from_dict(domain_data)
+
+        v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain="d0" )
+
+        v1_ave_data =  { 'name': "CDSpark.average", 'axes': "xt" }
+        v1_ave =  cwt.Process.from_dict( v1_ave_data )
+        v1_ave.set_inputs( v1 )
+
+        anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.diff2" } )
+        anomaly.set_inputs( v1, v1_ave )
+
+        self.wps.execute( anomaly, domain=d0, async=True )
+
+        dataPath = self.wps.download_result( anomaly )
+        self.plotter.mpl_spaceplot(dataPath)
+
+
     def test_plot(self):
         self.plotter.mpl_timeplot("/tmp/testData.nc")
 
@@ -57,4 +77,4 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.spatial_ave()
+executor.anomaly()
