@@ -343,7 +343,7 @@ class WPS(object):
 
         return operation, domains, variables
 
-    def __prepare_data_inputs(self, process, inputs, domain, **kwargs):
+    def __prepare_data_inputs(self, process, inputs, _domains, **kwargs):
         """ Preparse a process inputs for the data_inputs string.
 
         Args:
@@ -356,12 +356,9 @@ class WPS(object):
             A dictionary containing the operations, domains and variables
             associated with the process.
         """
-        domains = []
-
-        if domain is not None:
-            process.domain = domain
-
-            domains.append(domain.parameterize())
+        domains = [ domain.parameterize() for domain in _domains ]
+        if not process.domain and len(_domains) > 0:
+            process.domain = _domains[0]
 
         parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
@@ -377,9 +374,9 @@ class WPS(object):
 
         return {'variable': variables, 'domain': domains, 'operation': operation}
 
-    def prepare_data_inputs(self, process, inputs, domain, **kwargs):
+    def prepare_data_inputs(self, process, inputs, domains, **kwargs):
         """ Creates the data_inputs string. """
-        data_inputs = self.__prepare_data_inputs(process, inputs, domain, **kwargs)
+        data_inputs = self.__prepare_data_inputs(process, inputs, domains, **kwargs)
 
         return '[{}]'.format(';'.join('{}={}'.format(x, json.dumps(y))
             for x, y in data_inputs.iteritems()))
@@ -425,7 +422,7 @@ class WPS(object):
 
 
 
-    def execute(self, process, inputs=None, domain=None, async=True, method='GET', **kwargs):
+    def execute(self, process, inputs=None, domains=[], async=True, method='GET', **kwargs):
         """ Execute the process on the WPS server. 
         
         Args:
@@ -447,11 +444,11 @@ class WPS(object):
                 }
 
         if method.lower() == 'get':
-            params['datainputs'] = self.prepare_data_inputs(process, inputs, domain, **kwargs)
+            params['datainputs'] = self.prepare_data_inputs(process, inputs, domains, **kwargs)
 
             response = self.__request(method, params=params)
         elif method.lower() == 'post':
-            data_inputs = self.__prepare_data_inputs(process, inputs, domain, **kwargs)
+            data_inputs = self.__prepare_data_inputs(process, inputs, domains, **kwargs)
 
             data = self.__execute_post_data(data_inputs, params)
 

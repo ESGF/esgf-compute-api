@@ -24,7 +24,7 @@ class TestWorkflow:
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
-        self.wps.execute( op, domain=d0, async=True )
+        self.wps.execute( op, domains=[d0], async=True )
 
         dataPath = self.wps.download_result(op)
         self.plotter.mpl_timeplot(dataPath)
@@ -42,29 +42,32 @@ class TestWorkflow:
 
         op.set_inputs()
 
-        self.wps.execute( op, domain=d0, async=True )
+        self.wps.execute( op, domains=[d0], async=True )
 
         dataPath = self.wps.download_result(op)
         self.plotter.mpl_spaceplot(dataPath)
 
     def anomaly( self ):
 
-        domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
-        d0 = cwt.Domain.from_dict(domain_data)
+        d0_data = { 'id': 'd0', 'lat': {'start':0, 'end':50, 'crs':'values'}, 'lon': {'start':0, 'end':90, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
+        d0 = cwt.Domain.from_dict(d0_data)
+
+        d1_data = { 'id': 'd0', 'lat': {'start':25, 'end':25, 'crs':'values'}, 'lon': {'start':45, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
+        d1 = cwt.Domain.from_dict(d1_data)
 
         v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas" )
 
-        v1_ave_data =  { 'name': "CDSpark.average", 'axes': "xt", 'domain': "d0" }
+        v1_ave_data =  { 'name': "CDSpark.average", 'axes': "xy", 'domain': "d0" }
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
         v1_ave.set_inputs( v1 )
 
-        anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.diff2", 'domain': "d0" } )
+        anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.diff2", 'domain': "d1" } )
         anomaly.set_inputs( v1, v1_ave )
 
-        self.wps.execute( anomaly, domain=d0, async=True )
+        self.wps.execute( anomaly, domains=[d0,d1], async=True )
 
         dataPath = self.wps.download_result( anomaly )
-        self.plotter.mpl_spaceplot(dataPath)
+        self.plotter.mpl_timeplot(dataPath)
 
     def average( self ):
 
