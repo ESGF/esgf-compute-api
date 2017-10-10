@@ -32,6 +32,9 @@ class PlotMgr:
             ax.imshow(spatialData, interpolation="bilinear", cmap='jet')
             plt.show()
 
-
+    def print_Mdata(self, dataPath, varName="Nd4jMaskedTensor" ):
+            f = cdms2.openDataset(dataPath)
+            spatialData = f( varName, squeeze=1 )
+            self.logger.info( "Produced result, shape: " +  str( spatialData.shape ) + ", dims: " + spatialData.getOrder() )
 
 
