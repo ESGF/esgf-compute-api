@@ -34,7 +34,7 @@ class PlotMgr:
 
     def print_Mdata(self, dataPath, varName="Nd4jMaskedTensor" ):
             f = cdms2.openDataset(dataPath)
-            spatialData = f( varName, squeeze=1 )
+            spatialData = f( varName )
             self.logger.info( "Produced result, shape: " +  str( spatialData.shape ) + ", dims: " + spatialData.getOrder() )
 
 
