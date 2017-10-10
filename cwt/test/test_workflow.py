@@ -93,4 +93,4 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.anomaly()
+executor.average()
