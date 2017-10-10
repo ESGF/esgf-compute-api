@@ -80,7 +80,7 @@ class TestWorkflow:
         self.wps.execute( v1_ave, domain=d0, async=True )
 
         dataPath = self.wps.download_result( v1_ave )
-        self.plotter.mpl_spaceplot(dataPath)
+        self.plotter.print_Mdata(dataPath)
 
 
     def test_plot(self):
