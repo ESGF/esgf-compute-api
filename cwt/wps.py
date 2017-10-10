@@ -140,16 +140,13 @@ class WPS(object):
         elif self.hasNode( process.response, "ProcessStarted" ): status = "EXECUTING"
         elif self.hasNode( process.response, "ProcessFinished" ): status = "COMPLETED"
         elif self.hasNode( process.response, "ProcessFailed" ): status = "ERROR"
-
-        # for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}Status' ):
-        #     if   ref.find("{http://www.opengis.net/wps/1.0.0}ProcessAccepted"): status = "QUEUED"
-        #     elif ref.find("{http://www.opengis.net/wps/1.0.0}ProcessStarted"): status = "EXECUTING"
-        #     elif ref.find("{http://www.opengis.net/wps/1.0.0}ProcessFinished"): status = "COMPLETED"
-        #     elif ref.find("{http://www.opengis.net/wps/1.0.0}ProcessFailed"): status = "ERROR"
         return status
 
-    def hasNode( self, parent_node, child_node_name ):
-        for ref in parent_node.iter( '{http://www.opengis.net/wps/1.0.0}' + child_node_name ): return True
+    def hasNode( self, parent_node, child_node_name, schema="wps" ):
+        if   schema == "wps": schemaLocation = "{http://www.opengis.net/wps/1.0.0}"
+        elif schema == "ows": schemaLocation = "{http://www.opengis.net/ows/1.1}"
+        else: schemaLocation = ""
+        for ref in parent_node.iter( schemaLocation + child_node_name ): return True
         return False
 
 
