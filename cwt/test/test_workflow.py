@@ -61,7 +61,7 @@ class TestWorkflow:
         anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.diff2", 'domain': "d0" } )
         anomaly.set_inputs( v1, v1_ave )
 
-        self.wps.execute( anomaly, async=True )
+        self.wps.execute( anomaly, domain=d0, async=True )
 
         dataPath = self.wps.download_result( anomaly )
         self.plotter.mpl_spaceplot(dataPath)
