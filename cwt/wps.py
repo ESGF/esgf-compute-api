@@ -136,10 +136,12 @@ class WPS(object):
         response = self.__http_request("get", url, params, None, headers)
         process.response = xml.etree.ElementTree.fromstring( response )
         status = "UNKNOWN"
-        for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}ProcessStarted' ):
-            status = ref.text
+        for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}Status' ):
+            if   ref.find("ProcessAccepted"): status = "QUEUED"
+            elif ref.find("ProcessStarted"): status = "EXECUTING"
+            elif ref.find("ProcessFinished"): status = "COMPLETED"
+            elif ref.find("ProcessFailed"): status = "ERROR"
         return status
-
 
 
     def __request(self, method, params=None, data=None):
