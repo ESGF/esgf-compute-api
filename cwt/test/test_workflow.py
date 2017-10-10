@@ -52,7 +52,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain="d0" )
+        v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas" )
 
         v1_ave_data =  { 'name': "CDSpark.average", 'axes': "xt", 'domain': "d0" }
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
@@ -61,7 +61,7 @@ class TestWorkflow:
         anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.diff2", 'domain': "d0" } )
         anomaly.set_inputs( v1, v1_ave )
 
-        self.wps.execute( anomaly, domain=d0, async=True )
+        self.wps.execute( anomaly, async=True )
 
         dataPath = self.wps.download_result( anomaly )
         self.plotter.mpl_spaceplot(dataPath)
@@ -71,13 +71,13 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain="d0" )
+        v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas" )
 
-        v1_ave_data =  { 'name': "CDSpark.average", 'axes': "xt" }
+        v1_ave_data =  { 'name': "CDSpark.average", 'axes': "xt", 'domain': "d0" }
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
         v1_ave.set_inputs( v1 )
 
-        self.wps.execute( v1_ave, domain=d0, async=True )
+        self.wps.execute( v1_ave, async=True )
 
         dataPath = self.wps.download_result( v1_ave )
         self.plotter.print_Mdata(dataPath)
