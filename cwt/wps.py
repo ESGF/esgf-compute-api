@@ -136,12 +136,21 @@ class WPS(object):
         response = self.__http_request("get", url, params, None, headers)
         process.response = xml.etree.ElementTree.fromstring( response )
         status = "UNKNOWN"
-        for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}Status' ):
-            if   ref.find("{http://www.opengis.net/wps/1.0.0}ProcessAccepted"): status = "QUEUED"
-            elif ref.find("{http://www.opengis.net/wps/1.0.0}ProcessStarted"): status = "EXECUTING"
-            elif ref.find("{http://www.opengis.net/wps/1.0.0}ProcessFinished"): status = "COMPLETED"
-            elif ref.find("{http://www.opengis.net/wps/1.0.0}ProcessFailed"): status = "ERROR"
+        if   self.hasNode( process.response, "ProcessAccepted" ): status = "QUEUED"
+        elif self.hasNode( process.response, "ProcessStarted" ): status = "EXECUTING"
+        elif self.hasNode( process.response, "ProcessFinished" ): status = "COMPLETED"
+        elif self.hasNode( process.response, "ProcessFailed" ): status = "ERROR"
+
+        # for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}Status' ):
+        #     if   ref.find("{http://www.opengis.net/wps/1.0.0}ProcessAccepted"): status = "QUEUED"
+        #     elif ref.find("{http://www.opengis.net/wps/1.0.0}ProcessStarted"): status = "EXECUTING"
+        #     elif ref.find("{http://www.opengis.net/wps/1.0.0}ProcessFinished"): status = "COMPLETED"
+        #     elif ref.find("{http://www.opengis.net/wps/1.0.0}ProcessFailed"): status = "ERROR"
         return status
+
+    def hasNode( self, parent_node, child_node_name ):
+        for ref in parent_node.iter( '{http://www.opengis.net/wps/1.0.0}' + child_node_name ): return True
+        return False
 
 
     def __request(self, method, params=None, data=None):
