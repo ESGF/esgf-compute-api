@@ -6,6 +6,7 @@ import re
 import sys, urllib
 import xml.etree.ElementTree
 import time
+from sets import Set
 import requests
 from lxml import etree
 
@@ -356,9 +357,14 @@ class WPS(object):
             A dictionary containing the operations, domains and variables
             associated with the process.
         """
+        domain_names = Set([ domain.name for domain in _domains ])
+        assert len(domain_names) == len(_domains), "Error, duplicate domain IDs in domain list"
+
         domains = [ domain.parameterize() for domain in _domains ]
-        if not process.domain and len(_domains) > 0:
-            process.domain = _domains[0]
+        if not process.domain:
+            if len(_domains) == 1: process.domain = _domains[0]
+            else: raise Exception( "Ambiguous domain for process: " + process.name )
+        else: assert process.domain in domain_names, "Error, nonexistent domain {} referenced in process {}".format( process.domain, process.identifier )
 
         parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
