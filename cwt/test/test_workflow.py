@@ -29,6 +29,22 @@ class TestWorkflow:
         dataPath = self.wps.download_result(op)
         self.plotter.mpl_timeplot(dataPath)
 
+    def spatial_max( self ):
+
+        domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
+        d0 = cwt.Domain.from_dict(domain_data)
+
+        inputs = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain="d0" )
+
+        op_data =  { 'name': "CDSpark.max", 'axes': "xy" }
+        op =  cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( inputs )
+
+        self.wps.execute( op, domains=[d0], async=True )
+
+        dataPath = self.wps.download_result(op)
+        self.plotter.mpl_timeplot(dataPath)
+
     def time_ave( self ):
 
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
@@ -96,5 +112,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.average()
+executor.spatial_max()
 
