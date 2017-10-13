@@ -364,7 +364,7 @@ class WPS(object):
         if not process.domain:
             if len(_domains) == 1: process.domain = _domains[0]
             else: raise Exception( "Ambiguous domain for process: " + process.name )
-        else: assert process.domain in domain_names, "Error, nonexistent domain {} referenced in process {}".format( process.domain, process.identifier )
+        else: assert process.domain in domain_names, "Error, nonexistent domain {} referenced in process {}, defined domains IDs = {}".format( process.domain, process.identifier, str(domain_names) )
 
         parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
