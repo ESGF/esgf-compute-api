@@ -434,7 +434,7 @@ class WPS(object):
         Args:
             process: A Process object to be executed on the WPS server.
             inputs: A list in Variables/Processes.
-            domain: A Domain object to be used.
+            domains: A list of Domain objects to be used.
             async:  A bool determining async (True) or sync (False) execution.
             kwargs: A dict containing additional arguments.
         """

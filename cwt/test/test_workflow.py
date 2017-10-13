@@ -80,7 +80,7 @@ class TestWorkflow:
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
         v1_ave.set_inputs( v1 )
 
-        self.wps.execute( v1_ave, async=True )
+        self.wps.execute( v1_ave, domains=[d0], async=True )
 
         dataPath = self.wps.download_result( v1_ave )
         self.plotter.print_Mdata(dataPath)
@@ -96,5 +96,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.anomaly()
+executor.average()
 
