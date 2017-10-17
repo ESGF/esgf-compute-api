@@ -224,7 +224,7 @@ class WPS(object):
         if self.__capabilities is None or refresh:
             self.__capabilities = self.__get_capabilities(method)
 
-        return [cwt.Process(x) for x in self.__capabilities.process_offerings]
+        return [cwt.Process(process=x) for x in self.__capabilities.process_offerings]
 
     def get_process(self, identifier, method='GET'):
         """ Return a specified process.
@@ -242,7 +242,7 @@ class WPS(object):
             self.__capabilities = self.__get_capabilities(method)
 
         try:
-            return [cwt.Process(x) for x in self.__capabilities.process_offerings
+            return [cwt.Process(process=x) for x in self.__capabilities.process_offerings
                     if x.identifier == identifier][0]
         except IndexError:
             raise Exception('Failed to find process with identifier "{}"'.format(identifier))
