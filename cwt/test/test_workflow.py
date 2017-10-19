@@ -15,10 +15,11 @@ class TestWorkflow:
 
     def spatial_ave( self ):
 
-        domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
+        domain_data = { 'id': 'd0' }
+
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain="d0" )
+        inputs = cwt.Variable("collection://cip_merra2_6hr_tas", "tas", domain="d0" )
 
         op_data =  { 'name': "CDSpark.average", 'axes': "xy" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
@@ -112,5 +113,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.spatial_max()
+executor.spatial_ave()
 
