@@ -449,6 +449,10 @@ class WPS(object):
                 'status': str(async).lower()
                 }
 
+        if( len( domains ) == 0 ):
+            domain = kwargs.get("domain")
+            if domain is not None: domains = [domain]
+
         if method.lower() == 'get':
             params['datainputs'] = self.prepare_data_inputs(process, inputs, domains, **kwargs)
 
