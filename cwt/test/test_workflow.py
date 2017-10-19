@@ -18,6 +18,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0' }
 
         d0 = cwt.Domain.from_dict(domain_data)
+        print "XX"
 
         inputs = cwt.Variable("collection://cip_merra2_6hr_tas", "tas", domain="d0" )
 
@@ -25,7 +26,7 @@ class TestWorkflow:
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
-        self.wps.execute( op, domains=[d0], async=True )
+        self.wps.execute( op, domain=d0, async=True )
 
         dataPath = self.wps.download_result(op)
         self.plotter.mpl_timeplot(dataPath)
