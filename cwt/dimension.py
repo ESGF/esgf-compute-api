@@ -84,7 +84,7 @@ class Dimension(parameter.Parameter):
     def from_dict(cls, data, name):
         """ Create dimension from dict representation. """
         if 'start' in data:
-            if isinstance(data['start'], str):
+            if not isinstance(data['start'], str):
                 start = int_or_float(data['start'])
             else:
                 start = data['start']
@@ -94,7 +94,7 @@ class Dimension(parameter.Parameter):
         end = None
 
         if 'end' in data:
-            if isinstance(data['end'], str):
+            if not isinstance(data['end'], str):
                 end = int_or_float(data['end'])
             else:
                 end = data['end']

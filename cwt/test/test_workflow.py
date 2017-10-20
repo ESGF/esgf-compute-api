@@ -20,7 +20,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         print "XX"
 
-        inputs = cwt.Variable("collection://cip_merra2_6hr_tas", "tas", domain="d0" )
+        inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain="d0" )
 
         op_data =  { 'name': "CDSpark.average", 'axes': "xy" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
