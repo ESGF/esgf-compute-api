@@ -17,9 +17,9 @@ class TestWorkflow:
         domain_data = {'id':'d0','time':{'start':'1995-01-01T00:00:00','end':'1997-12-31T23:00:00','crs':'values'}}
 
         d0 = cwt.Domain.from_dict(domain_data)
-        inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain="d0")
+        inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain=d0 )
 
-        op_data = {'name': "CDSpark.average", 'axes': "xy"}
+        op_data = {'name': "CDSpark.ave", 'axes': "xy"}
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(inputs)
 
@@ -51,7 +51,7 @@ class TestWorkflow:
 
         inputs = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain="d0" )
 
-        op_data =  { 'name': "CDSpark.average", 'axes': "t" }
+        op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -72,7 +72,7 @@ class TestWorkflow:
 
         v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas" )
 
-        v1_ave_data =  { 'name': "CDSpark.average", 'axes': "xy", 'domain': "d0" }
+        v1_ave_data =  { 'name': "CDSpark.ave", 'axes': "xy", 'domain': "d0" }
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
         v1_ave.set_inputs( v1 )
 
@@ -91,7 +91,7 @@ class TestWorkflow:
 
         v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas" )
 
-        v1_ave_data =  { 'name': "CDSpark.average", 'axes': "xt", 'domain': "d0" }
+        v1_ave_data =  { 'name': "CDSpark.ave", 'axes': "xt", 'domain': "d0" }
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
         v1_ave.set_inputs( v1 )
 

@@ -37,6 +37,16 @@ class Variable(parameter.Parameter):
         if domains and isinstance(domains, domain.Domain):
             domains = [domains]
 
+        domain1 = kwargs.get('domain', None)
+
+        if domain1 and isinstance(domain1, domain.Domain):
+            domains = [domain1]
+        else: raise Exception("'domain' parameter in Variable declaration must be of type cwt.domain.Domain")
+
+        for domain1 in domains:
+            if not isinstance( domain1, domain.Domain ):
+                raise Exception("'domain' parameter  in Variable declaration must be of type cwt.domain.Domain")
+
         self.domains = domains
         self.mime_type = kwargs.get('mime_type', None)
 
