@@ -30,7 +30,7 @@ class TestWorkflow:
 
     def spatial_max( self ):
 
-        domain_data = { 'id': 'd0', 'lat': {'start':-180, 'end':-180, 'crs':'values'}, 'lon': {'start':0, 'end':90, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
+        domain_data = { 'id': 'd0', 'lat': {'start':0, 'end':90, 'crs':'values'}, 'lon': {'start':-180, 'end':-180, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
         inputs = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
