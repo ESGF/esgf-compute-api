@@ -30,7 +30,7 @@ class TestWorkflow:
 
     def spatial_max( self ):
 
-        domain_data = { 'id': 'd0', 'lat': {'start':0, 'end':90, 'crs':'values'}, 'lon': {'start':-180, 'end':-180, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
+        domain_data = { 'id': 'd0', 'lat': {'start':0, 'end':90, 'crs':'values'}, 'lon': {'start':0, 'end':10, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
         inputs = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
@@ -46,7 +46,7 @@ class TestWorkflow:
 
     def time_ave( self ):
 
-        domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
+        domain_data = { 'id': 'd0', 'lat': {'start':0, 'end':90, 'crs':'values'}, 'lon': {'start':0, 'end':90, 'crs':'values'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
         inputs = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
@@ -112,5 +112,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.spatial_max()
+executor.time_ave()
 
