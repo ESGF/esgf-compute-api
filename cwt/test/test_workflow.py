@@ -33,7 +33,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':-180, 'end':-180, 'crs':'values'}, 'lon': {'start':0, 'end':90, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain=d0 )
+        inputs = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
 
         op_data =  { 'name': "CDSpark.max", 'axes': "xy" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
@@ -49,7 +49,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':1000, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain=d0 )
+        inputs = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
 
         op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
@@ -70,8 +70,8 @@ class TestWorkflow:
         d1_data = { 'id': 'd1', 'lat': {'start':30, 'end':30, 'crs':'values'}, 'lon': {'start':30, 'end':30, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
         d1 = cwt.Domain.from_dict(d1_data)
 
-        v0 = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain=d0 )
-        v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain=d1 )
+        v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
+        v1 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d1 )
 
         v0_ave_data =  { 'name': "CDSpark.ave", 'axes': "xy" }
         v0_ave =  cwt.Process.from_dict( v0_ave_data )
@@ -90,7 +90,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://cip_merra2_mon_tas", "tas", domain=d0 )
+        v1 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
 
         v1_ave_data =  { 'name': "CDSpark.ave", 'axes': "xt" }
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
