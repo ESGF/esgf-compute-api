@@ -90,7 +90,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
+        v1 = cwt.Variable("collection://cip_merra2_mth", "tas" )
 
         v1_ave_data =  { 'name': "CDSpark.ave", 'axes': "xt" }
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
@@ -112,5 +112,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.spatial_ave()
+executor.average()
 
