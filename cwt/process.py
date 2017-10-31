@@ -30,11 +30,11 @@ class Process(parameter.Parameter):
         process: A DescribeProcessResponse object.
         name: A string name for the process to be used as the input of another process.
     """
-    def __init__(self, process, name=None):
+    def __init__(self, identifier=None, process=None, name=None):
         super(Process, self).__init__(name)
 
         self.__process = process
-        self.__identifier = None
+        self.__identifier = identifier
 
         self.response = None
         self.processed = False
@@ -46,11 +46,9 @@ class Process(parameter.Parameter):
     @classmethod
     def from_dict(cls, data):
         """ Attempts to load a process from a dict. """
-        obj = cls(None, data.get('result'))
+        obj = cls(data.get('name'), None, data.get('result'))
 
         obj.inputs = data.get('input', [])
-
-        obj.identifier = data.get('name')
 
         obj.domain = data.get('domain')
 

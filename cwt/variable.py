@@ -32,22 +32,9 @@ class Variable(parameter.Parameter):
         self.uri = uri
         self.var_name = var_name
 
-        domains = kwargs.get('domains', None)
+        domain0 = kwargs.get('domains', kwargs.get('domain', None) )
+        self.domains = ( domain0 if isinstance(domain0, (list, tuple)) else [domain0] ) if domain0 else None
 
-        if domains and isinstance(domains, domain.Domain):
-            domains = [domains]
-
-        domain1 = kwargs.get('domain', None)
-
-        if domain1 and isinstance(domain1, domain.Domain):
-            domains = [domain1]
-        else: raise Exception("'domain' parameter in Variable declaration must be of type cwt.domain.Domain")
-
-        for domain1 in domains:
-            if not isinstance( domain1, domain.Domain ):
-                raise Exception("'domain' parameter  in Variable declaration must be of type cwt.domain.Domain")
-
-        self.domains = domains
         self.mime_type = kwargs.get('mime_type', None)
 
     @classmethod
@@ -95,10 +82,11 @@ class Variable(parameter.Parameter):
         new_domains = []
 
         for d in self.domains:
-            if d not in domains:
-                raise Exception('Could not find domain {}'.format(d))
-
-            new_domains.append(domains[d])
+            if isinstance( d, domain.Domain ):
+               new_domains.append(d)
+            else:
+                if d not in domains: raise Exception('Could not find domain {}'.format(d))
+                new_domains.append(domains[d])
 
         self.domains = new_domains
 
