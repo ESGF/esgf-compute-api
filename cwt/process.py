@@ -6,7 +6,7 @@ import json
 import logging
 
 import requests
-
+from cwt import domain
 from cwt import parameter
 from cwt import named_parameter
 from cwt import variable
@@ -69,6 +69,12 @@ class Process(parameter.Parameter):
         obj.parameters = proc_params
 
         return obj
+
+    def resolve_domains(self, domains):
+        """ Resolves the domain identifier to an object. """
+        if self.domain is None or isinstance( self.domain, domain.Domain ): return
+        if self.domain not in domains: raise Exception('Could not find domain {}'.format(self.domain) )
+        self.domain = domains[self.domain]
 
     def __getattr__(self, name):
         """ Fallthrough attribute lookup.

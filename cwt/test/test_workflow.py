@@ -49,7 +49,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':0, 'end':90, 'crs':'values'}, 'lon': {'start':0, 'end':90, 'crs':'values'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
+        inputs = cwt.Variable( "collection://cip_merra2_mth", "tas", domain=d0 )
 
         op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """

@@ -9,7 +9,7 @@ import time
 from sets import Set
 import requests
 from lxml import etree
-
+import variable
 import cwt
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
@@ -359,6 +359,8 @@ class WPS(object):
         """
         domain_names = Set([ domain.name for domain in _domains ])
         assert len(domain_names) == len(_domains), "Error, duplicate domain IDs in domain list"
+        domain_map = { ( d.name, d ) for d in _domains }
+        for input in inputs: input.resolve_domains( domain_map )
 
         domains = [ domain.parameterize() for domain in _domains ]
         if not process.domain:
