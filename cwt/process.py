@@ -73,7 +73,8 @@ class Process(parameter.Parameter):
     def resolve_domains(self, domains):
         """ Resolves the domain identifier to an object. """
         if self.domain is None or isinstance( self.domain, domain.Domain ): return
-        if self.domain not in domains: raise Exception('Could not find domain {}'.format(self.domain) )
+        if self.domain not in domains:
+            raise Exception('Could not find domain {}'.format(self.domain) )
         self.domain = domains[self.domain]
 
     def __getattr__(self, name):

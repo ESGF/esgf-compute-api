@@ -369,7 +369,7 @@ class WPS(object):
         parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
         process.inputs.extend(inputs)
-        domain_map = { ( d.name, d ) for d in _domains }
+        domain_map = dict( ( d.name, d ) for d in _domains )
         for input in process.inputs: input.resolve_domains( domain_map )
 
         process.add_parameters(*parameters)
