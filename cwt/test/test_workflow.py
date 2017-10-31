@@ -14,7 +14,7 @@ class TestWorkflow:
     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
 
     def spatial_ave(self):
-        domain_data = {'id':'d0','time':{'start':'1995-01-01T00:00:00','end':'1997-12-31T23:00:00','crs':'values'}}
+        domain_data = {'id':'d0','time':{'start':'1995-01-01T00:00:00','end':'1997-12-31T23:00:00','crs':'timestamps'}}
 
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain=d0 )
@@ -112,5 +112,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.time_ave()
+executor.spatial_ave()
 
