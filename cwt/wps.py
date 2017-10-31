@@ -359,8 +359,6 @@ class WPS(object):
         """
         domain_names = Set([ domain.name for domain in _domains ])
         assert len(domain_names) == len(_domains), "Error, duplicate domain IDs in domain list"
-        domain_map = { ( d.name, d ) for d in _domains }
-        for input in inputs: input.resolve_domains( domain_map )
 
         domains = [ domain.parameterize() for domain in _domains ]
         if not process.domain:
@@ -371,6 +369,8 @@ class WPS(object):
         parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
         process.inputs.extend(inputs)
+        domain_map = { ( d.name, d ) for d in _domains }
+        for input in process.inputs: input.resolve_domains( domain_map )
 
         process.add_parameters(*parameters)
 
