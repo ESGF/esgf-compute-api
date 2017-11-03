@@ -10,11 +10,6 @@ Supported WPS version: 1.0.0
 
 Installation
 ============
-:: 
-    
-    conda install -c uvcdat esgf-compute-api
-
-or
 
 ::
 
@@ -22,12 +17,14 @@ or
 
     cd esgf-compute-api
 
+    git checkout updates_for_EDAS
+
     python setup.py install
 
 
 Quickstart
 ==========
-`Getting Started <https://github.com/ESGF/esgf-compute-api/blob/master/examples/1_getting_started.ipynb>`_
+`Getting Started <https://github.com/ESGF/esgf-compute-api/blob/EDAS_docs/examples/edas/1_getting_started.ipynb>`_
 
 ::
 
@@ -48,14 +45,5 @@ Quickstart
 Examples
 ========
 
-Jupyter Notebook examples can be found `here <https://github.com/ESGF/esgf-compute-api/tree/master/examples>`_
+Jupyter Notebook examples can be found `here <https://github.com/ESGF/esgf-compute-api/tree/EDAS_docs/examples/edas>`_
 
-Documentation
-=============
-
-Documentation can be found on `readthedocs <http://esgf-compute-api.readthedocs.io/en/latest>`_
-
-Compatibility
-=============
-
-Compatibility document can be found on `readthedocs <https://esgf-compute-api.readthedocs.io/en/latest/cwt.compat.html>`_

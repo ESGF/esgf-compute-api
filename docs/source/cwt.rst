@@ -51,31 +51,6 @@ cwt\.dimension module
     :undoc-members:
     :show-inheritance:
 
-cwt\.gridder module
--------------------
-
-.. automodule:: cwt.gridder
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-cwt\.mask module
-----------------
-
-.. automodule:: cwt.mask
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-cwt\.named\_parameter module
-----------------------------
-
-.. automodule:: cwt.named_parameter
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 Module contents
 ---------------
 
