@@ -14,7 +14,7 @@ class TestWorkflow:
     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
 
     def spatial_ave(self):
-        domain_data = {'id':'d0','time':{'start':'1995-01-01T00:00:00','end':'1997-12-31T23:00:00','crs':'values'}}
+        domain_data = {'id':'d0','time':{'start':'1995-01-01T00:00:00','end':'1997-12-31T23:00:00','crs':'timestamps'}}
 
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain=d0 )
@@ -49,7 +49,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':0, 'end':90, 'crs':'values'}, 'lon': {'start':0, 'end':90, 'crs':'values'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
+        inputs = cwt.Variable( "collection://cip_merra2_mth", "tas", domain="d0" )
 
         op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
@@ -90,7 +90,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
+        v1 = cwt.Variable("collection://cip_merra2_mth", "tas" )
 
         v1_ave_data =  { 'name': "CDSpark.ave", 'axes': "xt" }
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
@@ -112,5 +112,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.time_ave()
+executor.average()
 

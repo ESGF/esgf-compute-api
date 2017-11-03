@@ -9,7 +9,7 @@ import time
 from sets import Set
 import requests
 from lxml import etree
-
+import variable
 import cwt
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
@@ -254,7 +254,7 @@ class WPS(object):
         if self.__capabilities is None or refresh:
             self.__capabilities = self.__get_capabilities(method)
 
-        return [cwt.Process(x) for x in self.__capabilities.process_offerings]
+        return [cwt.Process(process=x) for x in self.__capabilities.process_offerings]
 
     def get_process(self, identifier, method='GET'):
         """ Return a specified process.
@@ -272,7 +272,7 @@ class WPS(object):
             self.__capabilities = self.__get_capabilities(method)
 
         try:
-            return [cwt.Process(x) for x in self.__capabilities.process_offerings
+            return [cwt.Process(process=x) for x in self.__capabilities.process_offerings
                     if x.identifier == identifier][0]
         except IndexError:
             raise Exception('Failed to find process with identifier "{}"'.format(identifier))
@@ -369,6 +369,8 @@ class WPS(object):
         parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
         process.inputs.extend(inputs)
+        domain_map = dict( ( d.name, d ) for d in _domains )
+        for input in process.inputs: input.resolve_domains( domain_map )
 
         process.add_parameters(*parameters)
 
@@ -450,8 +452,9 @@ class WPS(object):
                 }
 
         if( len( domains ) == 0 ):
-            domain = kwargs.get("domain")
-            if domain is not None: domains = [domain]
+            domain0 = kwargs.get("domains",kwargs.get("domain"))
+            if domain0 is not None:
+                domains = domain0 if isinstance(domain0, (list, tuple)) else [domain0]
 
         if method.lower() == 'get':
             params['datainputs'] = self.prepare_data_inputs(process, inputs, domains, **kwargs)
