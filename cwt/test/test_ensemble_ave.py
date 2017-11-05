@@ -7,8 +7,8 @@ def getEnsembleInput( collection, domain ):
 plotter = cwt.initialize()
 wps = cwt.WPS( "https://dptomcat03-int/wps/cwt" )
 
-d0 = cwt.Domain.from_dict(
-    { 'time': {'start':'1980-01-01T00:00:00','end':'1980-01-01T23:59:00','crs':'timestamps'},
+d0 = cwt.Domain.from_dict( { 'id': 'd0',
+      'time': {'start':'1980-01-01T00:00:00','end':'1980-01-01T23:59:00','crs':'timestamps'},
       'level': { 'start':'70000', 'end':'70000', 'crs':'values' } } )
 
 collections =  [ "cip_jra55_6hr", "cip_merra2_6hr", "cip_cfsr_6hr", "cip_eraint_6hr" ]
