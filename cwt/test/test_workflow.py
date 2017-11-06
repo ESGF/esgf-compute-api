@@ -19,7 +19,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain=d0 )
 
-        op_data = {'name': "CDSpark.ave", 'axes': "xy"}
+        op_data = { 'name': "CDSpark.ave", 'weights':'cosine', 'axes': "xy" }
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(inputs)
 
@@ -112,5 +112,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.average()
+executor.spatial_ave()
 
