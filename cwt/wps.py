@@ -412,7 +412,7 @@ class WPS(object):
 
         return request(**base_params)
 
-    def download_result( self, op ):
+    def download_result( self, op, temp_dir="/tmp/" ):
         status = self.status( op )
         logger.info( "STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
@@ -421,7 +421,7 @@ class WPS(object):
             logger.info( "STATUS: " +  status )
         if status == "COMPLETED":
             file_href = op.hrefs.get("file")
-            file_path = "/tmp/" + file_href.split('/')[ -1 ]
+            file_path = temp_dir + file_href.split('/')[ -1 ]
             urllib.urlretrieve (file_href, file_path )
             return file_path
         else:
