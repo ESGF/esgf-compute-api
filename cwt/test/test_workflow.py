@@ -1,19 +1,21 @@
-
 import cwt, os
 # import logging, cdms2, vcs
 # from cwt.test.plotters import PlotMgr
 # import cdms2, datetime, matplotlib, urllib3
 # import matplotlib.pyplot as plt
-
 # host = 'https://www-proxy-dev.nccs.nasa.gov/edas/wps/cwt'
 
+def create_tempdir():
+    temp_dir = os.path.expanduser( "~/.edas" )
+    try: os.makedirs( temp_dir, 0755 )
+    except Exception: pass
+    return temp_dir
 
 class TestWorkflow:
     plotter = cwt.initialize()
     host ="https://dptomcat03-int/wps/cwt"
     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
-    temp_dir = os.path.expanduser( "~/.edas" )
-    os.makedirs( temp_dir, 0755 );
+    temp_dir = create_tempdir()
 
     def weighted_spatial_ave(self):
         domain_data = {'id':'d0','time':{'start':'1995-01-01T00:00:00','end':'1997-12-31T23:00:00','crs':'timestamps'}}
