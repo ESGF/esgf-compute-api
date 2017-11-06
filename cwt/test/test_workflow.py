@@ -35,7 +35,7 @@ class TestWorkflow:
         inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain=d0 )
 
         op_data = { 'name': "CDSpark.ave", 'axes': "xy" }
-        op = cwt.Process.from_dict(op_data)  
+        op = cwt.Process.from_dict(op_data)
         op.set_inputs(inputs)
 
         self.wps.execute(op, domains=[d0], async=True)
@@ -68,6 +68,27 @@ class TestWorkflow:
 
         op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( inputs )
+
+        op.set_inputs()
+
+        self.wps.execute( op, domains=[d0], async=True )
+
+        dataPath = self.wps.download_result(op)
+        self.plotter.mpl_spaceplot(dataPath)
+
+    def sia_comparison_time_ave( self ):
+
+        start_year = 1958     #  Holdings:  1958 - 2001
+        end_year = 1958
+
+        domain_data = { 'id': 'd0','time': {'start':start_year+'-01-01T00:00:00','end':end_year+'-12-31T23:00:00','crs':'timestamps'  } }
+        d0 = cwt.Domain.from_dict(domain_data)
+
+        inputs = cwt.Variable( "collection://iap-ua_eraint_tas1hr", "tas", domain="d0" )
+
+        op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
+        op =  cwt.Process.from_dict( op_data )
         op.set_inputs( inputs )
 
         op.set_inputs()
@@ -127,5 +148,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.spatial_ave()
+executor.sia_comparison_time_ave()
 
