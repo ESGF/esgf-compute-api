@@ -1,4 +1,4 @@
-import cwt, os
+import cwt, os, time
 # import logging, cdms2, vcs
 # from cwt.test.plotters import PlotMgr
 # import cdms2, datetime, matplotlib, urllib3
@@ -84,12 +84,12 @@ class TestWorkflow:
     def sia_comparison_time_ave( self ):
 
         start_year = 1958     #  Holdings:  1958 - 2001
-        end_year = 1958
+        end_year = 1968
 
         domain_data = { 'id': 'd0','time': {'start':str(start_year)+'-01-01T00:00:00','end':str(end_year)+'-12-31T23:00:00','crs':'timestamps'  } }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        print "Execuing global time average for variabe 'tas' from collection 'iap-ua_eraint_tas1hr' for " + str(end_year-start_year+1) + " years, starting with " + str(start_year)
+        print "\nExecuing global time average for variabe 'tas' from collection 'iap-ua_eraint_tas1hr' for " + str(end_year-start_year+1) + " years, starting with " + str(start_year) +"\n"
 
         inputs = cwt.Variable( "collection://iap-ua_eraint_tas1hr", "tas", domain="d0" )
 
@@ -99,9 +99,12 @@ class TestWorkflow:
 
         op.set_inputs()
 
+        start = time.time()
         self.wps.execute( op, domains=[d0], async=True )
 
         dataPath = self.wps.download_result( op, self.temp_dir )
+        end = time.time()
+        print "\nCompleted execution in " + str(end-start) + " secs\n"
         self.plotter.mpl_spaceplot(dataPath)
 
     def anomaly( self ):
