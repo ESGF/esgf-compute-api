@@ -20,7 +20,7 @@ class TestWorkflow:
 
     def time_selection_test(self):
 
-        domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2011-01-01T00:00:00', 'end':'2011-12-31T23:00:00', 'crs':'timestamps'}}
+        domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
 
         inputs = cwt.Variable("collection://cip_merra2_mth", "pr", domain="d0" )
