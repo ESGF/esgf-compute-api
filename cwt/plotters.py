@@ -18,7 +18,7 @@ class PlotMgr:
             dates = matplotlib.dates.date2num(datetimes)
             fig, ax = plt.subplots()
             ax.plot(dates, timeSeries.data )
-            ax.xaxis.set_major_formatter( mdates.DateFormatter('%Y') )
+            ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
             ax.grid(True)
             fig.autofmt_xdate()
             plt.show()
@@ -29,7 +29,7 @@ class PlotMgr:
             f = cdms2.openDataset(dataPath)
             spatialData = f( varName, time=slice(timeIndex,timeIndex+1), squeeze=1 )
             fig, ax = plt.subplots()
-            ax.imshow(spatialData, interpolation="bilinear", cmap='jet')
+            ax.imshow(spatialData, interpolation="bilinear", cmap='jet', origin='lower')
             plt.show()
 
     def print_Mdata(self, dataPath, varName="Nd4jMaskedTensor" ):
