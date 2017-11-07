@@ -9,7 +9,7 @@ class PlotMgr:
     def __init__(self):
         self.logger = logging.getLogger('cwt.wps')
 
-    def mpl_timeplot( self, dataPath, varName="Nd4jMaskedTensor", show_points=False ):
+    def mpl_timeplot( self, dataPath, show_points=False, varName="Nd4jMaskedTensor" ):
         if dataPath:
             self.logger.info( "Plotting file: " +  dataPath )
             f = cdms2.openDataset(dataPath)

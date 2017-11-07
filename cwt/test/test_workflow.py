@@ -35,7 +35,7 @@ class TestWorkflow:
 
         dataPath = self.wps.download_result(op)
 
-        self.plotter.mpl_timeplot(dataPath,"Pressure",True)
+        self.plotter.mpl_timeplot(dataPath,True)
 
     def weighted_spatial_ave(self):
         domain_data = {'id':'d0','time':{'start':'1995-01-01T00:00:00','end':'1997-12-31T23:00:00','crs':'timestamps'}}
