@@ -17,7 +17,7 @@ class PlotMgr:
             datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
             dates = matplotlib.dates.date2num(datetimes)
             fig, ax = plt.subplots()
-            ax.plot(dates, timeSeries.data, 'bo' )
+            ax.plot(dates, timeSeries.data, 'bo-' )
             ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
             ax.grid(True)
             fig.autofmt_xdate()
