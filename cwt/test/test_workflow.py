@@ -130,9 +130,7 @@ class TestWorkflow:
     def anomaly( self ):
 
         d0 = cwt.Domain.from_dict( { 'id': 'd0' } )
-
-        d1_data = { 'id': 'd1', 'lat': {'start':-40, 'end':-10, 'crs':'values'}, 'lon': {'start':115, 'end':155, 'crs':'values'} }
-        d1 = cwt.Domain.from_dict(d1_data)
+        d1 = cwt.Domain.from_dict( { 'id': 'd1', 'lat': {'start':-40, 'end':-10, 'crs':'values'}, 'lon': {'start':115, 'end':155, 'crs':'values'} } )
 
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0  )
         v1 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d1  )
@@ -145,7 +143,7 @@ class TestWorkflow:
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
         v1_ave.set_inputs( v1 )
 
-        anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.eDiff" } )
+        anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.eDiff", "domain": "d0" } )
         anomaly.set_inputs( v1_ave, v0_ave )
 
         self.wps.execute( anomaly, domains=[d0,d1], async=True )
