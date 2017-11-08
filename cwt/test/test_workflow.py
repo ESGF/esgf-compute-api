@@ -179,5 +179,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.time_selection_test()
+executor.time_ave()
 

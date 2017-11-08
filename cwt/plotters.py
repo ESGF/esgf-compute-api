@@ -1,7 +1,9 @@
 import logging
 import cdms2, datetime, matplotlib, urllib3
+from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import numpy as np
 
 
 class PlotMgr:
@@ -9,7 +11,7 @@ class PlotMgr:
     def __init__(self):
         self.logger = logging.getLogger('cwt.wps')
 
-    def mpl_timeplot( self, dataPath, show_points=False, varName="Nd4jMaskedTensor" ):
+    def mpl_timeplot( self, dataPath, varName="Nd4jMaskedTensor" ):
         if dataPath:
             self.logger.info( "Plotting file: " +  dataPath )
             f = cdms2.openDataset(dataPath)
@@ -17,9 +19,8 @@ class PlotMgr:
             datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
             dates = matplotlib.dates.date2num(datetimes)
             fig, ax = plt.subplots()
-            if( show_points): ax.plot(dates, timeSeries.data, 'bo-' )
-            else: ax.plot( dates, timeSeries.data )
-            ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
+            ax.plot(dates, timeSeries.data )
+            ax.xaxis.set_major_formatter( mdates.DateFormatter('%b%Y') )
             ax.grid(True)
             fig.autofmt_xdate()
             plt.show()
@@ -28,9 +29,26 @@ class PlotMgr:
         if dataPath:
             self.logger.info( "Plotting file: " +  dataPath )
             f = cdms2.openDataset(dataPath)
-            spatialData = f( varName, time=slice(timeIndex,timeIndex+1), squeeze=1 )
+            lons = f.getAxis('lon')
+            lats = f.getAxis('lat')
+            lons2 = lons[:]
+            lats2 = lats[:]
+            m = Basemap(llcrnrlon=lons[0], llcrnrlat=lats[0], urcrnrlon=lons[len(lons)-1], urcrnrlat=lats[len(lats)-1],
+                        projection='merc', lat_0 = lats2.mean(), lon_0 = lons2.mean())
+            spatialData = f( varName, time=slice(timeIndex,timeIndex+1), squeeze=1)
             fig, ax = plt.subplots()
-            ax.imshow(spatialData, interpolation="bilinear", cmap='jet', origin='lower')
+            lon, lat = np.meshgrid(lons2, lats2)
+            xi, yi = m(lon, lat)
+            cs2 = m.pcolormesh(xi, yi, spatialData, cmap='jet')
+            # draw parallels
+            lats_space = abs(lats[0])+abs(lats[len(lats)-1])
+            m.drawparallels(np.arange(lats[0],lats[len(lats)-1], round(lats_space/5, 0)), labels=[1,0,0,0], dashes=[6,900])
+            # draw meridians
+            lons_space = abs(lons[0])+abs(lons[len(lons)-1])
+            m.drawmeridians(np.arange(lons[0],lons[len(lons)-1], round(lons_space/5, 0)), labels=[0,0,0,1], dashes=[6,900])
+            m.drawcoastlines()
+            m.drawstates()
+            m.drawcountries()
             plt.show()
 
     def print_Mdata(self, dataPath, varName="Nd4jMaskedTensor" ):
