@@ -106,20 +106,18 @@ class TestWorkflow:
     def sia_comparison_time_ave( self ):
 
         start_year = 1960     #  Holdings:  1958 - 2001
-        end_year = 1961
+        end_year = 1960
 
         domain_data = { 'id': 'd0','time': {'start':str(start_year)+'-01-01T00:00:00','end':str(end_year)+'-12-31T23:00:00','crs':'timestamps'  } }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        print "\nExecuing global time average for variabe 'tas' from collection 'iap-ua_eraint_tas1hr' for " + str(end_year-start_year+1) + " years, starting with " + str(start_year) +"\n"
+        print "\nExecuing global time average for variable 'tas' from collection 'iap-ua_eraint_tas1hr' for " + str(end_year-start_year+1) + " years, starting with " + str(start_year) +"\n"
 
         inputs = cwt.Variable( "collection://iap-ua_eraint_tas1hr", "tas", domain="d0" )
 
         op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
         op =  cwt.Process.from_dict( op_data )
         op.set_inputs( inputs )
-
-        op.set_inputs()
 
         start = time.time()
         self.wps.execute( op, domains=[d0], async=True )
@@ -179,5 +177,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.time_ave()
+executor.sia_comparison_time_ave()
 
