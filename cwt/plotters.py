@@ -27,8 +27,7 @@ class PlotMgr:
 
     def mpl_spaceplot( self, dataPath, timeIndex=0, varName="Nd4jMaskedTensor" ):
         if dataPath:
-            self.logger.info( "Plotting file: " +  dataPath )
-            f = cdms2.openDataset(dataPath)
+             f = cdms2.openDataset(dataPath)
             lons = f.getAxis('lon')
             lats = f.getAxis('lat')
             lons2 = lons[:]
@@ -36,6 +35,7 @@ class PlotMgr:
             m = Basemap(llcrnrlon=lons[0], llcrnrlat=lats[0], urcrnrlon=lons[len(lons)-1], urcrnrlat=lats[len(lats)-1],
                         projection='merc', lat_0 = lats2.mean(), lon_0 = lons2.mean())
             spatialData = f( varName, time=slice(timeIndex,timeIndex+1), squeeze=1)
+            self.logger.info( "Plotting file: " +  dataPath  + ", data shape: " +  str( spatialData.shape ) + ", dims: " + spatialData.getOrder())
             fig, ax = plt.subplots()
             lon, lat = np.meshgrid(lons2, lats2)
             xi, yi = m(lon, lat)
