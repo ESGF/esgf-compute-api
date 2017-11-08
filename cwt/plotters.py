@@ -27,7 +27,7 @@ class PlotMgr:
 
     def mpl_spaceplot( self, dataPath, timeIndex=0, varName="Nd4jMaskedTensor" ):
         if dataPath:
-             f = cdms2.openDataset(dataPath)
+            f = cdms2.openDataset(dataPath)
             lons = f.getAxis('lon')
             lats = f.getAxis('lat')
             lons2 = lons[:]
