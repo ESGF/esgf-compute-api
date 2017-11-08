@@ -129,9 +129,9 @@ class TestWorkflow:
 
     def anomaly( self ):
 
-        d0 = cwt.Domain.from_dict({})
+        d0 = cwt.Domain.from_dict( { 'id': 'd0' } )
 
-        d1_data = { 'id': 'd0', 'lat': {'start':-10, 'end':-40, 'crs':'values'}, 'lon': {'start':115, 'end':155, 'crs':'values'} }
+        d1_data = { 'id': 'd1', 'lat': {'start':-10, 'end':-40, 'crs':'values'}, 'lon': {'start':115, 'end':155, 'crs':'values'} }
         d1 = cwt.Domain.from_dict(d1_data)
 
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas" )
