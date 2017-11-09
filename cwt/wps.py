@@ -110,7 +110,7 @@ class WPS(object):
             logger.debug( "Sending request to url: {0}, params = {1}, data = {2}, headers={3}".format(url,str(params),str(data),str(headers)))
             response = self.__client.request(method, url, params=params, data=data, headers=headers, verify=self.__verify )
         except requests.RequestException, err:
-            raise WPSHTTPError('{0} request failed: {1}'.format(method,str(err)))
+            raise WPSHTTPError('{0} request to connect to {1} failed: {2}'.format(method,url,str(err)))
 
         logger.debug('%s request succeeded', method)
 
