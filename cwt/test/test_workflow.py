@@ -178,5 +178,5 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.sia_comparison_time_ave()
+executor.weighted_spatial_ave()
 
