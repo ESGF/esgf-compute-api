@@ -20,7 +20,7 @@ class PlotMgr:
             dates = matplotlib.dates.date2num(datetimes)
             fig, ax = plt.subplots()
             ax.plot(dates, timeSeries.data )
-            ax.xaxis.set_major_formatter( mdates.DateFormatter('%b%Y') )
+            ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
             ax.grid(True)
             fig.autofmt_xdate()
             plt.show()
