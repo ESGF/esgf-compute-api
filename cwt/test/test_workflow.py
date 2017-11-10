@@ -106,7 +106,7 @@ class TestWorkflow:
     def sia_comparison_time_ave( self ):
 
         start_year = 1960     #  Holdings:  1958 - 2001
-        end_year = 1960
+        end_year = 1989
 
         domain_data = { 'id': 'd0','time': {'start':str(start_year)+'-01-01T00:00:00','end':str(end_year)+'-12-31T23:00:00','crs':'timestamps'  } }
         d0 = cwt.Domain.from_dict(domain_data)
