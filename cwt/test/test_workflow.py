@@ -111,9 +111,9 @@ class TestWorkflow:
         domain_data = { 'id': 'd0','time': {'start':str(start_year)+'-01-01T00:00:00','end':str(end_year)+'-12-31T23:00:00','crs':'timestamps'  } }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        print "\nExecuing global time average for variable 'tas' from collection 'iap-ua_eraint_tas1hr' for " + str(end_year-start_year+1) + " years, starting with " + str(start_year) +"\n"
+        print "\nExecuing global time average for variable 'tas' from collection 'iap-ua_era40_tas1hr   ' for " + str(end_year-start_year+1) + " years, starting with " + str(start_year) +"\n"
 
-        inputs = cwt.Variable( "collection://iap-ua_eraint_tas1hr", "tas", domain="d0" )
+        inputs = cwt.Variable( "collection://iap-ua_era40_tas1hr", "tas", domain="d0" )
 
         op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
         op =  cwt.Process.from_dict( op_data )
