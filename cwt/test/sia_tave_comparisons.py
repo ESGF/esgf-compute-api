@@ -39,6 +39,6 @@ executor = TestWorkflow()
 
 # Edit the start and end years here:
 
-executor.sia_comparison_time_ave(1958,1958)   #  Holdings:  1958 - 2001
+executor.sia_comparison_time_ave(1958,1968)   #  Holdings:  1958 - 2001
 
 
