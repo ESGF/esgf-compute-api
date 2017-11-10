@@ -152,13 +152,8 @@ class TestWorkflow:
         self.plotter.mpl_timeplot(dataPath)
 
     def climate_change_anomaly(self):
-        d0_data = {'id': 'd0', 'lat': {'start': -90, 'end': 90, 'crs': 'values'},
-                   'lon': {'start': 0, 'end': 360, 'crs': 'values'},
-                   'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
-
-        d1_data = {'id': 'd1', 'lat': {'start': -90, 'end': 90, 'crs': 'values'},
-                   'lon': {'start': 0, 'end': 360, 'crs': 'values'},
-                   'time': {'start': '1980-01-01T00:00:00', 'end': '1980-12-31T23:00:00', 'crs': 'timestamps'}}
+        d0_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
+        d1_data = {'id': 'd1', 'time': {'start': '1980-01-01T00:00:00', 'end': '1980-12-31T23:00:00', 'crs': 'timestamps'}}
 
         d0 = cwt.Domain.from_dict(d0_data)
         d1 = cwt.Domain.from_dict(d1_data)
@@ -174,21 +169,13 @@ class TestWorkflow:
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
-        self.wps.execute(v0_ave, domains=[d0], async=True)
-        self.wps.execute(v1_ave, domains=[d1], async=True)
-
         anomaly = cwt.Process.from_dict( { 'name': "CDSpark.eDiff" } )
         anomaly.set_inputs(v0_ave, v1_ave)
 
         self.wps.execute(anomaly, domains=[d0, d1], async=True)
 
-        dataPath = self.wps.download_result(v0_ave)
-        dataPath1 = self.wps.download_result(v1_ave)
-        dataPath2 = self.wps.download_result(anomaly)
-
+        dataPath = self.wps.download_result(anomaly)
         self.plotter.mpl_spaceplot(dataPath)
-        self.plotter.mpl_spaceplot(dataPath1)
-        self.plotter.mpl_spaceplot(dataPath2)
 
     def average( self ):
 
