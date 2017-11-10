@@ -169,7 +169,7 @@ class TestWorkflow:
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
-        anomaly = cwt.Process.from_dict( { 'name': "CDSpark.eDiff" } )
+        anomaly = cwt.Process.from_dict( { 'name': "CDSpark.eDiff", "domain": "d0" } )
         anomaly.set_inputs(v0_ave, v1_ave)
 
         self.wps.execute(anomaly, domains=[d0, d1], async=True)
