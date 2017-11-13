@@ -8,7 +8,7 @@ def create_tempdir():
 
 class TestWorkflow:
     plotter = cwt.initialize()
-    host ="https://dptomcat03-int/wps/cwt"
+    host ="https://127.0.0.1:9999/cwt"
     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
     temp_dir = create_tempdir()
 
