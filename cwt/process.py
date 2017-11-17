@@ -44,11 +44,16 @@ class Process(parameter.Parameter):
         self.hrefs = {}
 
     @classmethod
+    def get_iterable(cls, data, key):
+        result = data.get(key, [])
+        return result if hasattr(result, '__iter__') else [ result ]
+
+    @classmethod
     def from_dict(cls, data):
         """ Attempts to load a process from a dict. """
         obj = cls(data.get('name'), None, data.get('result'))
 
-        obj.inputs = data.get('input', [])
+        obj.inputs = cls.get_iterable( data, 'input' )
 
         obj.domain = data.get('domain')
 

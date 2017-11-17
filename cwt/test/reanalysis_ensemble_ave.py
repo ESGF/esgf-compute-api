@@ -2,7 +2,7 @@ import cwt, os
 
 def getEnsembleInput( collection, levels, domain ):
     variable = cwt.Variable( "collection://" + collection, "ta", domain=domain, name=collection )
-    var_filtered = cwt.Process.from_dict({'name': "CDSpark.compress", 'plev': levels, 'input': variable})
+    var_filtered = cwt.Process.from_dict({'name': "CDSpark.compress", 'plev': levels, 'input': variable })
     return var_filtered
 
 plotter = cwt.initialize()
