@@ -12,4 +12,4 @@ wps = cwt.WPS( "https://edas.nccs.nasa.gov/wps/cwt" )
 ens_inputs = [ getEnsembleInput( collection, levels, d0 ) for collection in collections ]
 ens_ave = cwt.Process.from_dict({ 'name': "CDSpark.eAve", "cwt": "~cip_jra55_6hr", "input": ens_inputs })
 wps.execute( ens_ave, domains=[d0] )
-
+wps.get_status( ens_ave )

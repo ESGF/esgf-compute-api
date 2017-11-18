@@ -428,7 +428,15 @@ class WPS(object):
             print xml.etree.ElementTree.tostring( op.response )
             return ""
 
-
+    def get_status( self, op ):
+        status = self.status( op )
+        logger.info( "STATUS: " +  status )
+        while status == "QUEUED" or status == "EXECUTING":
+            time.sleep(1)
+            status = self.status( op )
+            logger.info( "STATUS: " +  status )
+        logger.info("STATUS: COMPLETED, Response:")
+        print xml.etree.ElementTree.tostring( op.response )
 
     def execute(self, process, inputs=None, domains=[], async=True, method='GET', **kwargs):
         """ Execute the process on the WPS server. 
