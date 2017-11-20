@@ -2,10 +2,11 @@
 
 import json
 import logging
-import re
+import re, os
 import sys, urllib
 import xml.etree.ElementTree
 import time
+from os.path import dirname
 from sets import Set
 import requests
 from lxml import etree
@@ -68,6 +69,10 @@ class WPS(object):
             log_file = kwargs.get('log_file')
 
             if log_file is not None:
+
+                try: os.makedirs( dirname(log_file), 0755 )
+                except Exception: pass
+
                 file_handler = logging.FileHandler(log_file)
 
                 file_handler.setFormatter(formatter)
