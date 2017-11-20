@@ -434,13 +434,14 @@ class WPS(object):
             return ""
 
     def get_status( self, op ):
+        t0 = time.time()
         status = self.status( op )
         logger.info( "STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
             time.sleep(1)
             status = self.status( op )
             logger.info( "STATUS: " +  status )
-        logger.info("STATUS: COMPLETED, Response:")
+        logger.info("STATUS: COMPLETED, run time = {:.2f} s, Response:".format( time.time()-t0 ) )
         print xml.etree.ElementTree.tostring( op.response )
 
     def execute(self, process, inputs=None, domains=[], async=True, method='GET', **kwargs):
