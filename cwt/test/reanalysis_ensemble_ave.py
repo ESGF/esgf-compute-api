@@ -4,8 +4,8 @@ collections =  [ "cip_jra55_6hr", "cip_merra2_6hr", "cip_cfsr_6hr", "cip_eraint_
 d0 = cwt.Domain.from_dict( { 'id': 'd0', 'time': {'start':'1980-01-01T00:00:00','end':'1980-12-31T23:00:00','crs':'timestamps'} } )
 
 def getEnsembleInput( collection, levels, domain ):
-    variable = cwt.Variable( "collection://" + collection, "ta", domain=domain, name=collection )
-    return cwt.Process.from_dict({'name': "CDSpark.compress", 'plev': levels, 'input': variable })
+    variable = cwt.Variable( "collection://" + collection, "ta", domain=domain, name="ta-" + collection )
+    return cwt.Process.from_dict( { 'name':"CDSpark.compress", 'plev':levels, 'input':variable, 'result':"filt-ta-"+collection } )
 
 plotter = cwt.initialize()
 wps = cwt.WPS( "https://edas.nccs.nasa.gov/wps/cwt", log=True, log_file="/tmp/{}/logs/esgf_api.log".format(getpass.getuser()), verify=False )
