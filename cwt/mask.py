@@ -43,7 +43,7 @@ class Mask(object):
         self.operation = operation
 
         if not name:
-            name = str(uuid()).split("-")[-1]
+            name = str(uuid())[26:]
 
         self.name = name
 
