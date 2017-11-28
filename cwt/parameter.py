@@ -21,7 +21,7 @@ class Parameter(object):
         self._name = name
 
         if not self._name:
-            self._name = str(uuid())[28:]
+            self._name = str(uuid())[37:]
 
     @classmethod
     def from_dict(cls, data):
