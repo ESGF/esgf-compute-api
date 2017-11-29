@@ -216,6 +216,6 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.clt_time_ave()
+executor.spatial_max()
 
 

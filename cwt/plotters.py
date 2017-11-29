@@ -50,6 +50,7 @@ class PlotMgr:
             m.drawcoastlines()
             m.drawstates()
             m.drawcountries()
+            cbar = m.colorbar(cs2,location='bottom',pad="10%")
             plt.show()
 
     def print_Mdata(self, dataPath, varName="Nd4jMaskedTensor" ):
