@@ -18,6 +18,18 @@ class TestWorkflow:
     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
     temp_dir = create_tempdir()
 
+    def clt_time_ave( self ):
+        domain_data = { 'id': 'd0', 'lat':{'start':23.7,'end':49.2,'crs':'values'}, 'lon': {'start':-125, 'end':-70.3, 'crs':'values'},
+                        'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00','crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        inputs = cwt.Variable("collection://cip_cfsr_mth","clt",domain="d0" )
+        op_data =  { 'name': "CDSpark.ave", 'axes':"t" }
+        op =  cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( inputs )
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPath = self.wps.download_result(op, self.temp_dir)
+        self.plotter.mpl_spaceplot(dataPath)
+
     def time_selection_test(self):
 
         domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
@@ -33,7 +45,7 @@ class TestWorkflow:
 
         self.wps.execute( op, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result(op)
+        dataPath = self.wps.download_result(op, self.temp_dir)
 
         self.plotter.mpl_timeplot(dataPath,True)
 
@@ -49,7 +61,7 @@ class TestWorkflow:
 
         self.wps.execute(op, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(op)
+        dataPath = self.wps.download_result(op, self.temp_dir)
         self.plotter.mpl_timeplot(dataPath)
 
     def nonweighted_spatial_ave(self):
@@ -64,7 +76,7 @@ class TestWorkflow:
 
         self.wps.execute(op, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(op)
+        dataPath = self.wps.download_result(op, self.temp_dir)
         self.plotter.mpl_timeplot(dataPath)
 
 
@@ -82,7 +94,7 @@ class TestWorkflow:
 
         self.wps.execute( op, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result(op)
+        dataPath = self.wps.download_result(op, self.temp_dir)
         self.plotter.mpl_timeplot(dataPath)
 
     def time_ave( self ):
@@ -100,7 +112,7 @@ class TestWorkflow:
 
         self.wps.execute( op, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result(op)
+        dataPath = self.wps.download_result(op, self.temp_dir)
         self.plotter.mpl_spaceplot(dataPath)
 
     def sia_comparison_time_ave( self ):
@@ -148,7 +160,7 @@ class TestWorkflow:
 
         self.wps.execute( anomaly, domains=[d0,d1], async=True )
 
-        dataPath = self.wps.download_result( anomaly )
+        dataPath = self.wps.download_result( anomaly, self.temp_dir )
         self.plotter.mpl_timeplot(dataPath)
 
     def climate_change_anomaly(self):
@@ -174,7 +186,7 @@ class TestWorkflow:
 
         self.wps.execute(anomaly, domains=[d0, d1], async=True)
 
-        dataPath = self.wps.download_result(anomaly)
+        dataPath = self.wps.download_result(anomaly, self.temp_dir)
         self.plotter.mpl_spaceplot(dataPath)
 
     def average( self ):
@@ -190,7 +202,7 @@ class TestWorkflow:
 
         self.wps.execute( v1_ave, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result( v1_ave )
+        dataPath = self.wps.download_result( v1_ave, self.temp_dir )
         self.plotter.print_Mdata(dataPath)
 
 

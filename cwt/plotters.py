@@ -11,10 +11,11 @@ class PlotMgr:
     def __init__(self):
         self.logger = logging.getLogger('cwt.wps')
 
-    def mpl_timeplot( self, dataPath, varName="Nd4jMaskedTensor" ):
+    def mpl_timeplot( self, dataPath ):
         if dataPath:
             self.logger.info( "Plotting file: " +  dataPath )
             f = cdms2.openDataset(dataPath)
+            varName = f.variables.values()[0].id
             timeSeries = f( varName, squeeze=1 )
             datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
             dates = matplotlib.dates.date2num(datetimes)
@@ -25,7 +26,7 @@ class PlotMgr:
             fig.autofmt_xdate()
             plt.show()
 
-    def mpl_spaceplot( self, dataPath, timeIndex=0, varName="Nd4jMaskedTensor" ):
+    def mpl_spaceplot( self, dataPath, timeIndex=0 ):
         if dataPath:
             self.logger.info( "Plotting file: " +  dataPath )
             f = cdms2.openDataset(dataPath)
@@ -33,8 +34,8 @@ class PlotMgr:
             lats = f.getAxis('lat')
             lons2 = lons[:]
             lats2 = lats[:]
-            m = Basemap(llcrnrlon=lons[0], llcrnrlat=lats[0], urcrnrlon=lons[len(lons)-1], urcrnrlat=lats[len(lats)-1],
-                        epsg='4326', lat_0 = lats2.mean(), lon_0 = lons2.mean())
+            m = Basemap(llcrnrlon=lons[0], llcrnrlat=lats[0], urcrnrlon=lons[len(lons)-1], urcrnrlat=lats[len(lats)-1], epsg='4326', lat_0 = lats2.mean(), lon_0 = lons2.mean())
+            varName = f.variables.values()[0].id
             spatialData = f( varName, time=slice(timeIndex,timeIndex+1), squeeze=1)
             fig, ax = plt.subplots()
             lon, lat = np.meshgrid(lons2, lats2)
@@ -49,6 +50,7 @@ class PlotMgr:
             m.drawcoastlines()
             m.drawstates()
             m.drawcountries()
+            cbar = m.colorbar(cs2,location='bottom',pad="10%")
             plt.show()
 
     def print_Mdata(self, dataPath, varName="Nd4jMaskedTensor" ):
