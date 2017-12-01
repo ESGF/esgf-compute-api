@@ -204,6 +204,6 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.climate_change_anomaly()
+executor.spatial_max()
 
 
