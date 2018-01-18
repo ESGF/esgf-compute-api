@@ -1,12 +1,12 @@
 FROM continuumio/miniconda:4.3.27
 
 RUN apt-get update --fix-missing && \
-	apt-get install -y build-essential && \
+	apt-get install --no-install-recommends -y build-essential && \
 	conda install -y -c conda-forge -c uvcdat mesalib esgf-compute-api \
 	jupyter nb_conda_kernels cdms2 vcs && \
 	conda clean -y --all && \
-	apt-get autoremove -y && \
-	apt-get autoclean -y
+	apt-get purge -y --auto-remove build-essential && \
+	rm -rf /var/lib/apt/lists/*
 
 RUN git clone --depth=1 https://github.com/ESGF/esgf-compute-api 
 
