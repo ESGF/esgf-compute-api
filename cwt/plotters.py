@@ -53,9 +53,9 @@ class PlotMgr:
             cbar = m.colorbar(cs2,location='bottom',pad="10%")
             plt.show()
 
-    def print_Mdata(self, dataPath, varName="Nd4jMaskedTensor" ):
+    def print_Mdata(self, dataPath ):
             f = cdms2.openDataset(dataPath)
-            spatialData = f( varName )
-            self.logger.info( "Produced result, shape: " +  str( spatialData.shape ) + ", dims: " + spatialData.getOrder() )
+            for variable in f.variables.values():
+                self.logger.info( "Produced result " + variable.id + ", shape: " +  str( variable.shape ) + ", dims: " + variable.getOrder() )
 
 

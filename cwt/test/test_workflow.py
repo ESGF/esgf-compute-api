@@ -205,6 +205,22 @@ class TestWorkflow:
         dataPath = self.wps.download_result( v1_ave, self.temp_dir )
         self.plotter.print_Mdata(dataPath)
 
+    def performance_test_global_1y(self):
+        #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
+        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '1980-12-31T23:00:00', 'crs': 'timestamps'}}
+
+        d0 = cwt.Domain.from_dict(domain_data)
+
+        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+
+        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
+        v1_ave = cwt.Process.from_dict(v1_ave_data)
+        v1_ave.set_inputs(v1)
+
+        self.wps.execute(v1_ave, domains=[d0], async=True)
+
+        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
+        self.plotter.print_Mdata(dataPath)
 
     def test_plot(self):
         self.plotter.mpl_timeplot("/tmp/testData.nc")
@@ -216,6 +232,6 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.spatial_max()
+executor.performance_test_global_1y()
 
 
