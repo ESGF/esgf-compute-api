@@ -1,5 +1,5 @@
 import logging
-import cdms2, datetime, matplotlib, urllib3
+import cdms2, datetime, matplotlib
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -26,12 +26,20 @@ class PlotMgr:
             fig.autofmt_xdate()
             plt.show()
 
+    def getAxis(self, axes, atype ):
+        for axis in axes:
+            try:
+                if axis.axis == atype: return axis
+            except: pass
+        return None
+
     def mpl_spaceplot( self, dataPath, timeIndex=0 ):
         if dataPath:
             self.logger.info( "Plotting file: " +  dataPath )
             f = cdms2.openDataset(dataPath)
-            lons = f.getAxis('lon')
-            lats = f.getAxis('lat')
+            axes = f.axes.values()  # """:type : Process """
+            lons = self.getAxis( axes , "X" )
+            lats = self.getAxis( axes , "Y" )
             lons2 = lons[:]
             lats2 = lats[:]
             m = Basemap(llcrnrlon=lons[0], llcrnrlat=lats[0], urcrnrlon=lons[len(lons)-1], urcrnrlat=lats[len(lats)-1], epsg='4326', lat_0 = lats2.mean(), lon_0 = lons2.mean())
@@ -56,6 +64,7 @@ class PlotMgr:
     def print_Mdata(self, dataPath ):
             f = cdms2.openDataset(dataPath)
             for variable in f.variables.values():
-                self.logger.info( "Produced result " + variable.id + ", shape: " +  str( variable.shape ) + ", dims: " + variable.getOrder() )
+                self.logger.info( "Produced result " + variable.id + ", shape: " +  str( variable.shape ) + ", dims: " + variable.getOrder() + " from file: " + dataPath )
+                self.logger.info( "Data Sample: " + str( variable[0] ) )
 
 
