@@ -30,24 +30,21 @@ class TestWorkflow:
         dataPath = self.wps.download_result(op, self.temp_dir)
         self.plotter.mpl_spaceplot(dataPath)
 
-    def time_selection_test(self):
-
-        domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
+    def regrid_test(self):
+        domain_data = { 'id': 'd0' }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs = cwt.Variable("collection://cip_merra2_mth", "pr", domain="d0" )
+        v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain="d0")
 
-        op_data =  { 'name': "CDSpark.ave", 'axes': "xy" }
+        op_data = {'name': "CDSpark.noOp", "grid": "uniform", "shape": "18,36", "origin": "0,0", "res": "10,10"}
+        op = cwt.Process.from_dict(op_data)  # """:type : Process """
+        op.set_inputs(v0)
 
-        op =  cwt.Process.from_dict( op_data ) # """:type : Process """
-
-        op.set_inputs( inputs )
-
-        self.wps.execute( op, domains=[d0], async=True )
+        self.wps.execute(op, domains=[d0], async=True, profile="true")
 
         dataPath = self.wps.download_result(op, self.temp_dir)
+        self.plotter.mpl_spaceplot(dataPath)
 
-        self.plotter.mpl_timeplot(dataPath,True)
 
     def weighted_spatial_ave(self):
         domain_data = {'id':'d0','time':{'start':'1995-01-01T00:00:00','end':'1997-12-31T23:00:00','crs':'timestamps'}}
@@ -97,14 +94,14 @@ class TestWorkflow:
         dataPath = self.wps.download_result(op, self.temp_dir)
         self.plotter.mpl_timeplot(dataPath)
 
-    def time_ave( self ):
+    def regrid( self ):
 
-        domain_data = { 'id': 'd0', 'lat': {'start':0, 'end':90, 'crs':'values'}, 'lon': {'start':0, 'end':90, 'crs':'values'} }
+        domain_data = { 'id': 'd0', 'time': {'start':10, 'end':20, 'crs':'indices'} }
         d0 = cwt.Domain.from_dict(domain_data)
 
-        inputs = cwt.Variable( "collection://cip_merra2_mth", "tas", domain="d0" )
+        inputs = cwt.Variable( "collection://giss_r1i1p1", "tas", domain="d0" )
 
-        op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
+        op_data =  { "name":"CDSpark.noOp", "grid":"gaussian", "shape":"32" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -162,6 +159,7 @@ class TestWorkflow:
 
         dataPath = self.wps.download_result( anomaly, self.temp_dir )
         self.plotter.mpl_timeplot(dataPath)
+
 
     def climate_change_anomaly(self):
         d0_data = {'id': 'd0', 'time': {'start': '2016-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
@@ -235,6 +233,38 @@ class TestWorkflow:
         dataPath = self.wps.download_result(op, self.temp_dir)
         self.plotter.mpl_spaceplot(dataPath)
 
+    def diff_with_regrid1(self):
+        domain_data = { 'id': 'd0', 'time': {'start':"1990-01-01T00:00:00Z", 'end':"1991-01-01T00:00:00Z", 'crs':'timestamps'} }
+        d0 = cwt.Domain.from_dict(domain_data)
+
+        v1 = cwt.Variable("collection://cip_merra2_mth", "tas" )
+        v2 = cwt.Variable("collection://cip_cfsr_mth", "tas" )
+
+        diff_data =  { 'name': "CDSpark.eDiff",  "crs":"~cip_merra2_mth" }
+        diff_op =  cwt.Process.from_dict( diff_data )
+        diff_op.set_inputs( v1, v2 )
+
+        self.wps.execute( diff_op, domains=[d0], async=True )
+
+        dataPath = self.wps.download_result( diff_op, self.temp_dir )
+        self.plotter.print_Mdata(dataPath)
+
+
+  #       test("DiffWithRegrid")  { if(test_regrid)  {
+  #   print( s"Running test DiffWithRegrid" )
+  #   val MERRA_mon_variable = s"""{"uri":"collection:/cip_merra2_mon_1980-2015","name":"tas:v0","domain":"d0"}"""
+  #   val CFSR_mon_variable   = s"""{"uri":"collection:/cip_cfsr_mon_1980-1995","name":"tas:v1","domain":"d0"}"""
+  #   val ECMWF_mon_variable = s"""{"uri":"collection:/cip_ecmwf_mon_1980-2015","name":"tas:v2","domain":"d0"}"""
+  #   val datainputs =
+  #     s"""[   variable=[$MERRA_mon_variable,$CFSR_mon_variable],
+  #             domain=[  {"name":"d0","time":{"start":"1990-01-01T00:00:00Z","end":"1991-01-01T00:00:00Z","system":"values"}},
+  #                       {"name":"d1","time":{"start":"1990-01-01T00:00:00Z","end":"1991-01-01T00:00:00Z","system":"values"},"lat":{"start":20,"end":50,"system":"values"},"lon":{"start":30,"end":40,"system":"values"}} ],
+  #             operation=[{"name":"CDSpark.eDiff","input":"v0,v1","domain":"d0","crs":"~cip_merra2_mon_1980-2015"}]]""".stripMargin.replaceAll("\\s", "")
+  #   val result_node = executeTest(datainputs)
+  #   val result_data = CDFloatArray( getResultData( result_node ).slice(0,0,10) )
+  #   println( " ** Op Result:       " + result_data.mkBoundedDataString( ", ", 200 ) )
+  # } }
+
     def average( self ):
 
         domain_data = { 'id': 'd0', 'lat': {'start':70, 'end':90, 'crs':'values'}, 'lon': {'start':5, 'end':45, 'crs':'values'}, 'time': {'start':0, 'end':100, 'crs':'indices'} }
@@ -265,7 +295,7 @@ class TestWorkflow:
 
     def performance_test_global_1day(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-01T23:00:00Z', 'crs': 'timestamps'}}
+        domain_data = {'id': 'd0', 'time': {'start': '1980-01-15T00:00:00Z', 'end': '1980-01-15T23:59:00Z', 'crs': 'timestamps'}}
 
         d0 = cwt.Domain.from_dict(domain_data)
 
@@ -282,7 +312,7 @@ class TestWorkflow:
 
     def performance_test_conus_1day(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-        domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-01T23:00:00Z', 'crs': 'timestamps'}}
+        domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-15T00:00:00Z', 'end': '1980-01-15T23:59:00Z', 'crs': 'timestamps'}}
 
         d0 = cwt.Domain.from_dict(domain_data)
 
@@ -300,7 +330,7 @@ class TestWorkflow:
 
     def performance_test_global_1mth(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:00:00Z', 'crs': 'timestamps'}}
+        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:00Z', 'crs': 'timestamps'}}
 
         d0 = cwt.Domain.from_dict(domain_data)
 
@@ -317,7 +347,7 @@ class TestWorkflow:
 
     def performance_test_conus_1mth(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-        domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:00:00Z', 'crs': 'timestamps'}}
+        domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:00Z', 'crs': 'timestamps'}}
 
         d0 = cwt.Domain.from_dict(domain_data)
 
@@ -335,7 +365,7 @@ class TestWorkflow:
 
     def performance_test_global_1y(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:00:00Z', 'crs': 'timestamps'}}
+        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:59:00Z', 'crs': 'timestamps'}}
 
         d0 = cwt.Domain.from_dict(domain_data)
 
@@ -352,7 +382,7 @@ class TestWorkflow:
 
     def performance_test_conus_1y(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-        domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:00:00Z', 'crs': 'timestamps'}}
+        domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:59:00Z', 'crs': 'timestamps'}}
 
         d0 = cwt.Domain.from_dict(domain_data)
 
@@ -370,7 +400,7 @@ class TestWorkflow:
 
 
     def performance_test_global(self):
-        domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:00:00Z', 'crs': 'timestamps'} }
+        domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'} }
 
         d0 = cwt.Domain.from_dict(domain_data)
 
@@ -386,7 +416,7 @@ class TestWorkflow:
         self.plotter.print_Mdata(dataPath)
 
     def performance_test_conus(self):
-        domain_data = { 'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:00:00Z', 'crs': 'timestamps'} }
+        domain_data = { 'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'} }
 #        domain_data = { 'id': 'd0' }
 
         d0 = cwt.Domain.from_dict(domain_data)
@@ -402,9 +432,88 @@ class TestWorkflow:
         dataPath = self.wps.download_result(v1_ave, self.temp_dir)
         self.plotter.print_Mdata(dataPath)
 
+    def seasonal_anomaly( self ):
+
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40, 'crs':'values'}, 'lon': {'start':260, 'end':260, 'crs':'values'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1992-12-31T23:59:00Z', 'crs': 'timestamps'} } )
+
+        v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0  )
+
+        v0_ave_data =  { 'name': "CDSpark.ave", 'axes': "t", 'groupBy': "seasonOfYear" }
+        v0_ave =  cwt.Process.from_dict( v0_ave_data )
+        v0_ave.set_inputs( v0 )
+
+        anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.eDiff", "domain": "d0" } )
+        anomaly.set_inputs( v0_ave, v0 )
+
+        self.wps.execute( anomaly, domains=[d0], async=True )
+
+        dataPath = self.wps.download_result( anomaly, self.temp_dir )
+        self.plotter.mpl_timeplot(dataPath)
+
+    def seasonal_cycle( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40, 'crs':'values'}, 'lon': {'start':260, 'end':260, 'crs':'values'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1992-12-31T23:59:00Z', 'crs': 'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0  )
+        v0_ave_data =  { 'name': "CDSpark.ave", 'axes': "t", 'groupBy': "seasonOfYear" }
+        v0_ave =  cwt.Process.from_dict( v0_ave_data )
+        v0_ave.set_inputs( v0 )
+        self.wps.execute( v0_ave, domains=[d0], async=True )
+        dataPath = self.wps.download_result( v0_ave, self.temp_dir )
+        self.plotter.mpl_timeplot(dataPath)
+
+    def spatial_ave( self ):
+        domain_data = { 'id': 'd0', 'lat': {'start':23.7,'end':49.2,'crs':'values'}, 'lon': {'start':-125, 'end':-70.3, 'crs':'values'}, 'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        inputs = cwt.Variable( "collection://cip_cfsr_mth", "clt", domain=d0 )
+        op_data = { 'name': "CDSpark.ave", 'axes': "t" }
+        op = cwt.Process.from_dict( op_data )
+        op.set_inputs( inputs )
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPath = self.wps.download_result(op)
+        self.plotter.mpl_spaceplot(dataPath)
+
+    def precip_test( self ):
+
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'} } )
+        v0 = cwt.Variable("collection://merra2_m2t1nxlnd", "PRECTOTLAND", domain=d0  )
+        v0_ave =  cwt.Process.from_dict( { 'name': "CDSpark.ave", 'axes': "t", 'groupBy': "year" } )
+        v0_ave.set_inputs( v0 )
+
+        self.wps.execute( v0_ave, domains=[d0], async=True )
+
+        dataPath = self.wps.download_result( v0_ave, self.temp_dir )
+        self.plotter.mpl_spaceplot(dataPath)
+
+    def svd_test( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0' } )
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
+        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "grid": "uniform", "shape": "18,36", "origin": "0,0", "res": "10,10" } )
+        svd.set_inputs( v0 )
+        self.wps.execute( svd, domains=[d0], async=True )
+
+    def time_selection_test(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        inputs = cwt.Variable("collection://cip_merra2_mth", "pr", domain="d0" )
+        op_data =  { 'name': "CDSpark.ave", 'axes': "xy" }
+        op =  cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( inputs )
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPath = self.wps.download_result(op, self.temp_dir)
+        self.plotter.mpl_timeplot(dataPath)
+
+    def time_bin_selection_test(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'1990-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        inputs = cwt.Variable("collection://cip_merra2_mth", "pr", domain="d0" )
+        op_data =  { 'name': "CDSpark.ave", 'axes': "txy", "groupBy" : "year" }
+        op =  cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( inputs )
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPath = self.wps.download_result(op, self.temp_dir)
+        self.plotter.mpl_timeplot(dataPath)
 
     def test_plot(self):
-        self.plotter.mpl_timeplot("/tmp/testData.nc")
+        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/lWCPvtjP.nc")
 
     def ListKernels(self):
         print self.wps.getCapabilities( "", False )
@@ -412,12 +521,10 @@ class TestWorkflow:
     def ListCollections(self):
         print self.wps.getCapabilities( "coll", False )
 
+
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.performance_test_global_1mth()
+    executor.svd_test()
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
-#    executor.plotter.mpl_spaceplot(dataPath)
-
-
-
+#    executor.plotter.performance_test_global(dataPath)
 

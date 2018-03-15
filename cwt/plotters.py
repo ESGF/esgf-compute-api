@@ -29,7 +29,10 @@ class PlotMgr:
     def getAxis(self, axes, atype ):
         for axis in axes:
             try:
-                if axis.axis == atype: return axis
+                if( (atype == "X") and axis.isLongitude() ): return axis
+                if( (atype == "Y") and axis.isLatitude() ): return axis
+                if( (atype == "Z") and axis.isLevel() ): return axis
+                if( (atype == "T") and axis.isTime() ): return axis
             except: pass
         return None
 
@@ -66,5 +69,16 @@ class PlotMgr:
             for variable in f.variables.values():
                 self.logger.info( "Produced result " + variable.id + ", shape: " +  str( variable.shape ) + ", dims: " + variable.getOrder() + " from file: " + dataPath )
                 self.logger.info( "Data Sample: " + str( variable[0] ) )
+
+    def print_data(self, dataPath ):
+        try:
+            f = cdms2.openDataset(dataPath) # """:type : cdms2.CdmsFile """
+            varName = f.variables.values()[0].id
+            spatialData = f( varName ) # """:type : cdms2.FileVariable """
+            self.logger.info( "Produced result, shape: " +  str( spatialData.shape ) + ", dims: " + spatialData.getOrder() )
+            self.logger.info( "Data: " + ', '.join( str(x) for x in spatialData.getValue() ) )
+        except Exception:
+            self.logger.error( " ** Error printing result data ***")
+
 
 
