@@ -330,8 +330,8 @@ class TestWorkflow:
 
     def performance_test_global_1mth(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:00Z', 'crs': 'timestamps'}}
 
+        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:59Z', 'crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
 
         v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
@@ -347,10 +347,9 @@ class TestWorkflow:
 
     def performance_test_conus_1mth(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-        domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:00Z', 'crs': 'timestamps'}}
 
+        domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:59Z', 'crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
-
         v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
@@ -525,6 +524,7 @@ class TestWorkflow:
 if __name__ == '__main__':
     executor = TestWorkflow()
     executor.svd_test()
+
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
 #    executor.plotter.performance_test_global(dataPath)
 
