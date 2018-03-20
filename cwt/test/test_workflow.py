@@ -496,9 +496,9 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
     def svd_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        d0 = cwt.Domain.from_dict( { 'id': 'd0' } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
-        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "grid": "uniform", "shape": "9,18", "origin": "0,0", "res": "20,20" } )
+        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "grid": "uniform", "shape": "36,72", "res": "5,5" } )
         svd.set_inputs( v0 )
         self.wps.execute( svd, domains=[d0], async=True )
         dataPath = self.wps.download_result(svd, self.temp_dir)
