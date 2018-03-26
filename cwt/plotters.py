@@ -39,13 +39,13 @@ class PlotMgr:
     def getRowsCols( self, number ):
         largest_divisor = 1
         for i in range(2, number):
-            if( math.modf( largest_divisor/float(i) )[0] == 0.0 ):
+            if( number % i == 0 ):
                 largest_divisor = i
         complement = number/largest_divisor
         return (complement,largest_divisor) if( largest_divisor > complement ) else (largest_divisor,complement)
 
 
-    def mpl_spaceplot( self, dataPath, timeIndex=0 ):
+    def mpl_spaceplot( self, dataPath, timeIndex=0, smooth=False ):
         if dataPath:
             self.logger.info( "Plotting file: " +  dataPath )
             f = cdms2.openDataset(dataPath)
@@ -58,15 +58,16 @@ class PlotMgr:
             varNames = list( map( lambda v: v.id, f.variables.values() ) )
             varNames.sort()
             nRows, nCols = self.getRowsCols( len( varNames) )
-            for iplot in range( 1, len( varNames)+1 ):
-                ax = fig.add_subplot( nRows, nCols, iplot )
+            for iplot in range( 0, len( varNames) ):
+                ax = fig.add_subplot( nRows, nCols, iplot+1 )
                 varName = varNames[iplot]
                 ax.set_title(varName)
                 spatialData = f( varName, time=slice(timeIndex,timeIndex+1), squeeze=1)
                 m = Basemap(llcrnrlon=lons[0], llcrnrlat=lats[0], urcrnrlon=lons[len(lons)-1], urcrnrlat=lats[len(lats)-1], epsg='4326', lat_0 = lats2.mean(), lon_0 = lons2.mean())
                 lon, lat = np.meshgrid(lons2, lats2)
                 xi, yi = m(lon, lat)
-                cs2 = m.pcolormesh(xi, yi, spatialData, cmap='jet')
+                smoothing = 'gouraud' if smooth else 'flat'
+                cs2 = m.pcolormesh(xi, yi, spatialData, cmap='jet', shading=smoothing )
                 lats_space = abs(lats[0])+abs(lats[len(lats)-1])
                 m.drawparallels(np.arange(lats[0],lats[len(lats)-1], round(lats_space/5, 0)), labels=[1,0,0,0], dashes=[6,900])
                 lons_space = abs(lons[0])+abs(lons[len(lons)-1])

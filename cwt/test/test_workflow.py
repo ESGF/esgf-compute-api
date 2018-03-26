@@ -36,7 +36,7 @@ class TestWorkflow:
 
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain="d0")
 
-        op_data = {'name': "CDSpark.noOp", "grid": "uniform", "shape": "18,36", "origin": "0,0", "res": "10,10"}
+        op_data = {'name': "CDSpark.noOp", "grid": "uniform", "shape": "18,36", "res": "10,10"}
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(v0)
 
@@ -209,7 +209,7 @@ class TestWorkflow:
 
         v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain="d0")
 
-        op_data = {'name': "CDSpark.noOp", "grid":"uniform", "shape":"18,36", "origin":"0,0", "res":"5,10" }
+        op_data = {'name': "CDSpark.noOp", "grid":"uniform", "shape":"18,36", "res":"5,10" }
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(v0)
 
@@ -224,7 +224,7 @@ class TestWorkflow:
 
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain="d0")
 
-        op_data = {'name': "CDSpark.noOp", "grid": "uniform", "shape": "18,36", "origin": "0,0", "res": "10,10"}
+        op_data = {'name': "CDSpark.noOp", "grid": "uniform", "shape": "18,36", "res": "10,10"}
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(v0)
 
@@ -487,7 +487,7 @@ class TestWorkflow:
         self.plotter.mpl_timeplot(dataPath)
 
     def test_plot(self):
-        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/lWCPvtjP.nc")
+        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/bsdRDjyt.nc")
 
     def ListKernels(self):
         print self.wps.getCapabilities( "", False )
@@ -496,13 +496,33 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
     def svd_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0' } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
-        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "grid": "uniform", "shape": "36,72", "res": "5,5" } )
+        highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "30,72", "res": "5,5", "groupBy": "5-year"})
+        highpass.set_inputs(v0)
+        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"9" } )
+        highpass.set_inputs( highpass )
+        self.wps.execute( svd, domains=[d0], async=True )
+        dataPath = self.wps.download_result(svd, self.temp_dir)
+        self.plotter.mpl_spaceplot( dataPath, 0, True )
+
+    def lowpass_test( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
+        svd =  cwt.Process.from_dict( { 'name': "CDSpark.lowpass", "groupBy": "5-year" } )
         svd.set_inputs( v0 )
         self.wps.execute( svd, domains=[d0], async=True )
         dataPath = self.wps.download_result(svd, self.temp_dir)
-        self.plotter.mpl_spaceplot( dataPath )
+        self.plotter.mpl_timeplot( dataPath )
+
+    def highpass_test( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
+        highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "groupBy": "5-year" } )
+        highpass.set_inputs( v0 )
+        self.wps.execute( highpass, domains=[d0], async=True )
+        dataPath = self.wps.download_result(highpass, self.temp_dir)
+        self.plotter.mpl_timeplot( dataPath )
 
     def reset_wps( self ):
         d0 = cwt.Domain.from_dict( {'id': 'd0' } )
