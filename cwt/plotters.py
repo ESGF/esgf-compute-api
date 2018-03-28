@@ -13,7 +13,6 @@ class PlotMgr:
 
     def mpl_timeplot( self, dataPath ):
         if dataPath:
-            self.logger.info( "Plotting file: " +  dataPath )
             f = cdms2.openDataset(dataPath)
             varName = f.variables.values()[0].id
             timeSeries = f( varName, squeeze=1 )
@@ -21,6 +20,7 @@ class PlotMgr:
             dates = matplotlib.dates.date2num(datetimes)
             fig, ax = plt.subplots()
             ax.plot(dates, timeSeries.data )
+            self.logger.info( "Plotting file: " +  dataPath )
             ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
             ax.grid(True)
             fig.autofmt_xdate()

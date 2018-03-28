@@ -31,7 +31,7 @@ class Domain(parameter.Parameter):
         mask: Mask to be applied to the domain.
         name: Name of the domain.
     """
-    def __init__(self, dimensions=None, mask=None, name=None):
+    def __init__(self, dimensions=None, mask=None, name=None, filter=None):
         """ Domain init. """
         super(Domain, self).__init__(name)
 
@@ -40,11 +40,12 @@ class Domain(parameter.Parameter):
 
         self.dimensions = dimensions
         self.mask = mask
+        self.filter = filter
 
     @classmethod
     def from_dict(cls, data):
         """ Creates domain from dict reperesentation. """
-        blacklist = ['id', 'mask']
+        blacklist = ['id', 'mask', 'filter']
 
         name = None
 
@@ -64,7 +65,12 @@ class Domain(parameter.Parameter):
         if 'mask' in data:
             mask_data = mask.Mask.from_dict(data['mask'])
 
-        return cls(dimensions=dimensions, mask=mask_data, name=name)
+        filter = None
+
+        if 'filter' in data:
+            filter = mask.Mask.from_dict(data['filter'])
+
+        return cls(dimensions=dimensions, mask=mask_data, name=name, filter=filter )
 
     def get_dimension(self, names):
         if not isinstance(names, (list, tuple)):
@@ -92,8 +98,11 @@ class Domain(parameter.Parameter):
         if self.mask:
             param['mask'] = self.mask.parameterize()
 
+        if self.filter:
+            param['filter'] = self.filter
+
         return param
 
     def __repr__(self):
-        return ('Domain(dimensions=%r, mask=%r, name=%r)' %
-                (self.dimensions, self.mask, self.name))
+        return ('Domain(dimensions=%r, mask=%r, name=%r, filter=%s)' %
+                (self.dimensions, self.mask, self.name, self.filter))

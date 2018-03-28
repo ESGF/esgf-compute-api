@@ -487,7 +487,7 @@ class TestWorkflow:
         self.plotter.mpl_timeplot(dataPath)
 
     def test_plot(self):
-        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/bsdRDjyt.nc")
+        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/efmfoD8o.nc")
 
     def ListKernels(self):
         print self.wps.getCapabilities( "", False )
@@ -496,12 +496,12 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
     def svd_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
-        v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
-        highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "30,72", "res": "5,5", "groupBy": "5-year"})
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-80,"end":80,"crs":"values"}, "filter":"DJF" } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
+        highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "10-year"})
         highpass.set_inputs(v0)
         svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"9" } )
-        highpass.set_inputs( highpass )
+        svd.set_inputs( highpass )
         self.wps.execute( svd, domains=[d0], async=True )
         dataPath = self.wps.download_result(svd, self.temp_dir)
         self.plotter.mpl_spaceplot( dataPath, 0, True )
@@ -517,12 +517,25 @@ class TestWorkflow:
 
     def highpass_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
-        v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
         highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "groupBy": "5-year" } )
         highpass.set_inputs( v0 )
         self.wps.execute( highpass, domains=[d0], async=True )
         dataPath = self.wps.download_result(highpass, self.temp_dir)
         self.plotter.mpl_timeplot( dataPath )
+
+ #   val datainputs = s"""[domain=[{"name":"d0","lat":{"start":25,"end":25,"system":"indices"},"lon":{"start":20,"end":20,"system":"indices"}}],variable=[{"uri":"collection:/giss_r1i1p1","name":"tas:v1","domain":"d0"}],operation=[{"name":"CDSpark.lowpass","input":"v1","domain":"d0","groupBy":"5-year"}]]"""
+
+
+    def baseline_test( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33, 'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'}} ) # , 'time': { 'start':'1900-01-01T00:00:00', 'end':'2000-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
+        svd =  cwt.Process.from_dict( { 'name': "CDSpark.subset" } )
+        svd.set_inputs( v0 )
+        self.wps.execute( svd, domains=[d0], async=True )
+        dataPath = self.wps.download_result(svd, self.temp_dir)
+        self.plotter.mpl_timeplot( dataPath )
+
 
     def reset_wps( self ):
         d0 = cwt.Domain.from_dict( {'id': 'd0' } )
@@ -542,7 +555,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.svd_test( )
+    executor.svd_test()
 
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
 #    executor.plotter.performance_test_global(dataPath)
