@@ -46,29 +46,19 @@ class Domain(parameter.Parameter):
     def from_dict(cls, data):
         """ Creates domain from dict reperesentation. """
         blacklist = ['id', 'mask', 'filter']
+        mask_data = mask.Mask.from_dict(data['mask']) if 'mask' in data else None
+        filter = data['filter'] if 'filter' in data else None
 
         name = None
-
         if 'id' in data:
             name = data['id']
         else:
             raise parameter.ParameterError('Domain must provide an id.')
 
         dimensions = []
-
         for key, value in data.iteritems():
             if key not in blacklist:
                 dimensions.append(dimension.Dimension.from_dict(value, key))
-
-        mask_data = None
-
-        if 'mask' in data:
-            mask_data = mask.Mask.from_dict(data['mask'])
-
-        filter = None
-
-        if 'filter' in data:
-            filter = mask.Mask.from_dict(data['filter'])
 
         return cls(dimensions=dimensions, mask=mask_data, name=name, filter=filter )
 
