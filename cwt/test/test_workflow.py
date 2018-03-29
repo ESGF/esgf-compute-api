@@ -496,10 +496,11 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
     def svd_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-80,"end":80,"crs":"values"}, "filter":"DJF" } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-80,"end":80,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
-        highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "10-year"})
-        highpass.set_inputs(v0)
+        v1 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
+        highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
+        highpass.set_inputs(v0,v1)
         svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"9" } )
         svd.set_inputs( highpass )
         self.wps.execute( svd, domains=[d0], async=True )
@@ -519,6 +520,15 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
         highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "groupBy": "5-year" } )
+        highpass.set_inputs( v0 )
+        self.wps.execute( highpass, domains=[d0], async=True )
+        dataPath = self.wps.download_result(highpass, self.temp_dir)
+        self.plotter.mpl_timeplot( dataPath )
+
+    def highpass_test1( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-80,"end":80,"crs":"values"} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
+        highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year" } )
         highpass.set_inputs( v0 )
         self.wps.execute( highpass, domains=[d0], async=True )
         dataPath = self.wps.download_result(highpass, self.temp_dir)
