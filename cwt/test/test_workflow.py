@@ -487,7 +487,7 @@ class TestWorkflow:
         self.plotter.mpl_timeplot(dataPath)
 
     def test_plot(self):
-        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/efmfoD8o.nc")
+        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/wiqYJl6O.nc")
 
     def ListKernels(self):
         print self.wps.getCapabilities( "", False )
@@ -496,12 +496,12 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
     def svd_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-80,"end":80,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
-        v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
-        v1 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas:T", domain=d0  )
+        v1 = cwt.Variable("collection://cip_20crv2c_mth", "psl:P", domain=d0  )
         highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
         highpass.set_inputs(v0,v1)
-        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"9" } )
+        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8" } )
         svd.set_inputs( highpass )
         self.wps.execute( svd, domains=[d0], async=True )
         dataPath = self.wps.download_result(svd, self.temp_dir)

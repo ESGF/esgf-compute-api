@@ -44,7 +44,6 @@ class PlotMgr:
         complement = number/largest_divisor
         return (complement,largest_divisor) if( largest_divisor > complement ) else (largest_divisor,complement)
 
-
     def mpl_spaceplot( self, dataPath, timeIndex=0, smooth=False ):
         if dataPath:
             self.logger.info( "Plotting file: " +  dataPath )
@@ -57,7 +56,8 @@ class PlotMgr:
             fig = plt.figure()
             varNames = list( map( lambda v: v.id, f.variables.values() ) )
             varNames.sort()
-            nRows, nCols = self.getRowsCols( len( varNames) )
+            nCols = min( len(varNames), 4 )
+            nRows = math.ceil( len(varNames) / float(nCols) )
             for iplot in range( 0, len( varNames) ):
                 ax = fig.add_subplot( nRows, nCols, iplot+1 )
                 varName = varNames[iplot]
