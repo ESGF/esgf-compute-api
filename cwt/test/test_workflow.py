@@ -299,7 +299,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -316,7 +316,7 @@ class TestWorkflow:
         domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:59Z', 'crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -332,7 +332,7 @@ class TestWorkflow:
 
         domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:59Z', 'crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -350,7 +350,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -367,7 +367,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -385,7 +385,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -402,7 +402,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -555,7 +555,7 @@ class TestWorkflow:
     def performance_test_conus_1day( self, weighted ):
         domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-15T00:00:00Z', 'end': '1980-01-15T23:59:59Z', 'crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx", "weights":"cosine"} if weighted else {'name': "CDSpark.ave", 'axes': "tyx" }
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
@@ -565,7 +565,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.svd_test()
+    executor.performance_test_conus_1mth()
 
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
 #    executor.plotter.performance_test_global(dataPath)
