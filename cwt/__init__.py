@@ -13,7 +13,6 @@ from .named_parameter import *
 from .parameter import *
 from .process import *
 from .variable import *
-from .wps import *
 
 NorthernHemisphere = Dimension('latitude', 0, 90)
 SouthernHemisphere = Dimension('latitude', -90, 0)

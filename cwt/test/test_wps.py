@@ -1,111 +1,173 @@
 """
-WPS unittest.
+PyXB WPS bindings unit tests
 """
 
-import os
 import unittest
 
-import cwt
+import pyxb
 import mock
-from cwt.wps_lib import operations
+
+from cwt.wps import wps
+from cwt.wps import ows
+
+class TestOWS(unittest.TestCase):
+    def test_operation(self):
+        operation = ows.operation('GetCapabilities', 'http://test.com/get', 'http://test.com/post')
+
+        self.assertTrue(operation.validateBinding())
+
+    def test_operations_metadata(self):
+        get_capabilities = ows.operation('GetCapabilities', 'http://test.com/get', 'http://test.com/post')
+
+        describe_process = ows.operation('DescribeProcess', 'http://test.com/get', 'http://test.com/post')
+
+        metadata = ows.operations_metadata([get_capabilities, describe_process])
+
+        self.assertTrue(metadata.validateBinding())
+
+    def test_service_contact(self):
+        contact = ows.service_contact()
+
+        self.assertTrue(contact.validateBinding())
+
+    def test_service_provider(self):
+        contact = ows.service_contact()
+
+        service = ows.service_provider('name', contact)
+
+        self.assertTrue(service.validateBinding())
+
+    def test_service_identification(self):
+        service = ows.service_identification('title', 'abstract')
+
+        self.assertTrue(service.validateBinding())
 
 class TestWPS(unittest.TestCase):
-    """ WPS Test Case. """
+    def test_status_failed(self):
+        status = wps.status_failed('failed', 'code', '1.0.0', 'locator')
 
-    def setUp(self):
-        self.wps = cwt.WPS('http://nohost/wps')
+        self.assertTrue(status.validateBinding())
 
-        test_path = lambda x: os.path.join(os.path.dirname(__file__), x)
+    def test_status_succeeded(self):
+        status = wps.status_succeeded('succeeded')
 
-        with open(test_path('data/get_capabilities_response.txt'), 'r') as infile:
-            self.capabilities_data = infile.read()
+        self.assertTrue(status.validateBinding())
 
-        with open(test_path('data/describe_process_cdat_avg_response.txt'), 'r') as infile:
-            self.describe_data = infile.read()
+    def test_status_paused(self):
+        status = wps.status_paused('paused', 10)
 
-        with open(test_path('data/execute_cdat_avg_response.txt'), 'r') as infile:
-            self.execute_data = infile.read()
-        
-        self.data_inputs = '[variable=[{"uri": "file:///data/tas_6h.nc", "id": "tas|tas1"}];domain=[{"id": "d0"}];operation=[{"input": ["tas1"], "domain": "d0", "name": "CDAT.avg", "result": "avg"}]]'
+        self.assertTrue(status.validateBinding())
 
-    def test_combine_inputs(self):
-        inputs = [cwt.Variable('file:///tas.nc', 'tas{}'.format(x)) for x in range(2)]
+    def test_status_started(self):
+        status = wps.status_started('start', 10)
 
-        avg = cwt.Process(type('Process', (object,), dict(identifier='CDAT.avg')))
+        self.assertTrue(status.validateBinding())
 
-        avg.set_inputs(inputs[0])
+    def test_status_accepted(self):
+        status = wps.status_accepted('accepted')
 
-        with mock.patch.object(self.wps, '_WPS__request') as m:
-            m.return_value = self.execute_data
+        self.assertTrue(status.validateBinding())
 
-            self.wps.execute(avg, inputs=[inputs[1]])
+    def test_output_data(self):
+        data = wps.output_data('CDAT.subset', 'CDAT.subset', 'data')
 
-            self.assertIn('tas0|', m.call_args_list[0][1]['data'])
-            self.assertIn('tas1|', m.call_args_list[0][1]['data'])
+        self.assertTrue(data.validateBinding())
+
+    def test_execute_response(self):
+        status = wps.status_accepted('Accepted')
+
+        process = wps.process('CDAT.subset', 'CDAT.subset', '1.0.0')
+
+        data = wps.output_data('CDAT.subset', 'CDAT.subset', 'data')
+
+        response = wps.execute_response(process, status, '1.0.0', 'en-US', 'http://test.com/', 'http://test.com/status', [data])
+
+        self.assertTrue(response.validateBinding())
+
+    def test_data_input(self):
+        data = wps.data_input('variables', 'Variables', 'test data')
+
+        self.assertTrue(data.validateBinding())
 
     def test_execute(self):
-        with mock.patch.object(self.wps, '_WPS__request') as m:
-            m.return_value = self.execute_data
+        variables = wps.data_input('variables', 'Variables', 'test data')
 
-            op = cwt.Process(type('Process', (object,), dict(identifier='CDAT.avg')))
+        execute = wps.execute('CDAT.subset', '1.0.0', [variables])
 
-            response = self.wps.execute(op)
+        self.assertTrue(execute.validateBinding())
 
-            self.assertIsInstance(op.response, operations.ExecuteResponse)
+    def test_process_output_description(self):
+        output = wps.process_output_description('output', 'output', 'application/json')
 
-    def test_prepare_data_inputs(self):
-        proc = cwt.Process(type('Process', (object,), dict(identifier='CDAT.avg')), name='avg')
+        self.assertTrue(output.validateBinding())
 
-        tas = cwt.Variable('file:///data/tas_6h.nc', 'tas', name='tas1')
+    def test_data_input_description(self):
+        data = wps.data_input_description('variables', 'Variables', 'application/json', 1, 1)
 
-        d0 = cwt.Domain(name='d0')
+        self.assertTrue(data.validateBinding())
 
-        data_inputs = self.wps.prepare_data_inputs(proc, [tas], d0)
-       
-        self.assertEqual(self.data_inputs, data_inputs)
+    def test_process_description(self):
+        data = wps.data_input_description('variables', 'Variables', 'application/json', 1, 1)
 
-    def test_parse_data_inputs(self):
-        operations, domains, variables = cwt.WPS.parse_data_inputs(self.data_inputs)
+        output = wps.process_output_description('output', 'output', 'application/json')
 
-        self.assertEqual(len(operations), 1)
-        self.assertEqual(len(domains), 1)
-        self.assertEqual(len(variables), 1)
+        description = wps.process_description('CDAT.subset', 'CDAT.subset', '1.0.0', [data], [output])
+
+        self.assertTrue(description.validateBinding())
+
+    def test_process_descriptions(self):
+        data = wps.data_input_description('variables', 'Variables', 'application/json', 1, 1)
+
+        output = wps.process_output_description('output', 'output', 'application/json')
+
+        description = wps.process_description('CDAT.subset', 'CDAT.subset', '1.0.0', [data], [output])
+
+        descriptions = wps.process_descriptions('en-US', '1.0.0', description)
+
+        self.assertTrue(descriptions.validateBinding())
 
     def test_describe_process(self):
-        with mock.patch.object(self.wps, '_WPS__request') as m:
-            m.return_value = self.describe_data
+        describe = wps.describe_process('CDAT.subset', '1.0.0')
 
-            description = self.wps.describe('CDAT.avg')
+        self.assertTrue(describe.validateBinding())
 
-            self.assertIsNotNone(description)
-            self.assertIsInstance(description, operations.DescribeProcessResponse)
+    def test_process(self):
+        process = wps.process('CDAT.subset', 'CDAT.subset', '1.0.0')
 
-    def test_get_process(self):
-        with mock.patch.object(self.wps, '_WPS__request') as m:
-            m.return_value = self.capabilities_data
+        self.assertTrue(process.validateBinding())
 
-            process = self.wps.get_process('CDAT.avg')
+    def test_process_offerings(self):
+        subset = wps.process('CDAT.subset', 'CDAT.subset', '1.0.0')
 
-            self.assertIsNotNone(process)
-            self.assertIsInstance(process, cwt.Process)
+        offerings = wps.process_offerings([subset])
 
-    def test_processes_with_capabilities(self):
-        with mock.patch.object(self.wps, '_WPS__request') as m:
-            m.return_value = self.capabilities_data
-
-            processes = self.wps.processes()
-
-            self.assertIsNotNone(processes)
-            self.assertEqual(len(processes), 26)
-            self.assertTrue(all(isinstance(x, cwt.Process) for x in processes))
-
-    def test_processes(self):
-        with self.assertRaises(cwt.WPSHTTPError):
-            self.wps.processes()
+        self.assertTrue(offerings.validateBinding())
 
     def test_capabilities(self):
-        with self.assertRaises(cwt.WPSHTTPError):
-            self.wps.capabilities
+        identification = ows.service_identification('title', 'abstract')
+
+        contact = ows.service_contact()
+
+        provider = ows.service_provider('name', contact)
+
+        get_capabilities = ows.operation('GetCapabilities', 'http://test.com/get', 'http://test.com/post')
+
+        describe_process = ows.operation('DescribeProcess', 'http://test.com/get', 'http://test.com/post')
+
+        metadata = ows.operations_metadata([get_capabilities, describe_process])
+
+        subset = wps.process('CDAT.subset', 'CDAT.subset', '1.0.0')
+
+        offerings = wps.process_offerings([subset])
+
+        capabilities = wps.capabilities(identification, provider, metadata, offerings, 'en-US', '1.0.0')
+
+        self.assertTrue(capabilities.validateBinding())
+
+    def test_get_capabilities(self):
+        capabilities = wps.get_capabilities()
+
+        self.assertTrue(capabilities.validateBinding())
 
 if __name__ == '__main__':
     unittest.main()
