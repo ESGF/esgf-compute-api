@@ -391,7 +391,7 @@ class TestWorkflow:
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
-        self.wps.execute(v1_ave, domains=[d0], async=True)
+        self.wps.execute(v1_ave, domains=[d0], async=True ) # , profile="active" )
 
         dataPath = self.wps.download_result(v1_ave, self.temp_dir)
         self.plotter.print_Mdata(dataPath)
@@ -495,6 +495,15 @@ class TestWorkflow:
     def ListCollections(self):
         print self.wps.getCapabilities( "coll", False )
 
+    def svd_test_reduced( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v1 = cwt.Variable("collection://cip_20crv2c_mth", "psl:P", domain=d0  )
+        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8" } )
+        svd.set_inputs( v1 )
+        self.wps.execute( svd, domains=[d0], async=True )
+        dataPath = self.wps.download_result(svd, self.temp_dir)
+        self.plotter.mpl_spaceplot( dataPath, 0, True )
+
     def svd_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas:T", domain=d0  )
@@ -515,6 +524,15 @@ class TestWorkflow:
         self.wps.execute( svd, domains=[d0], async=True )
         dataPath = self.wps.download_result(svd, self.temp_dir)
         self.plotter.mpl_timeplot( dataPath )
+
+    def lowpass_profile_test( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v1 = cwt.Variable("collection://cip_20crv2c_mth", "psl:P", domain=d0  )
+        lowpass = cwt.Process.from_dict({'name': "CDSpark.lowpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
+        lowpass.set_inputs(v1)
+        self.wps.execute( lowpass, domains=[d0], async=True, profile="active" )
+        dataPath = self.wps.download_result(lowpass, self.temp_dir)
+        self.plotter.mpl_spaceplot( dataPath, 0, True )
 
     def highpass_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
@@ -546,6 +564,35 @@ class TestWorkflow:
         dataPath = self.wps.download_result(svd, self.temp_dir)
         self.plotter.mpl_timeplot( dataPath )
 
+    def binning_test( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'} ,
+                                     'time': { 'start':'1850-01-01T00:00:00Z', 'end':'1854-01-01T00:00:00Z', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain=d0  )
+        yearlyAve =  cwt.Process.from_dict( { 'name': "CDSpark.ave", "axes":"t", "groupBy": "year" } )
+        yearlyAve.set_inputs( v0 )
+        self.wps.execute( yearlyAve, domains=[d0], async=True )
+        dataPath = self.wps.download_result(yearlyAve, self.temp_dir)
+        self.plotter.print_data( dataPath )
+
+
+
+        #     230.1202, 224.2958, 228.4658, 228.0224, 226.1936, 225.7275,
+        #     222.0484, 223.9207, 223.3873, 222.8198, 225.1187, 224.4428,
+        #     229.7138, 229.7007, 229.8149, 229.4356, 227.8259, 228.9415,
+        #     231.1172, 229.9618, 228.9264, 228.0932, 227.1155, 226.0691,
+        #     227.9059, 227.116,  226.5818, 225.653,  224.769,  223.5814,
+        #     229.1446, 229.0689, 229.1144, 229.0135, 227.8756, 228.0897,
+        #     223.9355, 228.5432, 228.4396, 227.1773, 223.7382, 225.177,
+        #     228.7011, 226.9322, 218.759, 218.5423, 225.1021,  224.3837,
+        #     229.1338, 227.1501, 229.3834, 228.9121, 228.2971, 228.9964,
+        #     231.3791, 230.4205, 225.0711, 228.0521, 227.1422, 225.7934,
+        #     228.5478, 227.8226, 223.3534, 224.6234, 226.147,  225.1512,
+        #     228.3303, 228.9947, 228.601, 229.2599, 228.1443, 228.9194).map(_.toFloat), Float.MaxValue)
+        #
+        # """[domain=[{"name":"d0","lat":{"start":5,"end":7,"system":"indices"},"lon":{"start":5,"end":10,"system":"indices"},"time":{"start":"1850-01-01T00:00:00Z","end":"1854-01-01T00:00:00Z","system":"timestamps"}}],
+        #         | variable=[{"uri":"collection:/giss_r1i1p1","name":"tas:v1","domain":"d0"}],
+        #         | operation=[{ "name":"CDSpark.ave", "axes":"t", "input":"v1", "groupBy":"year" }]]""".stripMargin
+
 
     def reset_wps( self ):
         d0 = cwt.Domain.from_dict( {'id': 'd0' } )
@@ -563,10 +610,23 @@ class TestWorkflow:
         dataPath = self.wps.download_result(v1_ave, self.temp_dir)
         self.plotter.print_Mdata(dataPath)
 
-if __name__ == '__main__':
-    executor = TestWorkflow()
-    executor.svd_test()
+# if __name__ == '__main__':
+#     executor = TestWorkflow()
+# #    executor.performance_test_conus_1mth()
+#     executor.binning_test()
 
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
 #    executor.plotter.performance_test_global(dataPath)
 
+
+if __name__ == '__main__':
+    plotter = cwt.initialize()
+    host = "https://edas.nccs.nasa.gov/wps/cwt"
+    wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
+    d0 = cwt.Domain.from_dict(  {'id': 'd0', 'lat': {'start': 5, 'end': 7, 'crs': 'indices'}, 'lon': {'start': 5, 'end': 10, 'crs': 'indices'}, 'time': {'start': '1850-01-01T00:00:00Z', 'end': '1854-01-01T00:00:00Z', 'crs': 'timestamps'}})
+    v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain=d0)
+    yearlyAve = cwt.Process.from_dict({'name': "CDSpark.ave", "axes": "t", "groupBy": "year"})
+    yearlyAve.set_inputs(v0)
+    wps.execute(yearlyAve, domains=[d0], async=True)
+    dataPath = wps.download_result(yearlyAve)
+    plotter.print_data(dataPath)

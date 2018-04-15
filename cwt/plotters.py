@@ -90,7 +90,8 @@ class PlotMgr:
             varName = f.variables.values()[0].id
             spatialData = f( varName ) # """:type : cdms2.FileVariable """
             self.logger.info( "Produced result, shape: " +  str( spatialData.shape ) + ", dims: " + spatialData.getOrder() )
-            self.logger.info( "Data: " + ', '.join( str(x) for x in spatialData.getValue() ) )
+#            self.logger.info( "Data: \n" + ', '.join( str(x) for x in spatialData.getValue() ) )
+            self.logger.info( "Data: \n" + str( spatialData.getValue() ) )
         except Exception:
             self.logger.error( " ** Error printing result data ***")
 
