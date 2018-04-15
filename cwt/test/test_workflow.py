@@ -13,7 +13,8 @@ def create_tempdir():
 
 class TestWorkflow:
     plotter = cwt.initialize()
-    host = "https://edas.nccs.nasa.gov/wps/cwt"
+    host = os.environ["EDAS_HOST_ADDRESS"]  # "https://edas.nccs.nasa.gov/wps/cwt"
+    assert host != None, "Must set EDAS_HOST_ADDRESS environment variable"
 #    host ="https://dptomcat03-int/wps/cwt"
     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
     temp_dir = create_tempdir()
@@ -299,7 +300,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -316,7 +317,7 @@ class TestWorkflow:
         domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:59Z', 'crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -332,7 +333,7 @@ class TestWorkflow:
 
         domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:59Z', 'crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -350,7 +351,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -367,7 +368,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -385,7 +386,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -402,7 +403,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -602,7 +603,7 @@ class TestWorkflow:
     def performance_test_conus_1day( self, weighted ):
         domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-15T00:00:00Z', 'end': '1980-01-15T23:59:59Z', 'crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
-        v1 = cwt.Variable("collection://merrra2_m2i1nxint", "KE", domain=d0)
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx", "weights":"cosine"} if weighted else {'name': "CDSpark.ave", 'axes': "tyx" }
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
@@ -610,23 +611,25 @@ class TestWorkflow:
         dataPath = self.wps.download_result(v1_ave, self.temp_dir)
         self.plotter.print_Mdata(dataPath)
 
-# if __name__ == '__main__':
-#     executor = TestWorkflow()
-# #    executor.performance_test_conus_1mth()
-#     executor.binning_test()
+
+if __name__ == '__main__':
+    executor = TestWorkflow()
+#    executor.performance_test_conus_1mth()
+    executor.binning_test()
+
 
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
 #    executor.plotter.performance_test_global(dataPath)
 
 
-if __name__ == '__main__':
-    plotter = cwt.initialize()
-    host = "https://edas.nccs.nasa.gov/wps/cwt"
-    wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
-    d0 = cwt.Domain.from_dict(  {'id': 'd0', 'lat': {'start': 5, 'end': 7, 'crs': 'indices'}, 'lon': {'start': 5, 'end': 10, 'crs': 'indices'}, 'time': {'start': '1850-01-01T00:00:00Z', 'end': '1854-01-01T00:00:00Z', 'crs': 'timestamps'}})
-    v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain=d0)
-    yearlyAve = cwt.Process.from_dict({'name': "CDSpark.ave", "axes": "t", "groupBy": "year"})
-    yearlyAve.set_inputs(v0)
-    wps.execute(yearlyAve, domains=[d0], async=True)
-    dataPath = wps.download_result(yearlyAve)
-    plotter.print_data(dataPath)
+# if __name__ == '__main__':
+#     plotter = cwt.initialize()
+#     host = "https://edas.nccs.nasa.gov/wps/cwt"
+#     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
+#     d0 = cwt.Domain.from_dict(  {'id': 'd0', 'lat': {'start': 5, 'end': 7, 'crs': 'indices'}, 'lon': {'start': 5, 'end': 10, 'crs': 'indices'}, 'time': {'start': '1850-01-01T00:00:00Z', 'end': '1854-01-01T00:00:00Z', 'crs': 'timestamps'}})
+#     v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain=d0)
+#     yearlyAve = cwt.Process.from_dict({'name': "CDSpark.ave", "axes": "t", "groupBy": "year"})
+#     yearlyAve.set_inputs(v0)
+#     wps.execute(yearlyAve, domains=[d0], async=True)
+#     dataPath = wps.download_result(yearlyAve)
+#     plotter.print_data(dataPath)
