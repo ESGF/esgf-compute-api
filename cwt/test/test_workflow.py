@@ -613,7 +613,7 @@ class TestWorkflow:
 
 
     def plot_test(self):
-        self.plotter.mpl_timeplot( "/Users/tpmaxwel/.edas/9uRiTaMJ.nc" )
+        self.plotter.mpl_spaceplot( "/Users/tpmaxwel/.edas/yk0wc66F.nc" )
 
 if __name__ == '__main__':
     executor = TestWorkflow()
