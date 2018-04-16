@@ -425,6 +425,7 @@ class WPS(object):
             status = self.status( op )
             logger.info( "STATUS: " +  status )
         if status == "COMPLETED":
+            print "HREFS: " + str( op.hrefs )
             file_href = op.hrefs.get("file")
             file_path = temp_dir + "/" + file_href.split('/')[ -1 ]
             print "Downloading file: " + file_href
