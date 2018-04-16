@@ -564,9 +564,12 @@ class TestWorkflow:
         dataPath = self.wps.download_result(v1_ave, self.temp_dir)
         self.plotter.print_Mdata(dataPath)
 
+    def plot_test(self):
+        self.plotter.mpl_timeplot( "/Users/tpmaxwel/.edas/9uRiTaMJ.nc" )
+
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.performance_test_conus_1mth()
+    executor.plot_test()
 
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
 #    executor.plotter.performance_test_global(dataPath)

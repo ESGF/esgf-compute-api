@@ -13,18 +13,26 @@ class PlotMgr:
 
     def mpl_timeplot( self, dataPath ):
         if dataPath:
-            f = cdms2.openDataset(dataPath)
-            varName = f.variables.values()[0].id
-            timeSeries = f( varName, squeeze=1 )
-            datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
-            dates = matplotlib.dates.date2num(datetimes)
-            fig, ax = plt.subplots()
-            ax.plot(dates, timeSeries.data )
             self.logger.info( "Plotting file: " +  dataPath )
-            ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
-            ax.grid(True)
+            f = cdms2.openDataset(dataPath)
+            variables = f.variables
+            fig = plt.figure()
+            iplot = 1
+            for variable in variables.values():
+                varName = variable.id
+                self.logger.info( "  ->  Plotting variable: " +  varName + ", subplot: " + str(iplot) )
+                timeSeries = f( varName, squeeze=1 )
+                datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
+                dates = matplotlib.dates.date2num(datetimes)
+                ax = fig.add_subplot( 1, len(variables), iplot )
+                ax.plot(dates, timeSeries.data )
+                ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
+                ax.grid(True)
+                iplot = iplot + 1
+
             fig.autofmt_xdate()
             plt.show()
+
 
     def getAxis(self, axes, atype ):
         for axis in axes:
