@@ -617,7 +617,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.plot_test()
+    executor.performance_test_conus_1day(False)
 
 
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
