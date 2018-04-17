@@ -612,8 +612,7 @@ class TestWorkflow:
         self.plotter.print_Mdata(dataPath)
 
     def test_getCollections(self):
-        with self.assertRaises(cwt.WPSHTTPError):
-            return self.wps.getCapabilities("coll")
+        return self.wps.getCapabilities("coll",False)
 
     def plot_test(self):
         self.plotter.mpl_spaceplot( "/Users/tpmaxwel/.edas/yk0wc66F.nc" )
