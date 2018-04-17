@@ -611,13 +611,16 @@ class TestWorkflow:
         dataPath = self.wps.download_result(v1_ave, self.temp_dir)
         self.plotter.print_Mdata(dataPath)
 
+    def test_getCollections(self):
+        with self.assertRaises(cwt.WPSHTTPError):
+            return self.wps.getCapabilities("coll")
 
     def plot_test(self):
         self.plotter.mpl_spaceplot( "/Users/tpmaxwel/.edas/yk0wc66F.nc" )
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.performance_test_conus_1day(False)
+    print executor.test_getCollections()
 
 
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
