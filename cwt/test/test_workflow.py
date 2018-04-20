@@ -607,6 +607,11 @@ class TestWorkflow:
         dataPath = self.wps.download_result(v1_ave, self.temp_dir)
         self.plotter.print_Mdata(dataPath)
 
+    def test_getCollections(self):
+        return self.wps.getCapabilities("coll",False)
+
+    def plot_test(self):
+        self.plotter.mpl_spaceplot( "/Users/tpmaxwel/.edas/yk0wc66F.nc" )
 
     def performance_test_conus(self):
         domain_data = { 'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'} }
@@ -629,6 +634,7 @@ class TestWorkflow:
 if __name__ == '__main__':
     executor = TestWorkflow()
     executor.ListCollections()
+
 
 
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"

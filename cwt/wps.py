@@ -474,8 +474,9 @@ class WPS(object):
 
         if method.lower() == 'get':
             params['datainputs'] = self.prepare_data_inputs(process, inputs, domains, **kwargs)
-
+            logger.info( "Sending http request to server " + self.__url + ", params: " + str(params) )
             response = self.__request(method, params=params)
+            logger.info( "Reponse: " + response )
         elif method.lower() == 'post':
             data_inputs = self.__prepare_data_inputs(process, inputs, domains, **kwargs)
 
