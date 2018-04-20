@@ -16,6 +16,7 @@ class TestWorkflow:
     host = os.environ["EDAS_HOST_ADDRESS"]  # "https://edas.nccs.nasa.gov/wps/cwt"
     assert host != None, "Must set EDAS_HOST_ADDRESS environment variable"
 #    host ="https://dptomcat03-int/wps/cwt"
+    print "Connecting to wps host: " + host
     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
     temp_dir = create_tempdir()
 
@@ -382,7 +383,7 @@ class TestWorkflow:
 
 
     def performance_test_global(self):
-        domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'} }
+        domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2015-01-01T00:00:00Z', 'crs': 'timestamps'} }
 
         d0 = cwt.Domain.from_dict(domain_data)
 
@@ -397,22 +398,6 @@ class TestWorkflow:
         dataPath = self.wps.download_result(v1_ave, self.temp_dir)
         self.plotter.print_Mdata(dataPath)
 
-    def performance_test_conus(self):
-        domain_data = { 'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'} }
-#        domain_data = { 'id': 'd0' }
-
-        d0 = cwt.Domain.from_dict(domain_data)
-
-        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
-
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
-        v1_ave = cwt.Process.from_dict(v1_ave_data)
-        v1_ave.set_inputs(v1)
-
-        self.wps.execute(v1_ave, domains=[d0], async=True)
-
-        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
 
     def seasonal_anomaly( self ):
 
@@ -505,12 +490,23 @@ class TestWorkflow:
         dataPath = self.wps.download_result(svd, self.temp_dir)
         self.plotter.mpl_spaceplot( dataPath, 0, True )
 
-    def svd_test( self ):
+    def svd_test2( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas:T", domain=d0  )
         v1 = cwt.Variable("collection://cip_20crv2c_mth", "psl:P", domain=d0  )
         highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
         highpass.set_inputs(v0,v1)
+        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8" } )
+        svd.set_inputs( highpass )
+        self.wps.execute( svd, domains=[d0], async=True )
+        dataPath = self.wps.download_result(svd, self.temp_dir)
+        self.plotter.mpl_spaceplot( dataPath, 0, True )
+
+    def svd_test( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas:T", domain=d0  )
+        highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
+        highpass.set_inputs(v0)
         svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8" } )
         svd.set_inputs( highpass )
         self.wps.execute( svd, domains=[d0], async=True )
@@ -612,10 +608,27 @@ class TestWorkflow:
         self.plotter.print_Mdata(dataPath)
 
 
+    def performance_test_conus(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'} }
+#        domain_data = { 'id': 'd0' }
+
+        d0 = cwt.Domain.from_dict(domain_data)
+
+        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
+
+        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
+        v1_ave = cwt.Process.from_dict(v1_ave_data)
+        v1_ave.set_inputs(v1)
+
+        self.wps.execute(v1_ave, domains=[d0], async=True)
+
+        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
+        self.plotter.print_Mdata(dataPath)
+
+
 if __name__ == '__main__':
     executor = TestWorkflow()
-#    executor.performance_test_conus_1mth()
-    executor.binning_test()
+    executor.ListCollections()
 
 
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
