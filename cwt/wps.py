@@ -428,9 +428,12 @@ class WPS(object):
             print "HREFS: " + str( op.hrefs )
             file_href = op.hrefs.get("file")
             file_path = temp_dir + "/" + file_href.split('/')[ -1 ]
-            print "Downloading file: " + file_href
-            urllib.urlretrieve (file_href, file_path )
-            return file_path
+            if( file_href.startswith("/") ):
+                return file_href
+            else:
+                print "Downloading file: " + file_href
+                urllib.urlretrieve (file_href, file_path )
+                return file_path
         else:
             print xml.etree.ElementTree.tostring( op.response )
             return ""
