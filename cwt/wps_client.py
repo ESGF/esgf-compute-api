@@ -6,36 +6,36 @@ import re
 import sys
 
 import requests
-from lxml import etree
+from pyxb.utils import domutils
 
 import cwt
-from cwt.wps_lib import metadata
-from cwt.wps_lib import operations
+from cwt.wps import ows
+from cwt.wps import wps
+from cwt.wps import xlink
 
-logger = logging.getLogger('cwt.wps')
+bds = domutils.BindingDOMSupport()
 
-class WPSError(Exception):
-    pass
+bds.declareNamespace(ows.Namespace, prefix='ows')
 
-class WPSHTTPError(Exception):
-    pass
+bds.declareNamespace(wps.Namespace, prefix='wps')
 
-class WPSHTTPMethodError(Exception):
-    pass
+bds.declareNamespace(xlink.Namespace, prefix='xlink')
 
-class WPS(object):
-    def __init__(self, url, username=None, password=None, **kwargs):
+logger = logging.getLogger('cwt.wps_client')
+
+__ALL__ = [
+    'WPSClient',
+]
+
+class WPSClient(object):
+    def __init__(self, url, **kwargs):
         """ WPS class
 
         An class to connect and communicate with a WPS server implementing
         the ESGF-CWT API.
-
-        Supports two authentication methods, username/password or api_key.
         
         Attributes:
             url: A string url path for the WPS server.
-            username: A string username.
-            password: A string password.
             api_key: A string API_KEY for the WPS server.
             version: A string version of the WPS server.
             language: A string language code for the WPS server to communicate in.
@@ -43,20 +43,19 @@ class WPS(object):
             log_file: A string path for a log file.
         """
         self.__url = url
-        self.__username = username
-        self.__password = password
         self.__version = kwargs.get('version')
         self.__language = kwargs.get('language')
         self.__api_key = kwargs.get('api_key')
         self.__capabilities = None 
         self.__csrf_token = None
         self.__client = requests.Session()
+        self.__dry = kwargs.get('dry_run', False)
+        self.__file_handler = None
 
         if kwargs.get('log') is not None:
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
 
-            # TODO make level configurable
-            logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.INFO)
 
             stream_handler = logging.StreamHandler(sys.stdout)
 
@@ -67,19 +66,24 @@ class WPS(object):
             log_file = kwargs.get('log_file')
 
             if log_file is not None:
-                file_handler = logging.FileHandler(log_file)
+                self.__file_handler = logging.FileHandler(log_file)
 
-                file_handler.setFormatter(formatter)
+                self.__file_handler.setFormatter(formatter)
 
-                logger.addHandler(file_handler)
-        else:
-            logger.addHandler(logging.NullHandler())
+                logger.addHandler(self.__file_handler)
+
+    def __del__(self):
+        logging.shutdown()
+
+        if self.__file_handler is not None:
+            logger.removeHandler(self.__file_handler)
+
+            self.__file_handler.close()
     
-    @property
-    def capabilities(self):
+    def get_capabilities(self, refresh=False, method='GET'):
         """ Attempts to retrieve and return the WPS servers capabilities document. """
-        if self.__capabilities == None:
-            self.__capabilites = self.__get_capabilities()
+        if self.__capabilities is None or refresh:
+            self.__capabilities = self.__get_capabilities(method)
 
         return self.__capabilities
 
@@ -105,8 +109,8 @@ class WPS(object):
 
         try:
             response = self.__client.request(method, url, params=params, data=data, headers=headers)
-        except requests.RequestException:
-            raise WPSHTTPError('{0} request failed'.format(method))
+        except requests.RequestException as e:
+            raise cwt.WPSHttpError.from_request_response(e.response)
 
         logger.debug('%s request succeeded', method)
 
@@ -117,9 +121,8 @@ class WPS(object):
         if 'csrftoken' in response.cookies:
             self.__csrf_token = response.cookies['csrftoken']
 
-        if response.status_code != 200:
-            raise WPSHTTPError('{0} response failed with status code '
-                    '{1} {2}'.format(method, response.status_code, response.content))
+        if response.status_code > 200:
+            raise cwt.WPSHttpError.from_request_response(response)
 
         return response.text
 
@@ -148,73 +151,43 @@ class WPS(object):
        
         response = self.__http_request(method, url, params, data, headers)
 
-        logger.info('{}'.format(response))
-
         return response
 
-    def __parse_response(self, response, response_type):
-        """ Attempts to parse the WPS response.
-
-        Args:
-            response: A string WPS response.
-            response_type: A class we want to attempt to parse.
-
-        Returns:
-            A class containing the parsed WPS response.
-
-        Raises:
-            WPSError: An ExceptionReport was returned from the WPS server.
-        """
-        data = None
-
-        try:
-            data = response_type.from_xml(response)
-        except Exception:
-            raise
-        else:
-            return data
-
-        if data is None:
-            try:
-                data = metadata.ExceptionReport.from_xml(response)
-            except Exception:
-                raise WPSError('Failed to parse server response')
-            else:
-                raise WPSError(data)
-
-    def __get_capabilities(self, method='GET'):
+    def __get_capabilities(self, method):
         """ Builds and attempts a GetCapabilities request. """
-        params = {
+        if method.lower() == 'get':
+            params = {
                 'service': 'WPS',
                 'request': 'GetCapabilities',
-                }
+            }
 
-        if self.__version is not None:
-            params['acceptversions'] = self.__version
+            if self.__version is not None:
+                params['acceptversions'] = self.__version
 
-        if self.__language is not None:
-            params['language'] = self.__language
+            if self.__language is not None:
+                params['language'] = self.__language
 
-        if method.lower() == 'get':
+            logger.debug(params)
+
             response = self.__request(method, params=params)
         elif method.lower() == 'post':
-            request = operations.GetCapabilitiesRequest()
+            data = wps.get_capabilities().toxml(bds=bds)
 
-            data = request(**params)
+            logger.debug(data)
 
             response = self.__request(method, data=data)
         else:
-            raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
+            raise cwt.WPSError('{} method is unsupported'.format(method))
 
-        capabilities = self.__parse_response(response, operations.GetCapabilitiesResponse)
+        capabilities = wps.CreateFromDocument(response)
 
         return capabilities
 
-    def processes(self, regex=None, refresh=False, method='GET'):
+    def processes(self, pattern=None, refresh=False, method='GET'):
         """ Returns a list of WPS processes.
 
         Args:
-            regex: A string regex used to filter the processes by identifier.
+            pattern: A string regex used to filter the processes by identifier.
             refresh: A boolean to force a GetCapabilites refresh.
             method: A string HTTP method.
 
@@ -224,7 +197,12 @@ class WPS(object):
         if self.__capabilities is None or refresh:
             self.__capabilities = self.__get_capabilities(method)
 
-        return [cwt.Process(process=x) for x in self.__capabilities.process_offerings]
+        processes = [cwt.Process.from_binding(x) for x in self.__capabilities.ProcessOfferings.Process]
+
+        if pattern is not None:
+            processes = [x for x in processes if re.match(pattern, x.identifier) is not None]
+
+        return processes
 
     def get_process(self, identifier, method='GET'):
         """ Return a specified process.
@@ -238,16 +216,16 @@ class WPS(object):
         Raises:
             Exception: A process with identifier was not found.
         """
-        if self.__capabilities is None:
-            self.__capabilities = self.__get_capabilities(method)
+        processes = self.processes(identifier, method=method)
 
         try:
-            return [cwt.Process(process=x) for x in self.__capabilities.process_offerings
-                    if x.identifier == identifier][0]
+            process = processes[0]
         except IndexError:
-            raise Exception('Failed to find process with identifier "{}"'.format(identifier))
+            raise cwt.WPSError('No process with identifer matching "{}" exists'.format(identifier))
+        else:
+            return process
 
-    def describe(self, process, method='GET'):
+    def describe_process(self, process, method='GET'):
         """ Return a DescribeProcess response.
         
         Args:
@@ -257,33 +235,32 @@ class WPS(object):
         Returns:
             A DescribeProcessResponse object.
         """
-        if isinstance(process, cwt.Process):
-            identifier = process.identifier
-        else:
-            identifier = process
+        identifier = process.identifier
 
-        params = {
+        if method.lower() == 'get':
+            params = {
                 'service': 'wps',
                 'request': 'describeprocess',
                 'version': '1.0.0',
                 'identifier': identifier,
-                }
+            }
 
-        if self.__language is not None:
-            params['language'] = self.__language
+            if self.__language is not None:
+                params['language'] = self.__language
 
-        if method.lower() == 'get':
+            logger.debug(params)
+
             response = self.__request(method, params=params)
         elif method.lower() == 'post':
-            request = operations.DescribeProcess()
+            data = wps.describe_process([identifier], '1.0.0').toxml(bds=bds)
 
-            data = request(**params)
+            logger.debug(data)
 
-            resposne = self.__request(method, data=data)
+            response = self.__request(method, data=data)
         else:
-            raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
+            raise cwt.WPSError('{} method is unsupported'.format(method))
 
-        desc = self.__parse_response(response, operations.DescribeProcessResponse)
+        desc = wps.CreateFromDocument(response)
 
         return desc
 
@@ -355,29 +332,6 @@ class WPS(object):
         return '[{}]'.format(';'.join('{}={}'.format(x, json.dumps(y))
             for x, y in data_inputs.iteritems()))
 
-    def __execute_post_data(self, data_inputs, base_params):
-        """ Attempts to execute an HTTP Post request. """
-        request = operations.ExecuteRequest()
-
-        base_params['data_inputs'] = []
-
-        for key, value in data_inputs.iteritems():
-            logger.info('Setting input {} to {}'.format(key, value))
-
-            inp = metadata.Input()
-
-            inp.identifier = key
-
-            inp_data = metadata.ComplexData()
-
-            inp_data.value = '{0}'.format(value)
-
-            inp.data = inp_data
-
-            base_params['data_inputs'].append(inp) 
-
-        return request(**base_params)
-
     def execute(self, process, inputs=None, domain=None, method='POST', **kwargs):
         """ Execute the process on the WPS server. 
         
@@ -390,27 +344,37 @@ class WPS(object):
         if inputs is None:
             inputs = []
 
-        params = {
+        if method.lower() == 'get':
+            params = {
                 'service': 'WPS',
                 'request': 'Execute',
                 'version': '1.0.0',
                 'identifier': process.identifier,
-                }
+            }
 
-        if method.lower() == 'get':
             params['datainputs'] = self.prepare_data_inputs(process, inputs, domain, **kwargs)
+
+            logger.debug(params)
 
             response = self.__request(method, params=params)
         elif method.lower() == 'post':
             data_inputs = self.__prepare_data_inputs(process, inputs, domain, **kwargs)
 
-            data = self.__execute_post_data(data_inputs, params)
+            variables = wps.data_input('variable', 'Variable', json.dumps(data_inputs['variable']))
+
+            domains = wps.data_input('domain', 'Domain', json.dumps(data_inputs['domain']))
+
+            operation = wps.data_input('operation', 'Operation', json.dumps(data_inputs['operation']))
+
+            data = wps.execute(process.identifier, '1.0.0', [variables, domains, operation]).toxml(bds=bds)
+
+            logger.debug(data)
 
             response = self.__request(method, data=data)
         else:
-            raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
+            raise cwt.WPSError('{} method is unsupported'.format(method))
 
-        process.response = self.__parse_response(response, operations.ExecuteResponse)
+        process.response = wps.CreateFromDocument(response)
 
-        if isinstance(process.response.status, metadata.ProcessFailed):
-            raise Exception(process.response.status.exception_report)
+        if process.is_failed:
+            raise Exception(process.exception_message)

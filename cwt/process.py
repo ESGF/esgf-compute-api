@@ -11,8 +11,7 @@ from cwt import parameter
 from cwt import named_parameter
 from cwt import variable
 from cwt import gridder
-from cwt.wps_lib import metadata
-from cwt.wps_lib import operations
+from cwt.wps import wps
 
 logger = logging.getLogger('cwt.process')
 
@@ -30,17 +29,34 @@ class Process(parameter.Parameter):
         process: A DescribeProcessResponse object.
         name: A string name for the process to be used as the input of another process.
     """
-    def __init__(self, identifier=None, process=None, name=None):
+    def __init__(self, identifier=None, binding=None, name=None):
         super(Process, self).__init__(name)
 
-        self.__process = process
         self.__identifier = identifier
 
+        self.binding = binding
+
         self.response = None
+
         self.processed = False
+
         self.inputs = []
+
         self.parameters = {}
+
         self.domain = None
+
+    @classmethod
+    def from_identifier(cls, identifier):
+        obj = cls(identifier=identifier)
+
+        return obj
+
+    @classmethod
+    def from_binding(cls, binding):
+        obj = cls(binding=binding)
+
+        return obj
 
     @classmethod
     def from_dict(cls, data):
@@ -69,30 +85,13 @@ class Process(parameter.Parameter):
 
         return obj
 
-    def __getattr__(self, name):
-        """ Fallthrough attribute lookup.
+    @property
+    def identifier(self):
+        if self.__identifier is not None:
+            return self.__identifier
 
-        If the attribute is not contained in the current object then we search
-        the __process and response objects.
-
-        """
-        if hasattr(self.__process, name):
-            return getattr(self.__process, name)
-
-        if hasattr(self.response, name):
-            return getattr(self.response, name)
-        
-        raise AttributeError(name)
-
-    def __get_identifier(self):
-        """ Returns the processes identifier. """
-        return self.__process.identifier if self.__process is not None else self.__identifier
-
-    def __set_identifier(self, value):
-        """ Sets the processes identifier. """
-        self.__identifier = value
-
-    identifier = property(__get_identifier, __set_identifier)
+        if self.binding is not None:
+            return self.binding.Identifier.value()
 
     @property
     def processing(self):
@@ -109,11 +108,20 @@ class Process(parameter.Parameter):
         return self.status.__class__ in (metadata.ProcessAccepted, metadata.ProcessStarted)
 
     @property
-    def error(self):
-        """ Check if the process has errored. """
-        return True if (self.response is None or
-                        (self.response is not None and
-                         isinstance(self.status, metadata.ProcessFailed))) else False
+    def exception_message(self):
+        if self.response is None or self.response.Status.ProcessFailed is None:
+            return None
+
+        try:
+            exception = self.response.Status.ProcessFailed.ExceptionReport.Exception[0]
+        except IndexError:
+            return None
+        else:
+            return exception.ExceptionText.join('\n')
+
+    @property
+    def is_failed(self):
+        return self.response is not None and self.response.Status.ProcessFailed is not None
 
     @property
     def output(self):

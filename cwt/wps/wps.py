@@ -118,7 +118,7 @@ def status_failed(message, code, version, locator=None):
     if locator is not None:
         exception.locator = locator
 
-    exception.ExceptionText = message
+    exception.ExceptionText = [message]
 
     report.Exception = [exception]
 
@@ -386,7 +386,7 @@ def describe_process(identifier, version):
     """ Describe Process
 
     Args:
-        identifier (str): Process identifier to describe.
+        identifier (list): List of str identifiers to describe.
         version (str): Version of the process to describe.
 
     Returns:

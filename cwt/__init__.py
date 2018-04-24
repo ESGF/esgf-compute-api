@@ -7,12 +7,14 @@ __version__ = '2.0.0'
 
 from .dimension import *
 from .domain import *
+from .errors import *
 from .gridder import *
 from .mask import *
 from .named_parameter import *
 from .parameter import *
 from .process import *
 from .variable import *
+from .wps_client import *
 
 NorthernHemisphere = Dimension('latitude', 0, 90)
 SouthernHemisphere = Dimension('latitude', -90, 0)

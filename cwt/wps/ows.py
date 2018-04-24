@@ -84,9 +84,9 @@ def service_identification(title, abstract, keywords=None):
     """
     service = ServiceIdentification()
 
-    service.Title = title
+    service.Title = [title]
 
-    service.Abstract = abstract
+    service.Abstract = [abstract]
 
     if keywords is None:
         keywords = []

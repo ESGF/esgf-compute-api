@@ -1,5 +1,5 @@
 """
-PyXB WPS bindings unit tests
+pyxb wps bindings unit tests
 """
 
 import unittest
