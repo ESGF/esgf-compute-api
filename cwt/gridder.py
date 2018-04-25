@@ -30,7 +30,7 @@ class Gridder(cwt.Parameter):
         method: A String method that the regridding tool will use.
         grid: A String, Domain or Variable of the target grid.
     """
-    def __init__(self, tool='esmf', method='linear', grid='T85'):
+    def __init__(self, tool='regrid2', method='linear', grid='T85'):
         """ Gridder Init. """
         super(Gridder, self).__init__('gridder')
 
