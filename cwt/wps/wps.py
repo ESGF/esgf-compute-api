@@ -128,7 +128,7 @@ def status_failed(message, code, version, locator=None):
 
     return status
 
-def output_data(identifier, title, data):
+def output_data(identifier, title, value):
     """ Output Data
 
     Args:
@@ -149,7 +149,7 @@ def output_data(identifier, title, data):
 
     complex_data = ComplexDataType()
 
-    complex_data.Data = data
+    complex_data.Data = value
 
     data.ComplexData = complex_data
 

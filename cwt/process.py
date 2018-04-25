@@ -7,20 +7,17 @@ import logging
 
 import requests
 
-from cwt import parameter
-from cwt import named_parameter
-from cwt import variable
-from cwt import gridder
+import cwt
 from cwt.wps import wps
 
 logger = logging.getLogger('cwt.process')
 
 __all__ = ['ProcessError', 'Process']
 
-class ProcessError(Exception):
+class ProcessError(cwt.CWTError):
     pass
 
-class Process(parameter.Parameter):
+class Process(cwt.Parameter):
     """ A WPS Process
 
     Wraps a WPS Process.
@@ -65,7 +62,7 @@ class Process(parameter.Parameter):
 
         obj.inputs = data.get('input', [])
 
-        obj.domain = data.get('domain')
+        obj.domain = data.get('domain', None)
 
         known_keys = ('name', 'input', 'result')
 
@@ -77,9 +74,9 @@ class Process(parameter.Parameter):
 
                 if isinstance(d, (dict)):
                     if key == 'gridder':
-                        proc_params[key] = gridder.Gridder.from_dict(d)
+                        proc_params[key] = cwt.Gridder.from_dict(d)
                 else:
-                    proc_params[key] = named_parameter.NamedParameter.from_string(key, d)
+                    proc_params[key] = cwt.NamedParameter.from_string(key, d)
 
         obj.parameters = proc_params
 
@@ -105,19 +102,15 @@ class Process(parameter.Parameter):
         """
         self.update_status()
 
-        return self.status.__class__ in (metadata.ProcessAccepted, metadata.ProcessStarted)
+        return (self.response is not None and
+                (self.response.Status.ProcessAccepted is not None or
+                 self.response.Status.ProcessStarted is not None))
 
     @property
     def exception_message(self):
-        if self.response is None or self.response.Status.ProcessFailed is None:
-            return None
+        exception = self.response.Status.ProcessFailed.ExceptionReport.Exception[0]
 
-        try:
-            exception = self.response.Status.ProcessFailed.ExceptionReport.Exception[0]
-        except IndexError:
-            return None
-        else:
-            return exception.ExceptionText.join('\n')
+        return exception.ExceptionText[0]
 
     @property
     def is_failed(self):
@@ -126,17 +119,19 @@ class Process(parameter.Parameter):
     @property
     def output(self):
         """ Return the output of the process if done. """
-        if self.response is None:
+        if (self.response is None or
+                self.response.ProcessOutputs is None or
+                len(self.response.ProcessOutputs.Output) == 0):
             return None
 
-        if self.response.output is None or len(self.response.output) == 0:
-            return None
+        data = json.loads(self.response.ProcessOutputs.Output[0].Data.ComplexData.Data)
 
-        data = json.loads(self.response.output[0].data.value)
-
-        var = variable.Variable.from_dict(data)
+        var = cwt.Variable.from_dict(data)
 
         return var
+
+    def set_domain(self, domain):
+        self.domain = domain
 
     def get_parameter(self, name, required=False):
         """ Retrieves a parameter
@@ -152,12 +147,9 @@ class Process(parameter.Parameter):
             Exception: The parameter is required and not present.
         """
         if name not in self.parameters and required:
-            raise Exception('The parameter {} is not present and is required.'.format(name))
+            raise ProcessError('Parameter {} is required but not present', name)
 
-        if name in self.parameters:
-            return self.parameters[name]
-
-        return None
+        return self.parameters.get(name, None)
 
     def add_parameters(self, *args, **kwargs):
         """ Add a parameter.
@@ -165,27 +157,24 @@ class Process(parameter.Parameter):
         kwargs can contain two formats.
 
         k=v where v is a NamedParameter
-        k=v where v is a string in the format of 'x|y|z'
         
         Args:
             args: A list of NamedParameter objects.
             kwargs: A dict of NamedParameter objects or k=v where k is the name and v is string.
         """
         for a in args:
-            if isinstance(a, named_parameter.NamedParameter):
-                self.parameters[a.name] = a
-            else:
-                raise ProcessError('Cannot add parameter of type {}'.format(type(a)))
+            if not isinstance(a, cwt.NamedParameter):
+                raise ProcessError('Invalid parameter type "{}", should be a cwt.NamedParameter', type(a))
+
+            self.parameters[a.name] = a
 
         for k, v in kwargs.iteritems():
-            if isinstance(v, (list, tuple)):
-                self.parameters[k] = named_parameter.NamedParameter(k, *v)
-            elif isinstance(v, str):
-                self.parameters[k] = cwt.NamedParameter.from_string(k, v)
-            else:
-                raise ProcessError('Cannot add parameter of type {}'.format(type(v)))
+            if not isinstance(v, (tuple, list)):
+                raise ProcessError('Invalid parameter argument type {}, should be a list or tuple', type(v))
 
-    def set_inputs(self, *args):
+            self.parameters[k] = cwt.NamedParameter(k, *v)
+
+    def add_inputs(self, *args):
         """ Set the inputs of the Process. 
         
         Args:
@@ -220,7 +209,7 @@ class Process(parameter.Parameter):
 
                 temp[key].resolve_inputs(inputs, operations)
             else:
-                raise ProcessError('Input "{}" not found'.format(key))
+                raise ProcessError('Input "{}" not found', key)
 
         self.inputs = temp.values()
 
@@ -246,7 +235,7 @@ class Process(parameter.Parameter):
         new_processes = [x for x in self.inputs if isinstance(x, Process)]
 
         inputs.update(dict((x.name, x) for x in self.inputs
-                           if isinstance(x, variable.Variable)))
+                           if isinstance(x, cwt.Variable)))
 
         for p in new_processes:
             p.collect_input_processes(processes, inputs)
@@ -257,21 +246,18 @@ class Process(parameter.Parameter):
 
     def update_status(self):
         """ Retrieves the latest process status. """
-        if self.response is None or self.status_location is None:
-            raise ProcessError('Process does not support status updates')
+        if self.response is None or self.response.statusLocation is None:
+            return None
 
         try:
-            response = requests.get(self.status_location)
-        except requests.RequestException:
-            logger.exception('Error retrieving job status')
+            response = requests.get(self.response.statusLocation)
+        except requests.RequestException as e:
+            raise cwt.WPSHttpError.from_request_response(e.response)
 
-            raise ProcessError('Error retrieving job status')
+        self.response = wps.CreateFromDocument(response.text)
 
-        self.response = operations.ExecuteResponse.from_xml(response.text)
-
-        if isinstance(self.status, metadata.ProcessFailed):
-            raise ProcessError('Process failed with exception report:\n{}'
-                               .format(str(self.status.exception_report)))
+        if self.is_failed:
+            raise cwt.WPSError('Process failed: {}'.format(self.exception_message))
 
     def parameterize(self):
         """ Create a dictionary representation of the Process. """
@@ -281,18 +267,12 @@ class Process(parameter.Parameter):
         }
 
         if self.domain is not None:
-            if isinstance(self.domain, (str, unicode)):
-                params['domain'] = self.domain
-            else:
-                params['domain'] = self.domain.name
+            params['domain'] = self.domain.name
 
         inputs = []
 
         for i in self.inputs:
-            if isinstance(i, (str, unicode)):
-                inputs.append(i)
-            else:
-                inputs.append(i.name)
+            inputs.append(i.name)
 
         params['input'] = inputs
 
