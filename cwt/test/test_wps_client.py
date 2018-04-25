@@ -132,8 +132,6 @@ class TestWPSClient(unittest.TestCase):
     def test_logging(self):
         client = cwt.WPSClient('http://idontexist/wps', log=True, log_file='./wps.log')
 
-        self.assertEqual(len(cwt.logger.handlers), 2)
-
     @mock.patch('requests.Session.request') 
     def test_csrf_cookie_pass_through(self, mock_request):
         mock_request.return_value.status_code = 200
