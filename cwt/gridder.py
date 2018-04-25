@@ -2,11 +2,11 @@
 Gridder Module.
 """
 
-from cwt import parameter
+import cwt
 
 __all__ = ['Gridder']
 
-class Gridder(parameter.Parameter):
+class Gridder(cwt.Parameter):
     """ Gridder.
     
     Describes the regridder and target grid for an operation.
@@ -17,7 +17,7 @@ class Gridder(parameter.Parameter):
 
     Gridder from a Domain.
 
-    >>> new_grid = Domain([Dimension(90, -90, step=1)], name='lat')
+    >>> new_grid = Domain([Dimension('lat', 90, -90, step=1)], name='lat')
     >>> Gridder('esmf', 'linear', new_grid)
 
     Gridder from a Variable.

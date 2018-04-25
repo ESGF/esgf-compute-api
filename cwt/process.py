@@ -43,6 +43,12 @@ class Process(cwt.Parameter):
 
         self.domain = None
 
+    def __repr__(self):
+        return 'Process(identifier=%r, name=%r, num_inputs=%r)' % (
+            self.identifier,
+            self.name,
+            len(self.inputs))
+
     @classmethod
     def from_identifier(cls, identifier):
         obj = cls(identifier=identifier)

@@ -2,11 +2,11 @@
 NamedParameter Module.
 """
 
-from cwt import parameter
+import cwt
 
 __all__ = ['NamedParameter']
 
-class NamedParameter(parameter.Parameter):
+class NamedParameter(cwt.Parameter):
     """ Named Parameter.
 
     Describes a parameter to be passed to an Operation.
@@ -41,10 +41,10 @@ class NamedParameter(parameter.Parameter):
         """ Parameterizes NamedParameter for GET request. """
         if isinstance(self.values, (list, tuple)) and all(isinstance(x, (str, unicode)) for x in self.values):
             value = '|'.join(self.values)
-        elif isinstance(self.values, parameter.Parameter):
+        elif isinstance(self.values, cwt.Parameter):
             value = self.values.parameterize()
         else:
-            raise parameter.ParameterError('Unknow value type {}'.format(type(self.values)))
+            raise cwt.ParameterError('Unknown value type {}', type(self.values))
 
         return value
 

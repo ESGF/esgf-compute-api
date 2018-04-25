@@ -49,7 +49,6 @@ class WPSClient(object):
         self.__capabilities = None 
         self.__csrf_token = None
         self.__client = requests.Session()
-        self.__dry = kwargs.get('dry_run', False)
         self.__file_handler = None
 
         if kwargs.get('log') is not None:
@@ -71,6 +70,14 @@ class WPSClient(object):
                 self.__file_handler.setFormatter(formatter)
 
                 logger.addHandler(self.__file_handler)
+
+    def __repr__(self):
+        return ('Process(url=%r, version=%r, language=%r, capabilities=%r)') % (
+            self.__url,
+            self.__version,
+            self.__language,
+            self.__capabilities is not None,
+        )
 
     def __del__(self):
         logging.shutdown()
