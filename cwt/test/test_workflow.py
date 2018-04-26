@@ -1,4 +1,4 @@
-import cwt, os, time
+import cwt, os, time, logging
 # import logging, cdms2, vcs
 # from cwt.test.plotters import PlotMgr
 # import cdms2, datetime, matplotlib, urllib3
@@ -13,7 +13,7 @@ def create_tempdir():
 
 class TestWorkflow:
     plotter = cwt.initialize()
-    host = os.environ["EDAS_HOST_ADDRESS"]  # "https://edas.nccs.nasa.gov/wps/cwt"
+    host = os.environ["EDAS_HOST_ADDRESS"]
     assert host != None, "Must set EDAS_HOST_ADDRESS environment variable"
 #    host ="https://dptomcat03-int/wps/cwt"
     print "Connecting to wps host: " + host
