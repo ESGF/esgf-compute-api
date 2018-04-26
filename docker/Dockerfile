@@ -1,6 +1,6 @@
 FROM continuumio/miniconda:4.3.27
 
-ARG TAG=master
+ARG BRANCH=master
 
 ENV JUPYTER_MODULE=notebook
 
@@ -16,7 +16,7 @@ RUN apt-get update && \
 	apt-get purge -y --auto-remove build-essential && \
 	rm -rf /var/lib/apt/lists/*
 
-RUN git clone --branch=$TAG --depth=1 https://github.com/ESGF/esgf-compute-api && \
+RUN git clone --branch=$BRANCH --depth=1 https://github.com/ESGF/esgf-compute-api && \
 	cd esgf-compute-api && \
 	PATH=/opt/conda/envs/esgf-compute-api/bin:$PATH pip install -r requirements.txt && \
 	PATH=/opt/conda/envs/esgf-compute-api/bin:$PATH python setup.py install
