@@ -29,8 +29,8 @@ class TestWorkflow:
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
         self.wps.execute( op, domains=[d0], async=True )
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_spaceplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_spaceplot(dataPath)
 
     def regrid_test(self):
         domain_data = { 'id': 'd0' }
@@ -44,8 +44,8 @@ class TestWorkflow:
 
         self.wps.execute(op, domains=[d0], async=True, profile="true")
 
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_spaceplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_spaceplot(dataPath)
 
 
     def weighted_spatial_ave(self):
@@ -60,8 +60,8 @@ class TestWorkflow:
 
         self.wps.execute(op, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_timeplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_timeplot(dataPath)
 
     def nonweighted_spatial_ave(self):
         domain_data = {'id':'d0','time':{'start':'1995-01-01T00:00:00','end':'1997-12-31T23:00:00','crs':'timestamps'}}
@@ -75,8 +75,8 @@ class TestWorkflow:
 
         self.wps.execute(op, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_timeplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_timeplot(dataPath)
 
 
 
@@ -93,8 +93,8 @@ class TestWorkflow:
 
         self.wps.execute( op, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_timeplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_timeplot(dataPath)
 
     def regrid( self ):
 
@@ -111,8 +111,8 @@ class TestWorkflow:
 
         self.wps.execute( op, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_spaceplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_spaceplot(dataPath)
 
     def sia_comparison_time_ave( self ):
 
@@ -133,10 +133,10 @@ class TestWorkflow:
         start = time.time()
         self.wps.execute( op, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result( op, self.temp_dir )
+        dataPaths = self.wps.download_result( op, self.temp_dir )
         end = time.time()
         print "\nCompleted execution in " + str(end-start) + " secs\n"
-        self.plotter.mpl_spaceplot(dataPath)
+        for dataPath in dataPaths:  self.plotter.mpl_spaceplot(dataPath)
 
     def anomaly( self ):
 
@@ -159,8 +159,8 @@ class TestWorkflow:
 
         self.wps.execute( anomaly, domains=[d0,d1], async=True )
 
-        dataPath = self.wps.download_result( anomaly, self.temp_dir )
-        self.plotter.mpl_timeplot(dataPath)
+        dataPaths = self.wps.download_result( anomaly, self.temp_dir )
+        for dataPath in dataPaths:  self.plotter.mpl_timeplot(dataPath)
 
 
     def climate_change_anomaly(self):
@@ -186,8 +186,8 @@ class TestWorkflow:
 
         self.wps.execute(anomaly, domains=[d0, d1], async=True)
 
-        dataPath = self.wps.download_result(anomaly, self.temp_dir)
-        self.plotter.mpl_spaceplot(dataPath)
+        dataPaths = self.wps.download_result(anomaly, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_spaceplot(dataPath)
 
     def diff_WITH_REGRID(self):
         domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '1980-02-31T23:00:00', 'crs': 'timestamps'}  }
@@ -202,8 +202,8 @@ class TestWorkflow:
 
         self.wps.execute(op, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_spaceplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_spaceplot(dataPath)
 
     def regrid_test_brief(self):
         domain_data = {'id': 'd0', 'lat': {'start':0, 'end':90, 'crs':'values'}, 'time': {'start': '1980-01-01T00:00:00', 'end': '1980-02-31T23:00:00', 'crs': 'timestamps'}  }
@@ -217,8 +217,8 @@ class TestWorkflow:
 
         self.wps.execute(op, domains=[d0], async=True, profile="true" )
 
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_spaceplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_spaceplot(dataPath)
 
     def regrid_test(self):
         domain_data = { 'id': 'd0' }
@@ -232,8 +232,8 @@ class TestWorkflow:
 
         self.wps.execute(op, domains=[d0], async=True, profile="true")
 
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_spaceplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.mpl_spaceplot(dataPath)
 
     def diff_with_regrid1(self):
         domain_data = { 'id': 'd0', 'time': {'start':"1990-01-01T00:00:00Z", 'end':"1991-01-01T00:00:00Z", 'crs':'timestamps'} }
@@ -248,8 +248,8 @@ class TestWorkflow:
 
         self.wps.execute( diff_op, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result( diff_op, self.temp_dir )
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result( diff_op, self.temp_dir )
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
 
   #       test("DiffWithRegrid")  { if(test_regrid)  {
@@ -280,8 +280,8 @@ class TestWorkflow:
 
         self.wps.execute( v1_ave, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result( v1_ave, self.temp_dir )
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result( v1_ave, self.temp_dir )
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
     def testClock(self):
 
@@ -292,8 +292,8 @@ class TestWorkflow:
         util_op = cwt.Process.from_dict(util_data)
 
         self.wps.execute(util_op, domains=[d0], async=True)
-        dataPath = self.wps.download_result(util_op, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result(util_op, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
     def performance_test_global_1day(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
@@ -309,8 +309,8 @@ class TestWorkflow:
 
         self.wps.execute(v1_ave, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
     def performance_test_global_1mth(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
@@ -326,8 +326,8 @@ class TestWorkflow:
 
         self.wps.execute(v1_ave, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
     def performance_test_conus_1mth(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
@@ -342,8 +342,8 @@ class TestWorkflow:
 
         self.wps.execute(v1_ave, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
 
     def performance_test_global_1y(self):
@@ -360,8 +360,8 @@ class TestWorkflow:
 
         self.wps.execute(v1_ave, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
     def performance_test_conus_1y(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
@@ -377,8 +377,8 @@ class TestWorkflow:
 
         self.wps.execute(v1_ave, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
 
 
@@ -395,8 +395,8 @@ class TestWorkflow:
 
         self.wps.execute(v1_ave, domains=[d0], async=True ) # , profile="active" )
 
-        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
 
     def seasonal_anomaly( self ):
@@ -414,8 +414,8 @@ class TestWorkflow:
 
         self.wps.execute( anomaly, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result( anomaly, self.temp_dir )
-        self.plotter.mpl_timeplot(dataPath)
+        dataPaths = self.wps.download_result( anomaly, self.temp_dir )
+        for dataPath in dataPaths:  self.plotter.mpl_timeplot(dataPath)
 
     def seasonal_cycle( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40, 'crs':'values'}, 'lon': {'start':260, 'end':260, 'crs':'values'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1992-12-31T23:59:00Z', 'crs': 'timestamps'} } )
@@ -424,8 +424,9 @@ class TestWorkflow:
         v0_ave =  cwt.Process.from_dict( v0_ave_data )
         v0_ave.set_inputs( v0 )
         self.wps.execute( v0_ave, domains=[d0], async=True )
-        dataPath = self.wps.download_result( v0_ave, self.temp_dir )
-        self.plotter.mpl_timeplot(dataPath)
+        dataPaths = self.wps.download_result( v0_ave, self.temp_dir )
+        for dataPath in dataPaths:
+            self.plotter.mpl_timeplot(dataPath)
 
     def spatial_ave( self ):
         domain_data = { 'id': 'd0', 'lat': {'start':23.7,'end':49.2,'crs':'values'}, 'lon': {'start':-125, 'end':-70.3, 'crs':'values'}, 'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00', 'crs':'timestamps'}}
@@ -435,8 +436,9 @@ class TestWorkflow:
         op = cwt.Process.from_dict( op_data )
         op.set_inputs( inputs )
         self.wps.execute( op, domains=[d0], async=True )
-        dataPath = self.wps.download_result(op)
-        self.plotter.mpl_spaceplot(dataPath)
+        dataPaths = self.wps.download_result(op)
+        for dataPath in dataPaths:
+            self.plotter.mpl_spaceplot(dataPath)
 
     def precip_test( self ):
 
@@ -447,8 +449,9 @@ class TestWorkflow:
 
         self.wps.execute( v0_ave, domains=[d0], async=True )
 
-        dataPath = self.wps.download_result( v0_ave, self.temp_dir )
-        self.plotter.mpl_spaceplot(dataPath)
+        dataPaths = self.wps.download_result( v0_ave, self.temp_dir )
+        for dataPath in dataPaths:
+            self.plotter.mpl_spaceplot(dataPath)
 
     def time_selection_test(self):
         domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
@@ -458,8 +461,9 @@ class TestWorkflow:
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
         self.wps.execute( op, domains=[d0], async=True )
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_timeplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_timeplot(dataPath)
 
     def time_bin_selection_test(self):
         domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'1990-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
@@ -469,8 +473,9 @@ class TestWorkflow:
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
         self.wps.execute( op, domains=[d0], async=True )
-        dataPath = self.wps.download_result(op, self.temp_dir)
-        self.plotter.mpl_timeplot(dataPath)
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_timeplot(dataPath)
 
     def test_plot(self):
         self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/wiqYJl6O.nc")
@@ -488,8 +493,9 @@ class TestWorkflow:
         svd =  cwt.Process.from_dict( { 'name': "CDSpark.lowpass", "groupBy": "5-year" } )
         svd.set_inputs( v0 )
         self.wps.execute( svd, domains=[d0], async=True )
-        dataPath = self.wps.download_result(svd, self.temp_dir)
-        self.plotter.mpl_timeplot( dataPath )
+        dataPaths = self.wps.download_result(svd, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_timeplot( dataPath )
 
     def lowpass_profile_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
@@ -497,8 +503,9 @@ class TestWorkflow:
         lowpass = cwt.Process.from_dict({'name': "CDSpark.lowpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
         lowpass.set_inputs(v1)
         self.wps.execute( lowpass, domains=[d0], async=True, profile="active" )
-        dataPath = self.wps.download_result(lowpass, self.temp_dir)
-        self.plotter.mpl_spaceplot( dataPath, 0, True )
+        dataPaths = self.wps.download_result(lowpass, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_spaceplot( dataPath, 0, True )
 
     def highpass_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
@@ -506,8 +513,9 @@ class TestWorkflow:
         highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "groupBy": "5-year" } )
         highpass.set_inputs( v0 )
         self.wps.execute( highpass, domains=[d0], async=True )
-        dataPath = self.wps.download_result(highpass, self.temp_dir)
-        self.plotter.mpl_timeplot( dataPath )
+        dataPaths = self.wps.download_result(highpass, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_timeplot( dataPath )
 
     def highpass_test1( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-80,"end":80,"crs":"values"} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
@@ -515,8 +523,9 @@ class TestWorkflow:
         highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year" } )
         highpass.set_inputs( v0 )
         self.wps.execute( highpass, domains=[d0], async=True )
-        dataPath = self.wps.download_result(highpass, self.temp_dir)
-        self.plotter.mpl_timeplot( dataPath )
+        dataPaths = self.wps.download_result(highpass, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_timeplot( dataPath )
 
  #   val datainputs = s"""[domain=[{"name":"d0","lat":{"start":25,"end":25,"system":"indices"},"lon":{"start":20,"end":20,"system":"indices"}}],variable=[{"uri":"collection:/giss_r1i1p1","name":"tas:v1","domain":"d0"}],operation=[{"name":"CDSpark.lowpass","input":"v1","domain":"d0","groupBy":"5-year"}]]"""
 
@@ -527,8 +536,9 @@ class TestWorkflow:
         svd =  cwt.Process.from_dict( { 'name': "CDSpark.subset" } )
         svd.set_inputs( v0 )
         self.wps.execute( svd, domains=[d0], async=True )
-        dataPath = self.wps.download_result(svd, self.temp_dir)
-        self.plotter.mpl_timeplot( dataPath )
+        dataPaths = self.wps.download_result(svd, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_timeplot( dataPath )
 
     def binning_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'} ,
@@ -537,8 +547,9 @@ class TestWorkflow:
         yearlyAve =  cwt.Process.from_dict( { 'name': "CDSpark.ave", "axes":"t", "groupBy": "year" } )
         yearlyAve.set_inputs( v0 )
         self.wps.execute( yearlyAve, domains=[d0], async=True )
-        dataPath = self.wps.download_result(yearlyAve, self.temp_dir)
-        self.plotter.print_data( dataPath )
+        dataPaths = self.wps.download_result(yearlyAve, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.print_data( dataPath )
 
 
 
@@ -573,8 +584,9 @@ class TestWorkflow:
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
         self.wps.execute(v1_ave, domains=[d0], async=True)
-        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.print_Mdata(dataPath)
 
     def test_getCollections(self):
         return self.wps.getCapabilities("coll",False)
@@ -596,8 +608,9 @@ class TestWorkflow:
 
         self.wps.execute(v1_ave, domains=[d0], async=True)
 
-        dataPath = self.wps.download_result(v1_ave, self.temp_dir)
-        self.plotter.print_Mdata(dataPath)
+        dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.print_Mdata(dataPath)
 
     def svd_test_reduced( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
@@ -605,8 +618,9 @@ class TestWorkflow:
         svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8", "compu":"true" } )
         svd.set_inputs( v1 )
         self.wps.execute( svd, domains=[d0], async=True )
-        dataPath = self.wps.download_result(svd, self.temp_dir)
-        self.plotter.mpl_spaceplot( dataPath, 0, True )
+        dataPaths = self.wps.download_result(svd, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_spaceplot( dataPath, 0, True )
 
     def svd_test2( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
@@ -617,8 +631,9 @@ class TestWorkflow:
         svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8" } )
         svd.set_inputs( highpass )
         self.wps.execute( svd, domains=[d0], async=True )
-        dataPath = self.wps.download_result(svd, self.temp_dir)
-        self.plotter.mpl_spaceplot( dataPath, 0, True )
+        dataPaths = self.wps.download_result(svd, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_spaceplot( dataPath, 0, True )
 
     def svd_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
@@ -628,8 +643,9 @@ class TestWorkflow:
         svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8" } )
         svd.set_inputs( highpass )
         self.wps.execute( svd, domains=[d0], async=True )
-        dataPath = self.wps.download_result(svd, self.temp_dir)
-        self.plotter.mpl_spaceplot( dataPath, 0, True )
+        dataPaths = self.wps.download_result(svd, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_spaceplot( dataPath, 0, True )
 
 if __name__ == '__main__':
     executor = TestWorkflow()
@@ -637,7 +653,7 @@ if __name__ == '__main__':
 
 
 
-#    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
+#    dataPaths = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
 #    executor.plotter.performance_test_global(dataPath)
 
 
@@ -650,10 +666,10 @@ if __name__ == '__main__':
 #     yearlyAve = cwt.Process.from_dict({'name': "CDSpark.ave", "axes": "t", "groupBy": "year"})
 #     yearlyAve.set_inputs(v0)
 #     wps.execute(yearlyAve, domains=[d0], async=True)
-#     dataPath = wps.download_result(yearlyAve)
+#     dataPaths = wps.download_result(yearlyAve)
 #     plotter.print_data(dataPath)
 
-#    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
+#    dataPaths = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
 #    executor.plotter.performance_test_global(dataPath)
 
 
@@ -666,5 +682,5 @@ if __name__ == '__main__':
 #     yearlyAve = cwt.Process.from_dict({'name': "CDSpark.ave", "axes": "t", "groupBy": "year"})
 #     yearlyAve.set_inputs(v0)
 #     wps.execute(yearlyAve, domains=[d0], async=True)
-#     dataPath = wps.download_result(yearlyAve)
+#     dataPaths = wps.download_result(yearlyAve)
 #     plotter.print_data(dataPath)
