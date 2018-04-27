@@ -1,5 +1,6 @@
 .coverage
 .cache
+**/*.bak
 
 **/*.pyc
 
@@ -7,6 +8,7 @@
 *.log
 *.ipynb_*
 
+_build/
 build/
 dist/
 esgf_compute_api.egg-info/

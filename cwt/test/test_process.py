@@ -4,135 +4,240 @@ Process Unittest.
 
 import unittest
 
-import cwt
 import mock
-from cwt.wps_lib.xml import XMLError
+import requests
+from pyxb.utils import domutils
+
+import cwt
+from cwt.wps import ows
+from cwt.wps import wps
+from cwt.wps import xlink
+
+bds = domutils.BindingDOMSupport()
+
+bds.declareNamespace(ows.Namespace, prefix='ows')
+
+bds.declareNamespace(wps.Namespace, prefix='wps')
+
+bds.declareNamespace(xlink.Namespace, prefix='xlink')
 
 class TestProcess(unittest.TestCase):
     """ Process Test Case. """
 
     def setUp(self):
-        self.avg = cwt.Process(type('Process', (object,), dict(identifier='CDAT.avg')), name='avg')
+        process = wps.process('CDAT.subset', 'CDAT.subset', '1.0.0')
 
-        self.sum = cwt.Process(type('Process', (object,), dict(identifier='CDAT.sum')), name='sum')
+        started = wps.status_started('started', 10)
 
-        self.tas = cwt.Variable('file:///tas.nc', 'tas', name='tas')
+        output = wps.output_data('output', 'Output', '{"id": "tas|tas", "uri": "file:///test.nc"}')
 
-        self.clt = cwt.Variable('file:///clt.nc', 'clt', name='clt')
+        self.execute = wps.execute_response(process, started, '1.0.0', 'en-US', 'http://idontexist.com/wps', 'http://idontexist.com/status', [output])
 
-    def test_set_inputs(self):
-        self.avg.set_inputs(self.tas, self.clt)
+        failed = wps.status_failed('error', '10', '1.0.0')
 
-        self.assertItemsEqual(self.avg.inputs, [self.tas, self.clt])
+        self.execute_failed = wps.execute_response(process, failed, '1.0.0', 'en-US', 'http://idontexist.com/wps', 'http://idontexist.com/status', [output])
 
-    @mock.patch.object(cwt.wps.requests, 'get')
-    def test_update_status_malformed_execute_response(self, mock_get):
-        # Mock the response object with text property
-        mock_get.return_value = mock.Mock(text='</xml>')
+        self.binding = wps.process('CDAT.subset', 'CDAT.subset', '1.0.0')
 
-        self.avg.response = type('Process', (object,), dict(status_location='http://doesnotexist'))
-
-        with self.assertRaises(XMLError):
-            self.avg.update_status()
-
-    def test_update_status_location_does_not_exist(self):
-        self.avg.response = type('Process', (object,), dict(status_location='http://doesnotexist'))
-
-        with self.assertRaises(cwt.ProcessError):
-            self.avg.update_status()
-
-    def test_update_status(self):
-        with self.assertRaises(cwt.ProcessError):
-            self.avg.update_status()
+    def tearDown(self):
+        bds.reset()
 
     def test_parameterize(self):
-        expected = {
-                    'input': ['tas', 'sum'],
-                    'axes': 'x|y', 
-                    'name': 'CDAT.avg',
-                    'result': 'avg'
-                   }
+        process = cwt.Process.from_identifier('CDAT.subset')
 
-        self.sum.inputs = [self.clt, self.tas]
+        process.set_domain(cwt.Domain([
+            cwt.Dimension('time', 0, 365),
+        ]))
 
-        self.avg.inputs = [self.tas, self.sum]
+        process.add_parameters(test=['value1'])
 
-        self.avg.add_parameters(cwt.NamedParameter('axes', ('x', 'y')))
+        process.add_inputs(cwt.Variable('file:///test.nc', 'tas'))
 
-        self.assertDictContainsSubset(expected, self.avg.parameterize())
+        data = process.parameterize()
+
+    @mock.patch('requests.get')
+    def test_update_status_request_exception(self, mock_get):
+        mock_get.side_effect = requests.RequestException(response=mock.MagicMock(status_code=200, reason='some reason'))
+
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.response = self.execute
+
+        with self.assertRaises(cwt.WPSHttpError):
+            self.assertIsNone(process.update_status())
+
+    def test_update_status(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        self.assertIsNone(process.update_status())
 
     def test_collect_input_processes(self):
-        self.sum.inputs = [self.clt, self.tas]
+        process = cwt.Process.from_identifier('CDAT.subset')
 
-        self.avg.inputs = [self.tas, self.sum]
+        process1 = cwt.Process.from_identifier('CDAT.regrid')
 
-        processes, inputs = self.avg.collect_input_processes()
+        process1.add_inputs(cwt.Variable('file:///test.nc', 'tas'))
 
-        self.assertIsInstance(processes, list)
+        process.add_inputs(process1, cwt.Variable('file:///test1.nc', 'tas'))
+
+        processes, variables = process.collect_input_processes()
+
         self.assertEqual(len(processes), 1)
-        self.assertEqual(processes[0], self.sum)
 
-        self.assertIsInstance(inputs, list)
-        self.assertEqual(len(inputs), 2)
-        self.assertItemsEqual(inputs, [self.tas, self.clt])
+        self.assertEqual(len(variables), 2)
 
     def test_resolve_inputs_missing(self):
-        self.avg.inputs = ['tas']
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.inputs = ['subset']
 
         with self.assertRaises(cwt.ProcessError):
-            self.avg.resolve_inputs(dict(), dict())
+            process.resolve_inputs({}, {})
 
     def test_resolve_inputs_circular(self):
-        self.avg.inputs = ['avg']
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.inputs = ['subset']
 
         with self.assertRaises(cwt.ProcessError):
-            self.avg.resolve_inputs(dict(), dict(avg=self.avg))
+            process.resolve_inputs({}, {'subset': process })
 
     def test_resolve_inputs(self):
-        self.avg.inputs = ['sum', 'tas']
+        process = cwt.Process.from_identifier('CDAT.subset')
 
-        self.avg.resolve_inputs(dict(tas=self.tas), dict(sum=self.sum))
+        process.inputs = ['v0', 'subset']
 
-        self.assertIsInstance(self.avg.inputs, list)
-        self.assertEqual(len(self.avg.inputs), 2)
-        self.assertItemsEqual(self.avg.inputs, [self.sum, self.tas])
+        variables = {
+            'v0': cwt.Variable('file:///v0.nc', 'tas'),
+        }
 
-    def test_error(self):
-        self.assertTrue(self.avg.error)
+        operations = {
+            'subset': cwt.Process.from_identifier('CDAT.subset'),
+        }
 
-    def test_processing(self):
+        process.resolve_inputs(variables, operations)
+
+        self.assertIn(variables['v0'], process.inputs)
+
+        self.assertIn(operations['subset'], process.inputs)
+
+    def test_add_inputs(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.add_inputs(cwt.Variable('file:///test.nc', 'tas'))
+
+        self.assertEqual(len(process.inputs), 1)
+
+    def test_add_parameter_key_value(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.add_parameters(test=['value1'])
+
+        self.assertEqual(len(process.parameters), 1)
+
+    def test_add_parameter_invalid_argument_type(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
         with self.assertRaises(cwt.ProcessError):
-            self.avg.processing
+            process.add_parameters(test='test')
+        
+    def test_add_parameter_invalid_type(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
 
-    def test_parameters_property(self):
-        axes = cwt.NamedParameter('axes', ('x', 'y'))
+        with self.assertRaises(cwt.ProcessError):
+            process.add_parameters('test')
 
-        self.avg.parameters = [axes]
+    def test_add_parameter(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
 
-        self.assertEqual(axes, self.avg.parameters[0])
+        process.add_parameters(cwt.NamedParameter('test', 'value1'))
 
-    def test_identifier_property(self):
-        self.assertEqual(self.avg.identifier, 'CDAT.avg')
+        self.assertEqual(len(process.parameters), 1)
 
-    def test_missing_attribute(self):
-        with self.assertRaises(AttributeError):
-            self.avg.results
+    def test_get_parameter_missing_required(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.parameters['test'] = cwt.NamedParameter('test', 'value1')
+
+        with self.assertRaises(cwt.ProcessError):
+            process.get_parameter('test2', True)
+
+    def test_get_parameter_missing(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.parameters['test'] = cwt.NamedParameter('test', 'value1')
+
+        self.assertIsNone(process.get_parameter('test2'))
+
+    def test_get_parameter(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.parameters['test'] = cwt.NamedParameter('test', 'value1')
+
+        param = process.get_parameter('test')
+
+        self.assertEqual(param.name, 'test')
+
+    def test_output_not_available(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        self.assertIsNone(process.output)
+
+    def test_output(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.response = self.execute
+
+        self.assertIsInstance(process.output, cwt.Variable)
+
+    @mock.patch('requests.get')
+    def test_processing_failed(self, mock_request):
+        mock_request.return_value.text = self.execute_failed.toxml(bds=bds)
+
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.response = self.execute_failed
+
+        with self.assertRaises(cwt.WPSError):
+            process.processing
+
+    @mock.patch('requests.get')
+    def test_processing(self, mock_request):
+        mock_request.return_value.text = self.execute.toxml(bds=bds)
+
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.response = self.execute
+
+        self.assertTrue(process.processing)
 
     def test_from_dict(self):
         data = {
-                'result': 'avg1',
-                'input': ['tas1'],
-                'name': 'CDAT.avg',
-                'axes': 'x|y',
-               }
+            'name': 'CDAT.subset',
+            'result': 'subset',
+            'input': ['v0'],
+            'domain': 'd0',
+            'gridder': {
+                'grid': 'T21',
+            }
+        }
 
-        proc = cwt.Process.from_dict(data)
+        process = cwt.Process.from_dict(data)
 
-        self.assertEqual(proc.name, 'avg1')
-        self.assertIsInstance(proc.inputs, list)
-        self.assertItemsEqual(proc.inputs, ['tas1'])
-        self.assertIsInstance(proc.parameters, dict)
-        self.assertEqual(proc.identifier, 'CDAT.avg')
+        self.assertEqual(process.identifier, 'CDAT.subset')
+        self.assertEqual(process.inputs, ['v0'])
+        self.assertEqual(process.domain, 'd0')
+
+
+    def test_from_binding(self):
+        process = cwt.Process.from_binding(self.binding)
+
+        self.assertEqual(process.identifier, 'CDAT.subset')
+
+    def test_from_identifier(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        self.assertEqual(process.identifier, 'CDAT.subset')
 
 if __name__ == '__main__':
     unittest.main()

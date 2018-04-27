@@ -2,13 +2,11 @@
 Domain Module.
 """
 
-from cwt import dimension
-from cwt import mask
-from cwt import parameter
+import cwt
 
 __all__ = ['Domain']
 
-class Domain(parameter.Parameter):
+class Domain(cwt.Parameter):
     """ Domain.
 
     A domain consist of one or more dimensions. A mask can be associated with
@@ -16,13 +14,13 @@ class Domain(parameter.Parameter):
 
     Simple domain.
 
-    >>> domain = Domain([Dimesnion(90, -90, Dimension.values)])
+    >>> domain = Domain([Dimesnion('lat', 90, -90, Dimension.values)])
 
     Domain with a mask.
 
     >>> domain = Domain([
-            Dimension(90, -90, Dimension.values, name='lon'),
-            Dimension(0, 90, Dimension.values, name='lat'),
+            Dimension('lat', 90, -90, Dimension.values, name='lat'),
+            Dimension('lon', 0, 90, Dimension.values, name='lon'),
         ],
         mask = Mask('http://thredds/clt.nc', 'clt', 'var_data<0.5'))
 
@@ -51,18 +49,18 @@ class Domain(parameter.Parameter):
         if 'id' in data:
             name = data['id']
         else:
-            raise parameter.ParameterError('Domain must provide an id.')
+            raise cwt.ParameterError('Missing id attribute')
 
         dimensions = []
 
         for key, value in data.iteritems():
             if key not in blacklist:
-                dimensions.append(dimension.Dimension.from_dict(value, key))
+                dimensions.append(cwt.Dimension.from_dict(value, key))
 
         mask_data = None
 
         if 'mask' in data:
-            mask_data = mask.Mask.from_dict(data['mask'])
+            mask_data = cwt.Mask.from_dict(data['mask'])
 
         return cls(dimensions=dimensions, mask=mask_data, name=name)
 

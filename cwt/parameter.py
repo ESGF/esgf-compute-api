@@ -4,9 +4,11 @@ Parameter module.
 
 from uuid import uuid4 as uuid
 
+import cwt
+
 __all__ = ['ParameterError', 'Parameter']
 
-class ParameterError(Exception):
+class ParameterError(cwt.CWTError):
     pass
 
 class Parameter(object):

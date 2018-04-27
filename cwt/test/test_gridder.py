@@ -10,7 +10,7 @@ class TestGridder(unittest.TestCase):
     """ Gridder Test Case. """
 
     def test_parameterize(self):
-        expected = { 'tool': 'esmf', 'method': 'linear', 'grid': 'T85' }
+        expected = { 'tool': 'regrid2', 'method': 'linear', 'grid': 'T85' }
 
         gridder = cwt.Gridder()
 

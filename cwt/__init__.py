@@ -5,15 +5,16 @@ from __future__ import absolute_import
 
 __version__ = '2.0.0'
 
+from .errors import *
+from .parameter import *
 from .dimension import *
 from .domain import *
 from .gridder import *
 from .mask import *
 from .named_parameter import *
-from .parameter import *
 from .process import *
 from .variable import *
-from .wps import *
+from .wps_client import *
 
 NorthernHemisphere = Dimension('latitude', 0, 90)
 SouthernHemisphere = Dimension('latitude', -90, 0)

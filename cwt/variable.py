@@ -6,12 +6,11 @@ import os
 
 import requests
 
-from cwt import domain
-from cwt import parameter
+import cwt
 
 __all__ = ['Variable']
 
-class Variable(parameter.Parameter):
+class Variable(cwt.Parameter):
     """ Variable.
     
     Describes a variable to be used by an Operation.
@@ -21,7 +20,7 @@ class Variable(parameter.Parameter):
     Attributes:
         uri: A String URI for the file containing the variable data.
         var_name: A String name of the variable.
-        domains: List of domain.Domain objects to constrain the variable data.
+        domains: List of cwt.Domain objects to constrain the variable data.
         mime_type: A String name of the URI mime-type.
         name: Custom name of the Variable.
     """
@@ -34,7 +33,7 @@ class Variable(parameter.Parameter):
 
         domains = kwargs.get('domains', None)
 
-        if domains and isinstance(domains, domain.Domain):
+        if domains and isinstance(domains, cwt.Domain):
             domains = [domains]
 
         self.domains = domains
@@ -48,7 +47,7 @@ class Variable(parameter.Parameter):
         if 'uri' in data:
             uri = data['uri']
         else:
-            raise parameter.ParameterError('Variable must provide a uri.')
+            raise cwt.ParameterError('Variable must provide a uri.')
 
         name = None
         var_name = None
@@ -57,9 +56,9 @@ class Variable(parameter.Parameter):
             if '|' in data['id']:
                 var_name, name = data['id'].split('|')
             else:
-                raise parameter.ParameterError('Variable id must contain a variable name and id.')
+                raise cwt.ParameterError('Variable id must contain a variable name and id.')
         else:
-            raise parameter.ParameterError('Variable must provide an id.')
+            raise cwt.ParameterError('Variable must provide an id.')
 
         domains = None
 

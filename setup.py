@@ -9,5 +9,5 @@ setup(name='esgf-compute-api',
       author='Jason Boutte',
       author_email='boutte3@llnl.gov',
       url='https://github.com/ESGF/esgf-compute-api',
-      packages=['cwt', 'cwt.wps_lib'],
+      packages=['cwt', 'cwt.wps', 'cwt.wps.raw'],
 )

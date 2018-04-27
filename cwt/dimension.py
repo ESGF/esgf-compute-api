@@ -2,7 +2,7 @@
 Dimension module.
 """
 
-from cwt import parameter
+import cwt
 
 __all__ = ['CRS', 'VALUES', 'INDICES', 'Dimension']
 
@@ -38,18 +38,18 @@ def int_or_float(data):
     except ValueError:
         return float(data)
 
-class Dimension(parameter.Parameter):
+class Dimension(cwt.Parameter):
     """ Dimension.
 
     Describes a dimension of a plane. This dimension can be constrained 
     between two points and the length between each step can be specified or
     it will default to 1.
 
-    There are two pre-defined CRS's; indices and values.
+    There are three pre-defined CRS's; INDICES, VALUES and TIMESTAMPS.
 
     A dimension starting at 90, ending at -90 with step width of 0.5 degrees.
 
-    >>> lat = Dimension(90, -90, Dimension.values, step=0.5)
+    >>> lat = Dimension('lat', 90, -90, Dimension.VALUES, step=0.5)
 
     A dimension representing a single point at 90.
 
@@ -57,7 +57,7 @@ class Dimension(parameter.Parameter):
 
     A dimension with a custom name.
 
-    >>> lat = Dimension(90, -90, Dimension.values, step=0.5, name='lat')
+    >>> lat = Dimension('lat', 90, -90, Dimension.VALUES, step=0.5)
 
     Attributes:
         start: A (str, int, float) of the starting point.
@@ -90,7 +90,7 @@ class Dimension(parameter.Parameter):
         if 'crs' in data:
             crs = CRS(data['crs'])
         else:
-            raise parameter.ParameterError('Must provide a CRS value.')
+            raise cwt.ParameterError('Must provide a CRS value.')
 
         if 'start' in data:
             if isinstance(data['start'], str) and crs != TIMESTAMPS:
@@ -98,7 +98,7 @@ class Dimension(parameter.Parameter):
             else:
                 start = data['start']
         else:
-            raise parameter.ParameterError('Must provide a start value.')
+            raise cwt.ParameterError('Must provide a start value.')
 
         end = None
 
