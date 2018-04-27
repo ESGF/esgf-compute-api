@@ -1284,13 +1284,6 @@ if __name__ == '__main__':
 #     dataPath = wps.download_result(yearlyAve)
 #     plotter.print_data(dataPath)
 
-
-if __name__ == '__main__':
-    executor = TestWorkflow()
-    executor.performance_test_conus_1day(False)
-
-
-
 #    dataPath = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
 #    executor.plotter.performance_test_global(dataPath)
 

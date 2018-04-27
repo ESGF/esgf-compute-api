@@ -1,6 +1,6 @@
 """ A WPS Client """
 
-import json
+import json, cdms2
 import logging
 import re, os
 import sys, urllib
@@ -428,15 +428,52 @@ class WPS(object):
             print "HREFS: " + str( op.hrefs )
             file_href = op.hrefs.get("file")
             file_path = temp_dir + "/" + file_href.split('/')[ -1 ]
-            if( file_href.startswith("/") ):
-                return file_href
+
+            downloaded_files = []
+            nFiles = 1000
+            for fileIndex in range(nFiles):
+                downloaded_file = self.downloadFile( file_href, file_path, fileIndex )
+                if( downloaded_file == None ): break
+                if(fileIndex == 0):
+                    f = cdms2.openDataset(downloaded_file)
+                    nF = int( f.attributes.get( "nFiles", 0 ) )
+                    logger.info( "#NF# Setting NFILEs: " + str(nF) )
+                    if( nF > 0 ):
+                        nFiles = nF
+                downloaded_files += downloaded_file
+
+            return downloaded_files
+
+    def downloadFile(self, file_href, file_path, fileIndex, nAttempts = 10 ):
+        """
+            @type href: str
+        """
+        logger.info("#NF# download File: " + file_href + ", index = " + str(fileIndex) )
+        href = self.getDownloadHref(file_href, fileIndex)
+        for attempt in range(nAttempts):
+            if (href.startswith("/")):
+                if os.path.isfile(href):
+                    return href
             else:
-                print "Downloading file: " + file_href
-                urllib.urlretrieve (file_href, file_path )
-                return file_path
-        else:
-            print xml.etree.ElementTree.tostring( op.response )
-            return ""
+                print "Downloading file: " + href
+                try:
+                    urllib.urlretrieve(href, file_path)
+                    return file_path
+                except Exception: pass
+
+            time.sleep(1)
+        logger.info( "#NF# Timeout" )
+        return None
+
+
+
+    def getDownloadHref(self, file_href, index ):
+        """
+             @type file_href: str
+             @type index: int
+        """
+        href = file_href[0:-3] if file_href.endswith(".nc") else file_href
+        return href + "-" + str(index) + ".nc"
 
     def get_status( self, op ):
         t0 = time.time()
@@ -478,13 +515,11 @@ class WPS(object):
         if method.lower() == 'get':
             params['datainputs'] = self.prepare_data_inputs(process, inputs, domains, **kwargs)
             logger.info( "Sending http request to server " + self.__url + ", params: " + str(params) )
-            response = self.__request(method, params=params)
+            response = self.__request( method, params=params )
             logger.info( "Reponse: " + response )
         elif method.lower() == 'post':
             data_inputs = self.__prepare_data_inputs(process, inputs, domains, **kwargs)
-
             data = self.__execute_post_data(data_inputs, params)
-
             response = self.__request(method, data=data)
         else:
             raise WPSHTTPMethodError('{0} is an unsupported method'.format(method))
