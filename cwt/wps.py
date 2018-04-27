@@ -437,9 +437,7 @@ class WPS(object):
                 if( downloaded_file == None ): break
                 if(fileIndex == 0):
                     f = cdms2.openDataset(downloaded_file)
-                    nF = int( f.attributes.get( "nFiles", 0 ) )
-                    if( nF > 0 ):
-                        nFiles = nF
+                    nFiles = int( f.attributes.get( "nFiles", 1 ) )
                 downloaded_files += downloaded_file
 
             return downloaded_files
@@ -471,7 +469,7 @@ class WPS(object):
              @type index: int
         """
         href = file_href[0:-3] if file_href.endswith(".nc") else file_href
-        return href + "-" + str(index) + ".nc"
+        return href + ".nc" if(index == 0) else  href + "-" + str(index) + ".nc"
 
     def get_status( self, op ):
         t0 = time.time()
