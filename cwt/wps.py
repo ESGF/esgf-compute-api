@@ -431,13 +431,13 @@ class WPS(object):
 
             downloaded_files = []
             nFiles = 1000
-            for fileIndex in range(nFiles):
+            for fileIndex in range(1000):
+                if( fileIndex >= nFiles ): break
                 downloaded_file = self.downloadFile( file_href, file_path, fileIndex )
                 if( downloaded_file == None ): break
                 if(fileIndex == 0):
                     f = cdms2.openDataset(downloaded_file)
                     nF = int( f.attributes.get( "nFiles", 0 ) )
-                    logger.info( "#NF# Setting NFILEs: " + str(nF) )
                     if( nF > 0 ):
                         nFiles = nF
                 downloaded_files += downloaded_file
@@ -464,8 +464,6 @@ class WPS(object):
             time.sleep(1)
         logger.info( "#NF# Timeout" )
         return None
-
-
 
     def getDownloadHref(self, file_href, index ):
         """
