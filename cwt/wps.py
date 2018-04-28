@@ -442,7 +442,7 @@ class WPS(object):
 
             return downloaded_files
 
-    def downloadFile(self, file_href, file_path, fileIndex, nAttempts = 10 ):
+    def downloadFile(self, file_href, file_path, fileIndex, nAttempts = 12 ):
         """
             @type href: str
         """
@@ -453,13 +453,13 @@ class WPS(object):
                 if os.path.isfile(href):
                     return href
             else:
-                print "Downloading file: " + href
+                print "#NF# Downloading file: " + href
                 try:
                     urllib.urlretrieve(href, file_path)
                     return file_path
                 except Exception: pass
 
-            time.sleep(1)
+            time.sleep(5)
         logger.info( "#NF# Timeout" )
         return None
 
