@@ -438,7 +438,7 @@ class WPS(object):
                 if(fileIndex == 0):
                     f = cdms2.openDataset(downloaded_file)
                     nFiles = int( f.attributes.get( "nFiles", 1 ) )
-                downloaded_files += downloaded_file
+                downloaded_files += [ downloaded_file ]
 
             return downloaded_files
 

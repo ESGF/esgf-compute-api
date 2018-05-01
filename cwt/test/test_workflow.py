@@ -649,7 +649,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.svd_test_reduced()
+    executor.performance_test_conus_1mth()
 
 
 
