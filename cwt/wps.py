@@ -453,7 +453,7 @@ class WPS(object):
                 if os.path.isfile(href):
                     return href
             else:
-                print "#NF# Downloading file: " + href
+                print "#NF# Downloading file: " + href + ", attempt " + str(attempt + 1)
                 try:
                     urllib.urlretrieve(href, file_path)
                     return file_path
