@@ -674,11 +674,11 @@ class TestWorkflow:
         for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
     def plot_test(self):
-        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/cLjNcdhm.nc", 0, True )
+        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/ApYLGykE.nc", 0, True )
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.svd_test_zg()
+    executor.plot_test()
 
 
 #    dataPaths = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"

@@ -41,12 +41,22 @@ class PlotMgr:
     def getAxis(self, axes, atype ):
         for axis in axes:
             try:
-                if( (atype == "X") and axis.isLongitude() ): return axis
-                if( (atype == "Y") and axis.isLatitude() ): return axis
+                if( (atype == "X") and self.isLongitude(axis) ): return axis
+                if( (atype == "Y") and self.isLatitude(axis) ): return axis
                 if( (atype == "Z") and axis.isLevel() ): return axis
                 if( (atype == "T") and axis.isTime() ): return axis
             except: pass
         return None
+
+    def isLongitude(self, axis ):
+        id = axis.id.lower()
+        if (hasattr(axis, 'axis') and axis.axis == 'X'): return 1
+        return ( id[0:3] == 'lon' )
+
+    def isLatitude(self, axis ):
+        id = axis.id.lower()
+        if (hasattr(axis, 'axis') and axis.axis == 'Y'): return 1
+        return ( id[0:3] == 'lat' )
 
     def getRowsCols( self, number ):
         largest_divisor = 1
@@ -62,13 +72,13 @@ class PlotMgr:
                 if( os.path.isfile(dataPath) ):
                     self.logger.info( "Plotting file: " +  dataPath )
                     f = cdms2.openDataset(dataPath)
-                    axes = f.axes.values()  # """:type : Process """
-                    lons = self.getAxis( axes , "X" )
-                    lats = self.getAxis( axes , "Y" )
+                    vars = f.variables.values()  # """:type : Process """
+                    lons = self.getAxis( vars , "X" )
+                    lats = self.getAxis( vars , "Y" )
                     lons2 = lons[:]
                     lats2 = lats[:]
                     fig = plt.figure()
-                    varNames = list( map( lambda v: v.id, f.variables.values() ) )
+                    varNames = list( map( lambda v: v.id, vars ) )
                     varNames.sort()
                     nCols = min( len(varNames), 4 )
                     nRows = math.ceil( len(varNames) / float(nCols) )
