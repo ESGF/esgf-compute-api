@@ -13,7 +13,7 @@ def create_tempdir():
 
 class TestWorkflow:
     plotter = cwt.initialize()
-    host = os.environ["EDAS_HOST_ADDRESS"]  # "https://edas.nccs.nasa.gov/wps/cwt"
+    host = os.environ.get( "EDAS_HOST_ADDRESS", "https://edas.nccs.nasa.gov/wps/cwt" )
     assert host != None, "Must set EDAS_HOST_ADDRESS environment variable"
 #    host ="https://dptomcat03-int/wps/cwt"
     print "Connecting to wps host: " + host
@@ -574,9 +574,6 @@ class TestWorkflow:
     def test_getCollections(self):
         return self.wps.getCapabilities("coll",False)
 
-    def plot_test(self):
-        self.plotter.mpl_spaceplot( "/Users/tpmaxwel/.edas/yk0wc66F.nc" )
-
     def performance_test_conus(self):
         domain_data = { 'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'} }
 #        domain_data = { 'id': 'd0' }
@@ -619,16 +616,34 @@ class TestWorkflow:
             self.plotter.mpl_spaceplot( dataPath, 0, True )
 
     def svd_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
-        v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas:T", domain=d0  )
-        highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
-        highpass.set_inputs(v0)
-        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8" } )
-        svd.set_inputs( highpass )
-        self.wps.execute( svd, domains=[d0], async=True )
+        d200 = cwt.Domain.from_dict( { 'id': 'd200', "lat":{"start":-75,"end":75,"crs":"values"}, "level":{"start":16,"end":16,"crs":"indices"}, "filter":"DJF" } )
+        d500 = cwt.Domain.from_dict( { 'id': 'd500', "lat":{"start":-75,"end":75,"crs":"values"}, "level":{"start":10,"end":10,"crs":"indices"}, "filter":"DJF" } )
+        d850 = cwt.Domain.from_dict( { 'id': 'd850', "lat":{"start":-75,"end":75,"crs":"values"}, "level":{"start":3,"end":3,"crs":"indices"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        ds = cwt.Domain.from_dict( { 'id': 'ds', "lat":{"start":-75,"end":75,"crs":"values"}, 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'}, "filter":"DJF" } )
+        v200 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P200", domain=d200  )
+        v500 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P500", domain=d500  )
+        v850 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P850", domain=d850  )
+        vs = cwt.Variable("collection://cip_20crv2c_mth", "psl:PS", domain=ds  )
+        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8", "grid": "uniform", "shape": "32,72", "res": "5,5" } )
+        svd.set_inputs( vs )
+        self.wps.execute( svd, domains=[ds], async=True )
         dataPaths = self.wps.download_result(svd, self.temp_dir)
         for dataPath in dataPaths:
             self.plotter.mpl_spaceplot( dataPath, 0, True )
+
+    def cloud_cover_demo(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':23.7,'end':49.2,'crs':'values'}, 'lon': {'start':-125, 'end':-70.3, 'crs':'values'}, 'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        v1 = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0 )
+
+        op_data = { 'name': "CDSpark.ave", "weights":"cosine", 'axes': "t" }
+        op = cwt.Process.from_dict( op_data )
+        op.set_inputs( v1 )
+
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPaths = self.wps.download_result(op)
+        for dataPath in dataPaths:  self.plotter.mpl_spaceplot(dataPath)
+
 
     def performance_test_conus_1mth(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
@@ -646,10 +661,12 @@ class TestWorkflow:
         dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
         for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
+    def plot_test(self):
+        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/cLjNcdhm.nc", 0, True )
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.performance_test_conus()
+    executor.svd_test()
 
 
 
