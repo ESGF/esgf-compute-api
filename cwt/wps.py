@@ -424,7 +424,10 @@ class WPS(object):
             time.sleep(1)
             status = self.status( op )
             logger.info( "STATUS: " +  status )
-        if status == "COMPLETED":
+        if status == "ERROR":
+            print "Remote execution error: check server logs"
+            return []
+        elif status == "COMPLETED":
             print "HREFS: " + str( op.hrefs )
             file_href = op.hrefs.get("file")
             file_path = temp_dir + "/" + file_href.split('/')[ -1 ]
