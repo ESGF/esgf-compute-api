@@ -445,6 +445,20 @@ class WPS(object):
 
             return downloaded_files
 
+    def track_status( self, op, temp_dir="/tmp" ):
+        status = self.status( op )
+        logger.info( "STATUS: " +  status )
+        while status == "QUEUED" or status == "EXECUTING":
+            time.sleep(1)
+            status = self.status( op )
+            logger.info( "STATUS: " +  status )
+        if status == "ERROR":
+            print "Remote execution error: check server logs"
+            return []
+        elif status == "COMPLETED":
+            logger.info( "STATUS: " +  status )
+            return
+
     def downloadFile(self, file_href, file_path, fileIndex, nAttempts = 12 ):
         """
             @type href: str
@@ -485,7 +499,7 @@ class WPS(object):
         logger.info("STATUS: COMPLETED, run time = {:.2f} s, Response:".format( time.time()-t0 ) )
         print xml.etree.ElementTree.tostring( op.response )
 
-    def execute(self, process, inputs=None, domains=[], async=True, method='GET', **kwargs):
+    def execute(self, process, inputs=None, domains=[], async=True, runargs={}, method='GET', **kwargs):
         """ Execute the process on the WPS server. 
         
         Args:
@@ -498,6 +512,8 @@ class WPS(object):
         if inputs is None:
             inputs = []
 
+
+
         params = {
                 'service': 'WPS',
                 'request': 'Execute',
@@ -505,6 +521,8 @@ class WPS(object):
                 'identifier': process.identifier,
                 'status': str(async).lower()
                 }
+
+        params.update( runargs )
 
         if( len( domains ) == 0 ):
             domain0 = kwargs.get("domains",kwargs.get("domain"))

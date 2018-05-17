@@ -90,7 +90,7 @@ class PlotMgr:
                             ax.set_title(varName)
                             spatialData = variable( time=slice(timeIndex,timeIndex+1), squeeze=1 )
                             m = Basemap(llcrnrlon=lons[0], llcrnrlat=lats[0], urcrnrlon=lons[len(lons)-1], urcrnrlat=lats[len(lats)-1], epsg='4326', lat_0 = lats2.mean(), lon_0 = lons2.mean())
-                            lon, lat = np.meshgrid(lons2, lats2)
+                            lon, lat = np.meshgrid( lons2.data, lats2.data )
                             xi, yi = m(lon, lat)
                             smoothing = 'gouraud' if smooth else 'flat'
                             cs2 = m.pcolormesh(xi, yi, spatialData, cmap='jet', shading=smoothing )
