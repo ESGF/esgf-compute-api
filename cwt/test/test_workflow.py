@@ -698,7 +698,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.svd_test_zg1()
+    executor.regrid_cip_20crv_zg_collection()
 
 
 #    dataPaths = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"
