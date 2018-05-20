@@ -656,12 +656,12 @@ class TestWorkflow:
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P0", domain=d0  )
         d1 = cwt.Domain.from_dict( { 'id': 'd1', "lat":{"start":-75,"end":75,"crs":"values"}, "level":{"start":10,"end":10,"crs":"indices"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v1 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P1", domain=d1  )
-        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8", "grid": "uniform", "shape": "32,72", "res": "5,5", "domain":"d0" } )
+        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8", "grid": "uniform", "shape": "32,72", "res": "5,5", "domain":"d0", "compu":"true" } )
         svd.set_inputs( v0, v1 )
         self.wps.execute( svd, domains=[d0,d1], async=True )
-        dataPaths = self.wps.download_result(svd, self.temp_dir)
+        dataPaths = self.wps.download_result( svd, self.temp_dir )
         for dataPath in dataPaths:
-            self.plotter.mpl_spaceplot( dataPath, 0, True )
+            self.plotter.mpl_plot( dataPath, 0, True )
 
     def cloud_cover_demo(self):
         domain_data = { 'id': 'd0', 'lat': {'start':23.7,'end':49.2,'crs':'values'}, 'lon': {'start':-125, 'end':-70.3, 'crs':'values'}, 'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00', 'crs':'timestamps'}}
@@ -694,11 +694,15 @@ class TestWorkflow:
         for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
     def plot_test(self):
-        self.plotter.mpl_spaceplot("/Users/tpmaxwel/.edas/ApYLGykE.nc", 0, True )
+        self.plotter.mpl_plot("/Users/tpmaxwel/.edas/8Uwn5AOs-1.nc", 0, True )
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.regrid_cip_20crv_zg_collection()
+    executor.plot_test( )
+#    executor.svd_test_zg1()
+
+
+#    executor.performance_test_conus_1mth()
 
 
 #    dataPaths = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"

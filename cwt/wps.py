@@ -463,17 +463,18 @@ class WPS(object):
         """
             @type href: str
         """
-        logger.info("#NF# download File: " + file_href + ", index = " + str(fileIndex) )
-        href = self.getDownloadHref(file_href, fileIndex)
+        href = self.getDownloadHref( file_href, fileIndex )
+        fpath = self.getDownloadFile( file_path, fileIndex )
+        logger.info("#NF# download File: " + href + ", index = " + str(fileIndex) )
         for attempt in range(nAttempts):
             if (href.startswith("/")):
                 if os.path.isfile(href):
                     return href
             else:
-                print "#NF# Downloading file: " + href + ", attempt " + str(attempt + 1)
+                print "#NF# Downloading file: " + href + " -> " + fpath + ", attempt " + str(attempt + 1)
                 try:
-                    urllib.urlretrieve(href, file_path)
-                    return file_path
+                    urllib.urlretrieve(href, fpath)
+                    return fpath
                 except Exception: pass
 
             time.sleep(5)
@@ -487,6 +488,14 @@ class WPS(object):
         """
         href = file_href[0:-3] if file_href.endswith(".nc") else file_href
         return href + ".nc" if(index == 0) else  href + "-" + str(index) + ".nc"
+
+    def getDownloadFile(self, file_path, index ):
+        """
+             @type file_href: str
+             @type index: int
+        """
+        fpath0 = file_path[0:-3] if file_path.endswith(".nc") else file_path
+        return fpath0 + ".nc" if(index == 0) else  fpath0 + "-" + str(index) + ".nc"
 
     def get_status( self, op ):
         t0 = time.time()

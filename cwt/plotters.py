@@ -18,15 +18,21 @@ class PlotMgr:
                     self.logger.info( "Plotting file: " +  dataPath )
                     f = cdms2.openDataset(dataPath)
                     variables = f.variables
+                    active_vars = []
+                    for variable in variables.values():
+                        varName = variable.id  # type : str
+                        if varName.startswith("result-"): active_vars.append(varName)
+                        else: print "Ignoring variable: " + varName
                     fig = plt.figure()
                     iplot = 1
-                    for variable in variables.values():
-                        varName = variable.id
+                    nCols = min( len(active_vars), 4 )
+                    nRows = math.ceil( len(active_vars) / float(nCols) )
+                    for varName in active_vars:
                         self.logger.info( "  ->  Plotting variable: " +  varName + ", subplot: " + str(iplot) )
                         timeSeries = f( varName, squeeze=1 )
                         datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
                         dates = matplotlib.dates.date2num(datetimes)
-                        ax = fig.add_subplot( 1, len(variables), iplot )
+                        ax = fig.add_subplot( nRows, nCols, iplot )
                         ax.plot(dates, timeSeries.data )
                         ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
                         ax.grid(True)
@@ -65,6 +71,20 @@ class PlotMgr:
                 largest_divisor = i
         complement = number/largest_divisor
         return (complement,largest_divisor) if( largest_divisor > complement ) else (largest_divisor,complement)
+
+    def mpl_plot(self, dataPath, timeIndex=0, smooth=False):
+        f = cdms2.openDataset(dataPath)
+        var = f.variables.values()[0]
+        naxes = self.getNAxes( var.shape )
+        if( naxes == 1 ): self.mpl_timeplot( dataPath )
+        else: self.mpl_spaceplot( dataPath, timeIndex, smooth )
+
+    def getNAxes(self, shape ):
+        naxes = 0
+        for axisLen in shape:
+            if( axisLen > 1 ):
+                naxes = naxes + 1
+        return naxes
 
     def mpl_spaceplot( self, dataPath, timeIndex=0, smooth=False ):
         if dataPath:
