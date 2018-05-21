@@ -693,12 +693,27 @@ class TestWorkflow:
         dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
         for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
+    def cip_cloud_cover(self):
+
+        domain_data = { 'id': 'd0', 'lat': {'start':23.7,'end':49.2,'crs':'values'},'lon': {'start':-125, 'end':-70.3, 'crs':'values'},'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        v1 = cwt.Variable("collection://cip_cfsr_mth", "clt",domain=d0 )
+
+        op_data = { 'name': "CDSpark.ave", "weights":"cosine", 'axes': "t" }
+        op = cwt.Process.from_dict( op_data )
+        op.set_inputs( v1 )
+
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPaths = self.wps.download_result(op)
+        for dataPath in dataPaths: self.plotter.mpl_spaceplot(dataPath)
+
     def plot_test(self):
-        self.plotter.mpl_plot("/Users/tpmaxwel/.edas/8Uwn5AOs-1.nc", 0, True )
+        self.plotter.mpl_plot("/tmp/1GvxlHn3.nc", 0, True )
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.plot_test( )
+    executor.plot_test()
+
 #    executor.svd_test_zg1()
 
 

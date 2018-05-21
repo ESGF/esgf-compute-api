@@ -18,6 +18,7 @@ class PlotMgr:
                     self.logger.info( "Plotting file: " +  dataPath )
                     f = cdms2.openDataset(dataPath)
                     variables = f.variables
+                    cvars = f.axes
                     active_vars = []
                     for variable in variables.values():
                         varName = variable.id  # type : str
@@ -47,22 +48,25 @@ class PlotMgr:
     def getAxis(self, axes, atype ):
         for axis in axes:
             try:
-                if( (atype == "X") and self.isLongitude(axis) ): return axis
-                if( (atype == "Y") and self.isLatitude(axis) ): return axis
-                if( (atype == "Z") and axis.isLevel() ): return axis
-                if( (atype == "T") and axis.isTime() ): return axis
-            except: pass
+                if( (atype == "X") and self.isLongitude(axis) ): return axis[:]
+                if( (atype == "Y") and self.isLatitude(axis) ): return axis[:]
+                if( (atype == "Z") and axis.isLevel() ): return axis[:]
+                if( (atype == "T") and axis.isTime() ): return axis[:]
+            except Exception as ex:
+                print "Exception in getAxis({0})".format(atype), ex
         return None
 
     def isLongitude(self, axis ):
         id = axis.id.lower()
-        if (hasattr(axis, 'axis') and axis.axis == 'X'): return 1
-        return ( id[0:3] == 'lon' )
+        hasAxis = hasattr(axis, 'axis')
+        isX = axis.axis == 'X'
+        if ( hasAxis and isX ): return True
+        return ( id.startswith( 'lon' ) )
 
     def isLatitude(self, axis ):
         id = axis.id.lower()
-        if (hasattr(axis, 'axis') and axis.axis == 'Y'): return 1
-        return ( id[0:3] == 'lat' )
+        if (hasattr(axis, 'axis') and axis.axis == 'Y'): return True
+        return ( id.startswith( 'lat' ) )
 
     def getRowsCols( self, number ):
         largest_divisor = 1
@@ -92,11 +96,10 @@ class PlotMgr:
                 if( os.path.isfile(dataPath) ):
                     self.logger.info( "Plotting file: " +  dataPath )
                     f = cdms2.openDataset(dataPath)
-                    vars = f.variables.values()  # """:type : Process """
-                    lons = self.getAxis( vars , "X" )
-                    lats = self.getAxis( vars , "Y" )
-                    lons2 = lons[:]
-                    lats2 = lats[:]
+                    vars = f.variables.values()
+                    axes = f.axes.values()
+                    lons = self.getAxis( axes , "X" )
+                    lats = self.getAxis( axes , "Y" )
                     fig = plt.figure()
                     varNames = list( map( lambda v: v.id, vars ) )
                     varNames.sort()
@@ -109,8 +112,14 @@ class PlotMgr:
                             ax = fig.add_subplot( nRows, nCols, iplot )
                             ax.set_title(varName)
                             spatialData = variable( time=slice(timeIndex,timeIndex+1), squeeze=1 )
-                            m = Basemap(llcrnrlon=lons[0], llcrnrlat=lats[0], urcrnrlon=lons[len(lons)-1], urcrnrlat=lats[len(lats)-1], epsg='4326', lat_0 = lats2.mean(), lon_0 = lons2.mean())
-                            lon, lat = np.meshgrid( lons2.data, lats2.data )
+                            m = Basemap( llcrnrlon=lons[0],
+                                         llcrnrlat=lats[0],
+                                         urcrnrlon=lons[len(lons)-1],
+                                         urcrnrlat=lats[len(lats)-1],
+                                         epsg='4326',
+                                         lat_0 = lats.mean(),
+                                         lon_0 = lons.mean())
+                            lon, lat = np.meshgrid( lons, lats )
                             xi, yi = m(lon, lat)
                             smoothing = 'gouraud' if smooth else 'flat'
                             cs2 = m.pcolormesh(xi, yi, spatialData, cmap='jet', shading=smoothing )
