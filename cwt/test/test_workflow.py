@@ -707,12 +707,101 @@ class TestWorkflow:
         dataPaths = self.wps.download_result(op)
         for dataPath in dataPaths: self.plotter.mpl_spaceplot(dataPath)
 
+    def cip_high_precip(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':37, 'end':38,'crs':'values'}, 'lon': {'start':-123, 'end':-121.5, 'crs':'values'}, 'time':{'start':'2014-09-01T00:00:00', 'end':'2017-03-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        v0 = cwt.Variable("collection://cip_merra2_mth", "pr",domain=d0 )
+
+        op_data = { 'name': "CDSpark.max", 'axes': "xy" }
+        op = cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( v0 )
+
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPaths  = self.wps.download_result(op)
+        for dataPath in dataPaths: self.plotter.mpl_timeplot(dataPath)
+
+    def cip_precip_sum(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':20, 'end':57,'crs':'values'}, 'lon': {'start':-190, 'end':-118, 'crs':'values'}, 'time':{'start':'2014-12-15T00:00:00', 'end':'2014-12-20T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+
+        inputs = cwt.Variable("collection://cip_merra2_6hr", "pr",domain=d0 )
+        op_data = { 'name': "CDSpark.sum", 'axes': "xy" }
+        op = cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( inputs )
+
+        op_data1 = { 'name': "CDSpark.sum", 'axes': "t" }
+        op1 = cwt.Process.from_dict( op_data1 ) # """:type : Process """
+        op1.set_inputs( inputs )
+
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPaths = self.wps.download_result(op)
+
+        self.wps.execute( op1, domains=[d0], async=True )
+        dataPaths1 = self.wps.download_result(op1)
+
+        for dataPath in dataPaths: self.plotter.mpl_timeplot(dataPath)
+        for dataPath1 in dataPaths1: self.plotter.mpl_spaceplot(dataPath1)
+
+    def cip_max_temp(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':46, 'end':47,'crs':'values'},'lon': {'start':5, 'end':15, 'crs':'values'},'time':{'start':'1980-06-01T00:00:00', 'end':'2016-08-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        v0 = cwt.Variable( "collection://cip_eraint_mth", "tas", domain=d0 )
+        op_data = { 'name': "CDSpark.max", 'axes': "xy" }
+        op = cwt.Process.from_dict( op_data )
+        op.set_inputs( v0 )
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPaths = self.wps.download_result(op)
+        for dataPath in dataPaths:
+            self.plotter.mpl_timeplot(dataPath)
+
+    def cip_max_temp_heatwave(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':46,'end':47,'crs':'values'}, 'lon': {'start':5, 'end':15, 'crs':'values'}, 'time':{'start':'2002-06-01T00:00:00', 'end':'2002-08-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        v0 = cwt.Variable("collection://cip_eraint_6hr", "tas",domain=d0 )
+
+        op_data = { 'name': "CDSpark.max", 'axes': "xy" }
+        op = cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( v0 )
+
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPaths = self.wps.download_result(op)
+
+        domain_data = { 'id': 'd1', 'lat': {'start':46,'end':47,'crs':'values'},'lon': {'start':5, 'end':15, 'crs':'values'},'time':{'start':'2003-06-01T00:00:00','end':'2003-08-31T23:00:00', 'crs':'timestamps'}}
+        d1 = cwt.Domain.from_dict(domain_data)
+        v1 = cwt.Variable("collection://cip_eraint_6hr", "tas",domain=d1 )
+
+        op_data1 = { 'name': "CDSpark.max", 'axes': "xy" }
+        op1 = cwt.Process.from_dict( op_data1 ) # """:type : Process """
+        op1.set_inputs( v1 )
+
+        self.wps.execute( op1, domains=[d1], async=True )
+        dataPaths1 = self.wps.download_result(op1)
+        for dataPath in dataPaths: self.plotter.mpl_timeplot(dataPath)
+        for dataPath1 in dataPaths1: self.plotter.mpl_timeplot(dataPath1)
+
+    def cip_min_temp(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':40.2, 'end':40.5,'crs':'values'}, 'lon': {'start':-105.6, 'end':-105.8, 'crs':'values'}, 'time':{'start':'1948-01-01T00:00:00', 'end':'2009-12-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        inputs = cwt.Variable("collection://iap-ua_nra_tas1hr", "tas", domain=d0 )
+
+        op_data = { 'name': "CDSpark.min", 'axes': "xy" }
+        op = cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( inputs )
+
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPaths = self.wps.download_result(op)
+        for dataPath in dataPaths: self.plotter.mpl_timeplot(dataPath)
+
     def plot_test(self):
         self.plotter.mpl_plot("/tmp/1GvxlHn3.nc", 0, True )
 
+    def plot_test_time(self):
+        self.plotter.mpl_plot("/tmp/gmhd2QIb.nc", 0, True )
+
+
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.plot_test()
+    executor.cip_min_temp()
 
 #    executor.svd_test_zg1()
 

@@ -17,18 +17,13 @@ class PlotMgr:
                 if( os.path.isfile(dataPath) ):
                     self.logger.info( "Plotting file: " +  dataPath )
                     f = cdms2.openDataset(dataPath)
-                    variables = f.variables
+                    varNames = f.variables.keys()
                     cvars = f.axes
-                    active_vars = []
-                    for variable in variables.values():
-                        varName = variable.id  # type : str
-                        if varName.startswith("result-"): active_vars.append(varName)
-                        else: print "Ignoring variable: " + varName
                     fig = plt.figure()
                     iplot = 1
-                    nCols = min( len(active_vars), 4 )
-                    nRows = math.ceil( len(active_vars) / float(nCols) )
-                    for varName in active_vars:
+                    nCols = min( len(varNames), 4 )
+                    nRows = math.ceil( len(varNames) / float(nCols) )
+                    for varName in varNames:
                         self.logger.info( "  ->  Plotting variable: " +  varName + ", subplot: " + str(iplot) )
                         timeSeries = f( varName, squeeze=1 )
                         datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
