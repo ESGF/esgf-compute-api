@@ -793,7 +793,10 @@ class TestWorkflow:
         for dataPath in dataPaths: self.plotter.mpl_timeplot(dataPath)
 
     def plot_test(self):
-        self.plotter.mpl_plot("/tmp/1GvxlHn3.nc", 0, True )
+        self.plotter.mpl_plot("/tmp/jB8aAhx7.nc", 0, True )
+
+    def plot_test1(self):
+        self.plotter.mpl_plot("/Users/tpmaxwel/.edas/jrn7uZXX-1.nc", 0, True )
 
     def plot_test_time(self):
         self.plotter.mpl_plot("/tmp/gmhd2QIb.nc", 0, True )
@@ -803,10 +806,12 @@ if __name__ == '__main__':
     executor = TestWorkflow()
     executor.cip_precip_sum()
 
-#    executor.svd_test_zg1()
+#    executor.plot_test()
 
 
-#    executor.performance_test_conus_1mth()
+#    executor.cip_min_temp()
+
+
 
 
 #    dataPaths = "/Users/tpmaxwel/.edas/p0lVpkMf.nc"

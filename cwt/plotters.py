@@ -24,38 +24,52 @@ class PlotMgr:
                     nCols = min( len(varNames), 4 )
                     nRows = math.ceil( len(varNames) / float(nCols) )
                     for varName in varNames:
-                        self.logger.info( "  ->  Plotting variable: " +  varName + ", subplot: " + str(iplot) )
                         timeSeries = f( varName, squeeze=1 )
-                        datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
-                        dates = matplotlib.dates.date2num(datetimes)
-                        ax = fig.add_subplot( nRows, nCols, iplot )
-                        ax.plot(dates, timeSeries.data )
-                        ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
-                        ax.grid(True)
-                        iplot = iplot + 1
+                        if self.isAxis( timeSeries ):
+                            self.logger.info( "Ignoring coordinate variable: " + varName )
+                        else:
+                            self.logger.info( "  ->  Plotting variable: " +  varName + ", subplot: " + str(iplot) )
+                            datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
+                            dates = matplotlib.dates.date2num(datetimes)
+                            ax = fig.add_subplot( nRows, nCols, iplot )
+                            ax.plot(dates, timeSeries.data )
+                            ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
+                            ax.grid(True)
+                            iplot = iplot + 1
 
                     fig.autofmt_xdate()
                     plt.show()
                     return
                 else: time.sleep(1)
 
+    def isAxis(self, var ): ( self.isLongitude(var) or self.isLatitude(var) or var.isLevel() or var.isTime() )
 
     def getAxis(self, axes, atype ):
-        for axis in axes:
-            try:
-                if( (atype == "X") and self.isLongitude(axis) ): return axis[:]
-                if( (atype == "Y") and self.isLatitude(axis) ): return axis[:]
-                if( (atype == "Z") and axis.isLevel() ): return axis[:]
-                if( (atype == "T") and axis.isTime() ): return axis[:]
-            except Exception as ex:
-                print "Exception in getAxis({0})".format(atype), ex
+        try:
+            if atype == "X":
+                for axis in axes:
+                    if( self.isLongitude(axis) ):
+                        return axis[:]
+            elif atype == "Y":
+                for axis in axes:
+                    if( self.isLatitude(axis) ):
+                        return axis[:]
+            elif atype == "Z":
+                for axis in axes:
+                    if( axis.isLevel() ):
+                        return axis[:]
+            elif atype == "Z":
+                for axis in axes:
+                    if( axis.isTime() ):
+                        return axis[:]
+        except Exception as ex:
+            print "Exception in getAxis({0})".format(atype), ex
         return None
 
     def isLongitude(self, axis ):
         id = axis.id.lower()
-        hasAxis = hasattr(axis, 'axis')
-        isX = axis.axis == 'X'
-        if ( hasAxis and isX ): return True
+        hasAxis = hasattr( axis, 'axis' )
+        if ( hasAxis and (axis.axis == 'X') ): return True
         return ( id.startswith( 'lon' ) )
 
     def isLatitude(self, axis ):
@@ -73,7 +87,7 @@ class PlotMgr:
 
     def mpl_plot(self, dataPath, timeIndex=0, smooth=False):
         f = cdms2.openDataset(dataPath)
-        var = f.variables.values()[0]
+        var = filter( lambda var: not self.isAxis(var), f.variables.values() )[0]
         naxes = self.getNAxes( var.shape )
         if( naxes == 1 ): self.mpl_timeplot( dataPath )
         else: self.mpl_spaceplot( dataPath, timeIndex, smooth )
@@ -93,8 +107,10 @@ class PlotMgr:
                     f = cdms2.openDataset(dataPath)
                     vars = f.variables.values()
                     axes = f.axes.values()
-                    lons = self.getAxis( axes , "X" )
-                    lats = self.getAxis( axes , "Y" )
+                    lons = self.getAxis( vars , "X" )
+                    if lons is None: lons = self.getAxis( axes , "X" )
+                    lats = self.getAxis( vars , "Y" )
+                    if lats is None: lats = self.getAxis( axes , "Y" )
                     fig = plt.figure()
                     varNames = list( map( lambda v: v.id, vars ) )
                     varNames.sort()
@@ -114,7 +130,7 @@ class PlotMgr:
                                          epsg='4326',
                                          lat_0 = lats.mean(),
                                          lon_0 = lons.mean())
-                            lon, lat = np.meshgrid( lons, lats )
+                            lon, lat = np.meshgrid( lons.data, lats.data )
                             xi, yi = m(lon, lat)
                             smoothing = 'gouraud' if smooth else 'flat'
                             cs2 = m.pcolormesh(xi, yi, spatialData, cmap='jet', shading=smoothing )
