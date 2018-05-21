@@ -801,7 +801,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.cip_min_temp()
+    executor.cip_precip_sum()
 
 #    executor.svd_test_zg1()
 
