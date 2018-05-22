@@ -42,7 +42,7 @@ class PlotMgr:
                     return
                 else: time.sleep(1)
 
-    def isAxis(self, var ): ( self.isLongitude(var) or self.isLatitude(var) or var.isLevel() or var.isTime() )
+    def isAxis(self, var ): hasattr( var, 'axis' )
 
     def getAxis(self, axes, atype ):
         try:

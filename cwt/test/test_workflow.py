@@ -699,7 +699,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         v1 = cwt.Variable("collection://cip_cfsr_mth", "clt",domain=d0 )
 
-        op_data = { 'name': "CDSpark.ave", "weights":"cosine", 'axes': "t" }
+        op_data = { 'name': "CDSpark.ave", 'axes': "t" }
         op = cwt.Process.from_dict( op_data )
         op.set_inputs( v1 )
 
@@ -804,7 +804,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.cip_precip_sum()
+    executor.cip_cloud_cover()
 
 #    executor.plot_test()
 
