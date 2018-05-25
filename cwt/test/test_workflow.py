@@ -815,9 +815,9 @@ if __name__ == '__main__':
 #    executor.cip_cloud_cover()
 #    executor.plot_test( [ "/Users/tpmaxwel/.edas/Ox54JkxW-1.nc" ] )
 
-#    executor.plot_test( [ "/Users/tpmaxwel/.edas/qxvP5MMo-1.nc" ] )
+    executor.plot_test( [ "/Users/tpmaxwel/.edas/qxvP5MMo.nc" ] )
 
-    executor.svd_test_zg1()
+#    executor.svd_test_zg1()
 
 #    executor.plot_test( [ "/tmp/KsnDea5S.nc", "/tmp/yNWJjSIh.nc" ] )
 #    executor.cip_min_temp()

@@ -41,12 +41,12 @@ class SVDTest:
             self.plotter.mpl_plot( dataPath, 0, True )
 
 if __name__ == '__main__':
+    variable = "zg"
+    collection = "cip_20crv2c_mth"
     lat_bounds = [ -75, 75 ]
     lon_bounds = None
     level = 500   # hPa
     month_filter = "JJA"
-    variable = "zg"
-    collection = "cip_20crv2c_mth"
     nModes =  8
     gridShape = [30,72]
 
