@@ -36,8 +36,9 @@ class PlotMgr:
                             ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
                             ax.grid(True)
                             iplot = iplot + 1
-                        except:
+                        except Exception as err:
                             self.logger.info( "Skipping plot for variable: " +  varName )
+                            if( varName.startswith("result") ): traceback.print_exc()
 
                     fig.autofmt_xdate()
                     plt.show()
@@ -97,9 +98,15 @@ class PlotMgr:
         complement = number/largest_divisor
         return (complement,largest_divisor) if( largest_divisor > complement ) else (largest_divisor,complement)
 
+    def getVariable( self, f ):
+        for var in f.variables.values():
+            if var.id.startswith("result-"):
+                return var
+        return None
+
     def mpl_plot(self, dataPath, timeIndex=0, smooth=False):
         f = cdms2.openDataset( dataPath )
-        var = f.variables.values()[0]
+        var = self.getVariable( f )
         naxes = self.getNAxes( var.shape )
         if( naxes == 1 ): self.mpl_timeplot( dataPath )
         else: self.mpl_spaceplot( dataPath, timeIndex, smooth )
@@ -164,6 +171,7 @@ class PlotMgr:
                     plt.show()
                     return
                 else: time.sleep(1)
+
 
     def print_Mdata(self, dataPath ):
         for k in range(0,30):
