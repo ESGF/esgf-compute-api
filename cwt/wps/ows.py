@@ -1,5 +1,54 @@
 from cwt.wps.raw.ows import *
 
+MissingParameterValue = 'MissingParameterValue'
+InvalidParameterValue = 'InvalidParameterValue'
+NoApplicableCode = 'NoApplicableCode'
+NotEnoughStorage = 'NotEnoughStorage'
+ServerBusy = 'ServerBusy'
+FileSizeExceeded = 'FileSizeExceeded'
+StorageNotSupported = 'StorageNotSupported'
+VersionNegotiationFailed = 'VersionNegotiationFailed'
+
+def exception(text, code, locator=None):
+    """ Exception
+
+    Args:
+        text: A str exception text.
+        code: A str exception code, see ows module.
+        locator: A str indicating where the error occurred.
+
+    Returns:
+        cwt.wps.raw.ows.Exception: Minimally filled instance.
+    """
+    ex = Exception()
+
+    ex.ExceptionText = [text]
+
+    ex.exceptionCode = code
+
+    if locator is not None:
+        ex.locator = locator
+
+    return ex
+
+def exception_report(version, exceptions):
+    """ ExceptionReport
+
+    Args:
+        version: A str version of which this conforms to.
+        exceptions: A list of cwt.wps.raw.ows.Exception instances.
+
+    Returns:
+        cwt.wps.raw.ows.ExceptionReport: Minimally filled instance.
+    """
+    er = ExceptionReport()
+
+    er.version = VersionType(version)
+
+    er.Exception.extend(exceptions) 
+
+    return er
+
 def operation(name, get=None, post=None):
     """ Operation
 
