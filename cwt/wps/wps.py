@@ -101,11 +101,6 @@ def status_failed(message, code, version, locator=None):
     Returns:
         cwt.wps.raw.wps.StatusType
     """
-    status = StatusType()
-
-    status.creationTime = datetime.datetime.now()
-
-    failed = ProcessFailedType()
 
     report = ows.ExceptionReport()
 
@@ -121,6 +116,23 @@ def status_failed(message, code, version, locator=None):
     exception.ExceptionText = [message]
 
     report.Exception = [exception]
+
+    return status_failed_from_report(report)
+
+def status_failed_from_report(report):
+    """ Status Failed
+
+    Args:
+        report: A cwt.wps.raw.ows.ExceptionReport instance.
+
+    Returns:
+        cwt.wps.raw.ows.StatusType
+    """
+    status = StatusType()
+
+    status.creationTime = datetime.datetime.now()
+
+    failed = ProcessFailedType()
 
     failed.ExceptionReport = report
 

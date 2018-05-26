@@ -20,7 +20,7 @@ def exception(text, code, locator=None):
     Returns:
         cwt.wps.raw.ows.Exception: Minimally filled instance.
     """
-    ex = Exception()
+    ex = ExceptionType()
 
     ex.ExceptionText = [text]
 
