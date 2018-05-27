@@ -371,13 +371,13 @@ def process_description(identifier, title, version, data_inputs, process_outputs
 
     return process
 
-def process_descriptions(lang, version, process):
+def process_descriptions(lang, version, process_descriptions):
     """ Process Descriptions
 
     Args:
         lang (str): Language code.
         version (str): Version of the process offerings.
-        process (cwt.wps.raw.wps.Process): Process being described.
+        descriptions (cwt.wps.raw.wps.ProcessDescriptionType): A list of process descriptions.
 
     Returns:
         cwt.wps.raw.wps.ProcessDescriptions
@@ -390,7 +390,7 @@ def process_descriptions(lang, version, process):
 
     descriptions.version = ows.VersionType(version)
 
-    descriptions.ProcessDescription = [process]
+    descriptions.ProcessDescription = process_descriptions
 
     return descriptions
 
