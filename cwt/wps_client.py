@@ -13,13 +13,13 @@ from cwt.wps import ows
 from cwt.wps import wps
 from cwt.wps import xlink
 
+domutils.BindingDOMSupport.DeclareNamespace(ows.Namespace, 'ows')
+
+domutils.BindingDOMSupport.DeclareNamespace(wps.Namespace, 'wps')
+
+domutils.BindingDOMSupport.DeclareNamespace(xlink.Namespace, 'xlink')
+
 bds = domutils.BindingDOMSupport()
-
-bds.declareNamespace(ows.Namespace, prefix='ows')
-
-bds.declareNamespace(wps.Namespace, prefix='wps')
-
-bds.declareNamespace(xlink.Namespace, prefix='xlink')
 
 logger = logging.getLogger('cwt.wps_client')
 
