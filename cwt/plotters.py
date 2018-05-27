@@ -1,4 +1,4 @@
-import logging, os, time, threading
+import logging, os, time, threading, vcs
 import cdms2, datetime, matplotlib, math, traceback
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
@@ -36,8 +36,9 @@ class PlotMgr:
                             ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
                             ax.grid(True)
                             iplot = iplot + 1
-                        except:
+                        except Exception as err:
                             self.logger.info( "Skipping plot for variable: " +  varName )
+                            if( varName.startswith("result") ): traceback.print_exc()
 
 
                     fig.autofmt_xdate()
@@ -58,15 +59,20 @@ class PlotMgr:
         for axis in axes:
 #            print " XX: " + axis.getShortName()
             try:
-                if( (atype == "X") and self.isLongitude(axis) ): return axis[:]
-                if( (atype == "Y") and self.isLatitude(axis) ): return axis[:]
-                if( (atype == "Z") and self.isLevel(axis) ): return axis[:]
-                if( (atype == "T") and self.isTime(axis) ): return axis[:]
+                if( (atype == "X") and self.isLongitude(axis) ): return self.createAxis( axis[:], "lon", atype )
+                if( (atype == "Y") and self.isLatitude(axis) ): return self.createAxis( axis[:], "lat", atype )
+                if( (atype == "Z") and self.isLevel(axis) ): return self.createAxis( axis[:], "level", atype )
+                if( (atype == "T") and self.isTime(axis) ): return self.createAxis( axis[:], "time", atype )
             except Exception as ex:
                 print "Exception in getAxis({0})".format(atype), ex
                 traceback.print_exc()
 
         return None
+
+    def createAxis(self, data, name, atype ):
+        axis = cdms2.createAxis( data )
+        axis.id = name
+        axis.axis = atype
 
     def isTime(self, axis ):
         id = axis.id.lower()
@@ -98,12 +104,38 @@ class PlotMgr:
         complement = number/largest_divisor
         return (complement,largest_divisor) if( largest_divisor > complement ) else (largest_divisor,complement)
 
+    def getVariable( self, f ):
+        for var in f.variables.values():
+            if var.id.startswith("result-"):
+                return var
+        return None
+
+    def getVariables( self, f ):
+        (lats, lons, plev, vars) = self.getAxes( f )
+        new_vars = []
+        for var in vars:
+            if var.id.startswith("result-"):
+                new_var=cdms2.createVariable( var().asma(), axes=( var.getTime(), plev, lats, lons ) )
+                new_var.id=var.id
+                new_vars.append( new_var )
+        return new_vars
+
     def mpl_plot(self, dataPath, timeIndex=0, smooth=False):
-        f = cdms2.openDataset( dataPath )
-        var = f.variables.values()[0]
-        naxes = self.getNAxes( var.shape )
-        if( naxes == 1 ): self.mpl_timeplot( dataPath )
-        else: self.mpl_spaceplot( dataPath, timeIndex, smooth )
+        if dataPath:
+            for k in range(0,30):
+                if( os.path.isfile(dataPath) ):
+                    f = cdms2.openDataset( dataPath )
+                    var = self.getVariable( f )
+                    naxes = self.getNAxes( var.shape )
+                    if( naxes == 1 ):
+                        self.logger.info( "SpacePlotting file: " +  dataPath )
+                        self.mpl_timeplot( f )
+                    else:
+                        self.vcs_spaceplot( f, timeIndex, smooth )
+                    f.close()
+                    return
+                else:
+                    time.sleep(1)
 
     def getNAxes(self, shape ):
         naxes = 0
@@ -117,54 +149,80 @@ class PlotMgr:
         axes = dset.axes.values()
         lons = self.getAxis( vars , "X" )
         lats = self.getAxis( vars , "Y" )
+        plev = self.getAxis( vars , "Z" )
         if( lons is None ):
             lons = self.getAxis( axes , "X" )
         if( lats is None ):
             lats = self.getAxis( axes , "Y" )
-        return (lats, lons, vars)
+        if( plev is None ):
+            plev = self.getAxis( axes , "Z" )
+        return (lats, lons, plev, vars)
 
-    def mpl_spaceplot( self, dataPath, timeIndex=0, smooth=False ):
-        if dataPath:
-            for k in range(0,30):
-                if( os.path.isfile(dataPath) ):
-                    self.logger.info( "SpacePlotting file: " +  dataPath )
-                    f = cdms2.openDataset(dataPath)
-                    lats, lons, vars = self.getAxes( f )
-                    fig = plt.figure()
-                    varNames = list( map( lambda v: v.id, vars ) )
-                    varNames.sort()
-                    nCols = min( len(varNames), 4 )
-                    nRows = math.ceil( len(varNames) / float(nCols) )
-                    iplot = 1
-                    for varName in varNames:
-                        variable = f( varName )
-                        if len( variable.shape ) > 1:
-                            ax = fig.add_subplot( nRows, nCols, iplot )
-                            ax.set_title(varName)
-                            spatialData = variable( time=slice(timeIndex,timeIndex+1), squeeze=1 )
-                            m = Basemap( llcrnrlon=lons[0],
-                                         llcrnrlat=lats[0],
-                                         urcrnrlon=lons[len(lons)-1],
-                                         urcrnrlat=lats[len(lats)-1],
-                                         epsg='4326',
-                                         lat_0 = lats.mean(),
-                                         lon_0 = lons.mean())
-                            lon, lat = np.meshgrid( lons.data, lats.data )
-                            xi, yi = m(lon, lat)
-                            smoothing = 'gouraud' if smooth else 'flat'
-                            cs2 = m.pcolormesh(xi, yi, spatialData, cmap='jet', shading=smoothing )
-                            lats_space = abs(lats[0])+abs(lats[len(lats)-1])
-                            m.drawparallels(np.arange(lats[0],lats[len(lats)-1], round(lats_space/5, 0)), labels=[1,0,0,0], dashes=[6,900])
-                            lons_space = abs(lons[0])+abs(lons[len(lons)-1])
-                            m.drawmeridians(np.arange(lons[0],lons[len(lons)-1], round(lons_space/5, 0)), labels=[0,0,0,1], dashes=[6,900])
-                            m.drawcoastlines()
-                            m.drawstates()
-                            m.drawcountries()
-                            cbar = m.colorbar(cs2,location='bottom',pad="10%")
-                            iplot = iplot + 1
-                    plt.show()
-                    return
-                else: time.sleep(1)
+    def mpl_spaceplot( self, f, timeIndex=0, smooth=False ):
+        lats, lons, vars = self.getAxes( f )
+        fig = plt.figure()
+        varNames = list( map( lambda v: v.id, vars ) )
+        varNames.sort()
+        nCols = min( len(varNames), 4 )
+        nRows = math.ceil( len(varNames) / float(nCols) )
+        iplot = 1
+        for varName in varNames:
+            variable = f( varName )
+            if len( variable.shape ) > 1:
+                ax = fig.add_subplot( nRows, nCols, iplot )
+                ax.set_title(varName)
+                spatialData = variable( time=slice(timeIndex,timeIndex+1), squeeze=1 )
+                m = Basemap( llcrnrlon=lons[0],
+                             llcrnrlat=lats[0],
+                             urcrnrlon=lons[len(lons)-1],
+                             urcrnrlat=lats[len(lats)-1],
+                             epsg='4326',
+                             lat_0 = lats.mean(),
+                             lon_0 = lons.mean())
+                lon, lat = np.meshgrid( lons.data, lats.data )
+                xi, yi = m(lon, lat)
+                smoothing = 'gouraud' if smooth else 'flat'
+                cs2 = m.pcolormesh(xi, yi, spatialData, cmap='jet', shading=smoothing )
+                lats_space = abs(lats[0])+abs(lats[len(lats)-1])
+                m.drawparallels(np.arange(lats[0],lats[len(lats)-1], round(lats_space/5, 0)), labels=[1,0,0,0], dashes=[6,900])
+                lons_space = abs(lons[0])+abs(lons[len(lons)-1])
+                m.drawmeridians(np.arange(lons[0],lons[len(lons)-1], round(lons_space/5, 0)), labels=[0,0,0,1], dashes=[6,900])
+                m.drawcoastlines()
+                m.drawstates()
+                m.drawcountries()
+                cbar = m.colorbar(cs2,location='bottom',pad="10%")
+                iplot = iplot + 1
+        plt.show()
+
+    def vcs_spaceplot( self, f, timeIndex=0, smooth=False ):
+        x=vcs.init()
+        variables = self.getVariables( f )
+        x.setcolormap("rainbow")
+        nCols = min( len(variables), 4 )
+        nRows = math.ceil( len(variables) / float(nCols) )
+        iplot = 1
+#        for varName in varNames:
+#        variable = f( varNames[0] )
+        variable = variables[0]
+        iso= x.createisofill('new','quick')
+        x.plot( variable, iso )
+        x.interact()
+
+            # x.setcolormap("rainbow")
+            # iso.ext_1="no"
+            # iso.ext_2="yes"
+            # cols = vcs.getcolors(levs, range(25, 239))
+            # iso.fillareacolors=cols
+            # header=x.createtext()
+            # header.To.height = 24
+            # header.To.halign = "center"
+            # header.To.valign = "top"
+            # header.x = .5
+            # header.y = .96
+            # lines=vcs.createisoline()
+            # lines.levels=levs
+            # x.plot( variable, iso )
+            # x.interact()
 
     def print_Mdata(self, dataPath ):
         for k in range(0,30):
