@@ -39,6 +39,7 @@ class PlotMgr:
                         except:
                             self.logger.info( "Skipping plot for variable: " +  varName )
 
+
                     fig.autofmt_xdate()
                     plt.show()
                     return

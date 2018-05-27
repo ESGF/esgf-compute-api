@@ -807,13 +807,19 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
+    executor.performance_test_conus_1day(False)
+
+#    executor.plot_test( )
+#    executor.svd_test_zg1()
 
 #    executor.cip_max_temp_heatwave()
 #    executor.cip_max_temp()
 #    executor.cip_precip_sum()
 #    executor.cip_cloud_cover()
-#    executor.plot_test( [ "/Users/tpmaxwel/.edas/acndM3fo.nc", "/Users/tpmaxwel/.edas/acndM3fo-1.nc" ] )
-    executor.plot_test( [ "/Users/tpmaxwel/.edas/acndM3fo-1.nc" ] )
+ #   executor.plot_test( [ "/Users/tpmaxwel/.edas/8Uwn5AOs.nc", "/Users/tpmaxwel/.edas/8Uwn5AOs-1.nc" ] )
+    executor.plot_test([ "/Users/tpmaxwel/.edas/8Uwn5AOs-1.nc" ] )
+
+#    executor.plot_test( [ "/Users/tpmaxwel/.edas/acndM3fo-1.nc" ] )
 #    executor.plot_test( [ "/tmp/KsnDea5S.nc", "/tmp/yNWJjSIh.nc" ] )
 #    executor.cip_min_temp()
 
