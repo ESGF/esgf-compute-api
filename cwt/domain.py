@@ -29,12 +29,42 @@ class Domain(cwt.Parameter):
         mask: Mask to be applied to the domain.
         name: Name of the domain.
     """
-    def __init__(self, dimensions=None, mask=None, name=None):
+    def __init__(self, dimensions=None, mask=None, name=None, **kwargs):
         """ Domain init. """
         super(Domain, self).__init__(name)
 
-        if not dimensions:
+        if dimensions is None:
             dimensions = []
+
+        for name, value in kwargs.iteritems():
+            if isinstance(value, slice):
+                args = [
+                    name, 
+                    value.start, 
+                    value.stop, 
+                    cwt.INDICES, 
+                    value.step
+                ]
+            elif isinstance(value, (list, tuple)):
+                if len(value) < 2:
+                    raise cwt.WPSError('Must provide a minimum of two values (start, stop) for dimension "{dim}"', dim=name)
+
+                if len(value) > 2:
+                    step = value[3]
+                else:
+                    step = 1
+
+                args = [
+                    name,
+                    value[0],
+                    value[1],
+                    cwt.VALUES,
+                    step
+                ]
+            else:
+                raise cwt.WPSError('Dimension\'s value cannot be of type "{type}"', type=type(value))
+
+            dimensions.append(cwt.Dimension(*args))
 
         self.dimensions = dimensions
         self.mask = mask
