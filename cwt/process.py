@@ -273,12 +273,18 @@ class Process(cwt.Parameter):
         }
 
         if self.domain is not None:
-            params['domain'] = self.domain.name
+            if isinstance(self.domain, str):
+                params['domain'] = self.domain
+            else:
+                params['domain'] = self.domain.name
 
         inputs = []
 
         for i in self.inputs:
-            inputs.append(i.name)
+            if isinstance(i, str):
+                inputs.append(i)
+            else:
+                inputs.append(i.name)
 
         params['input'] = inputs
 
