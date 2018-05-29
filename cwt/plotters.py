@@ -4,6 +4,7 @@ from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
+from typing import List, Any
 
 
 class PlotMgr:
@@ -16,19 +17,19 @@ class PlotMgr:
             for k in range(0,30):
                 if( os.path.isfile(dataPath) ):
                     self.logger.info( "Plotting file: " +  dataPath )
-                    f = cdms2.openDataset(dataPath)
-                    varNames = f.variables.keys()
-                    cvars = f.axes
-                    fig = plt.figure()
+                    f = cdms2.openDataset(dataPath) # type: cdms2.dataset.CdmsFile
+                    varNames = f.variables.keys()  # type: List[str]
+                    fig = plt.figure()    # type: Figure
                     iplot = 1
                     nCols = min( len(varNames), 4 )
                     nRows = math.ceil( len(varNames) / float(nCols) )
-                    for varName in varNames:
+                    for varName in varNames:  # type: str
                         self.logger.info( "  ->  Plotting variable: " +  varName + ", subplot: " + str(iplot) )
                         timeSeries = f( varName, squeeze=1 )
                         datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
                         dates = matplotlib.dates.date2num(datetimes)
                         ax = fig.add_subplot( nRows, nCols, iplot )
+                        ax.set_title( varName )
                         ax.plot(dates, timeSeries.data )
                         ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
                         ax.grid(True)
@@ -90,7 +91,7 @@ class PlotMgr:
             for k in range(0,30):
                 if( os.path.isfile(dataPath) ):
                     self.logger.info( "Plotting file: " +  dataPath )
-                    f = cdms2.openDataset(dataPath)
+                    f = cdms2.openDataset(dataPath) # type: cdms2.dataset.CdmsFile
                     vars = f.variables.values()
                     axes = f.axes.values()
                     lons = self.getAxis( axes , "X" )
