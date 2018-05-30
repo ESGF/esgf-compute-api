@@ -63,7 +63,7 @@ class TestWPSClient(unittest.TestCase):
 
         description = wps.process_description('CDAT.subset', 'CDAT.subset', '1.0.0', inputs, outputs)
 
-        self.process_descriptions = wps.process_descriptions('en-US', '1.0.0', description)
+        self.process_descriptions = wps.process_descriptions('en-US', '1.0.0', [description])
 
         process = wps.process('CDAT.subset', 'CDAT.subset', '1.0.0')
 
