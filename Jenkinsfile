@@ -28,6 +28,10 @@ pipeline {
         }
 
         stage('Build docker iamge') {
+            when { anyOf { branch 'bugfix-*'; branch 'release-*' } }
+
+            agent any
+
             steps {
                 script {
                     def version_index = env.BRANCH_NAME.indexOf('-')
