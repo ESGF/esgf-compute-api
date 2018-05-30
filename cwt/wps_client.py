@@ -43,6 +43,7 @@ class WPSClient(object):
             log_file: A string path for a log file.
             verify: A bool to enable/disable verifying a server's TLS certificate.
             ca: A str path to a CA bundle to use when verifiying a server's TLS certificate.
+            cert: A str path to an SSL client cert or a tuple as ('cert', 'key').
         """
         self.__url = url
         self.__version = kwargs.get('version')
@@ -54,6 +55,7 @@ class WPSClient(object):
         self.__file_handler = None
         self.__ssl_verify = kwargs.get('verify', True)
         self.__ssl_verify_ca = kwargs.get('ca', None)
+        self.__ssl_cert = kwargs.get('cert', None)
 
         if kwargs.get('log') is not None:
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
@@ -128,6 +130,9 @@ class WPSClient(object):
 
         if self.__ssl_verify_ca is not None and self.__ssl_verify:
             kwargs['verify'] = self.__ssl_verify_ca
+
+        if self.__ssl_cert is not None:
+            kwargs['cert'] = self.__ssl_cert
 
         try:
             response = self.__client.request(method, url, **kwargs)
