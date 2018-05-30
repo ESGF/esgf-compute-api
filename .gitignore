@@ -1,6 +1,7 @@
 .coverage
 .cache
 **/*.bak
+*.xml
 
 **/*.pyc
 
