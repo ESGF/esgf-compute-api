@@ -9,8 +9,7 @@ from eofs.standard import Eof
 # filename = '/dass/pubrepo/CREATE-IP/data/reanalysis/NOAA-NCEP/CFSR/mon/atmos/clt/clt_Amon_reanalysis_CFSR_197901-201712.nc'
 filename = '/dass/adm/edas/eofs-1.3.0/lib/eofs/examples/example_data/sst_ndjfm_anom.nc'
 ncin = Dataset(filename, 'r')
-
-sst = ncin.variables['tas'][:]
+sst = ncin.variables['sst'][:]
 lons = ncin.variables['longitude'][:]
 lats = ncin.variables['latitude'][:]
 ncin.close()
