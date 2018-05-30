@@ -10,7 +10,7 @@ import string
 #-----------------------------------------------------------------------------------------------------------
 # Open file ---
 # data_path = '/clim_obs/obs/ocn/mo/tos/UKMETOFFICE-HadISST-v1-1/130122_HadISST_sst.nc' ## Put your file here
-data_path = '/dass/pubrepo/CREATE-IP/data/reanalysis/NOAA-NCEP/CFSR/mon/atmos/tas/tas_Amon_reanalysis_CFSR_197901-201712.nc'
+data_path = '/dass/pubrepo/CREATE-IP/data/reanalysis/NOAA-NCEP/CFSR/mon/atmos/ts/ts_Amon_reanalysis_CFSR_197901-201712.nc'
 f = cdms.open(data_path)
 
 # Set time period ---
@@ -21,9 +21,11 @@ end_time = cdtime.comptime(end_year)
 
 # Load variable ---
 d = f('tas',time=(start_time,end_time),longitude=(0,360),latitude=(-90,90)) # Provide proper variable name
+print "Completed data read"
 
-# Reomove annual cycle ---
+# Remove annual cycle ---
 d_anom = cdutil.ANNUALCYCLE.departures(d)
+print "Completed data prep"
 
 # EOF (take only first variance mode...) ---
 solver = Eof(d_anom, weights='area')
