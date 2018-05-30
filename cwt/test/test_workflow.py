@@ -656,7 +656,7 @@ class TestWorkflow:
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P0", domain=d0)
         #        d1 = cwt.Domain.from_dict( { 'id': 'd1', "lat":{"start":-75,"end":75,"crs":"values"}, "level":{"start":10,"end":10,"crs":"indices"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         #        v1 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P1", domain=d1  )
-        highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "domain": "d0", "groupBy": "5-year", "grid": "uniform", "shape": "32,72", "res": "5,5" } )
+        highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "domain": "d0", "groupBy": "5-year", "grid": "uniform", "shape": "30,72", "res": "5,5" } )
         highpass.set_inputs( v0 )
         svd = cwt.Process.from_dict(  {'name': "SparkML.svd", "modes": "8" } )
         svd.set_inputs( highpass )
@@ -665,14 +665,22 @@ class TestWorkflow:
         for dataPath in dataPaths:
             self.plotter.mpl_plot(dataPath, 0, True)
 
+    def svd_test_zg1_col(self):
+        d0 = cwt.Domain.from_dict({'id': 'd0',  "level": {"start": 5, "end": 5, "crs": "indices"}, "filter": "DJF"})  # } ) # , "filter":"DJF" , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_20crv2c_zg_DJF_32x72_NDT", "zg", domain=d0)
+        svd = cwt.Process.from_dict(  {'name': "SparkML.svd", "modes": "8", "norm": "false" } )
+        svd.set_inputs( v0 )
+        self.wps.execute(svd, domains=[d0], async=True)
+        dataPaths = self.wps.download_result(svd, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_plot(dataPath, 0, True)
+
     def preprocess_zg1(self):
-        d0 = cwt.Domain.from_dict({'id': 'd0', "lat": {"start": -75, "end": 75, "crs": "values"}, "level": {"start": 5, "end": 5, "crs": "indices"}, "filter": "DJF"})  # } ) # , "filter":"DJF" , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
-        v0 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P0", domain=d0)
-        highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "domain": "d0", "groupBy": "5-year", "grid": "uniform", "shape": "32,72", "res": "5,5" } )
-        highpass.set_inputs( v0 )
-        rescale = cwt.Process.from_dict(  {'name': "SparkML.rescale" } )
-        rescale.set_inputs( highpass )
-        self.wps.execute(rescale, domains=[d0], async=True, runargs = {"responseForm": "collection:cip_20crv2c_zg_DJF_32x72_NDT"} )
+        d0 = cwt.Domain.from_dict({'id': 'd0', "lat": {"start": -80, "end": 80, "crs": "values"}, "filter": "DJF"})
+        v0 = cwt.Variable("collection://cip_20crv2c_mth", "zg", domain=d0)
+        rescale = cwt.Process.from_dict(  {'name': "SparkML.rescale", "domain": "d0", "grid": "uniform", "shape": "32,72", "responseForm": "collection:cip_20crv2c_zg_DJF_32x72_NDT" } )
+        rescale.set_inputs( v0 )
+        self.wps.execute(rescale, domains=[d0], async=True ) #, runargs = {"responseForm": "collection:cip_20crv2c_zg_DJF_32x72_NDT"} )
 
     def cloud_cover_demo(self):
         domain_data = { 'id': 'd0', 'lat': {'start':23.7,'end':49.2,'crs':'values'}, 'lon': {'start':-125, 'end':-70.3, 'crs':'values'}, 'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00', 'crs':'timestamps'}}
@@ -810,7 +818,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.preprocess_zg1()
+    executor.svd_test_zg1_col()
 
 #    executor.performance_test_conus_1mth()
 
