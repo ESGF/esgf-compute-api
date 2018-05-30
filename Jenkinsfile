@@ -22,7 +22,7 @@ pipeline {
 
                     pip install -r cwt/tests/requirements.txt
 
-                    nose2 --plugin nose2.plugins.junitxml --junit-xml cwt.tests || exit 1
+                    nose2 --plugin nose2.plugins.junitxml --junit-xml --with-coverage --coverage-report xml cwt.tests || exit 1
                 '''
             }
         }
@@ -48,6 +48,9 @@ pipeline {
             node('master') {
                 step([$class: 'XUnitBuilder',
                     tools: [[$class: 'JUnitType', pattern: 'nose2-junit.xml']]])
+
+                step([$class: 'CoberturaPublisher',
+                    coverturaReportFile: 'coverage.xml'])
             } 
         }
     }
