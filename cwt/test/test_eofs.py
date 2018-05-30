@@ -29,8 +29,11 @@ print "Completed data prep"
 
 # EOF (take only first variance mode...) ---
 solver = Eof(d_anom, weights='area')
+print "Created solver"
+
 # eof = solver.eofsAsCovariance(neofs=1)
 eof = solver.eofs(neofs=1)
+print "Computed eofs"
 # pc = solver.pcs(npcs=1, pcscaling=1) # pcscaling=1: scaled to unit variance
                                      # (divided by the square-root of their eigenvalue)
 frac = solver.varianceFraction()
