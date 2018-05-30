@@ -50,7 +50,7 @@ pipeline {
                     tools: [[$class: 'JUnitType', pattern: 'nose2-junit.xml']]])
 
                 step([$class: 'CoberturaPublisher',
-                    coverturaReportFile: 'coverage.xml'])
+                    coberturaReportFile: 'coverage.xml'])
             } 
         }
     }
