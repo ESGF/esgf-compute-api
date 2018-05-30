@@ -13,15 +13,19 @@ sst = ncin.variables['sst'][:]
 lons = ncin.variables['longitude'][:]
 lats = ncin.variables['latitude'][:]
 ncin.close()
-print "1"
+print "Completed data read"
 
 coslat = np.cos(np.deg2rad(lats))
 wgts = np.sqrt(coslat)[..., np.newaxis]
+print "Completed weights generation"
+
 solver = Eof(sst, weights=wgts)
-print "2"
+print "Created Solver"
+
 eof1 = solver.eofsAsCorrelation(neofs=1)
 pc1 = solver.pcs(npcs=1, pcscaling=1)
-print "3"
+print "Computed pc1"
+
 # Plot the leading EOF expressed as correlation in the Pacific domain.
 clevs = np.linspace(-1, 1, 11)
 ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=190))
