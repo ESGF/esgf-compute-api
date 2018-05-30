@@ -20,7 +20,7 @@ start_time = cdtime.comptime(start_year)
 end_time = cdtime.comptime(end_year)
 
 # Load variable ---
-d = f('ts',time=(start_time,end_time),longitude=(0,360),latitude=(-90,90)) # Provide proper variable name
+d = f('ts',time=(start_time,end_time),longitude=(120,290),latitude=(-50,50)) # Provide proper variable name
 print "Completed data read"
 
 # Remove annual cycle ---
