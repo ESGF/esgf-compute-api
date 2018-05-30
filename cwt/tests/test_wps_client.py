@@ -77,6 +77,36 @@ class TestWPSClient(unittest.TestCase):
         bds.reset()
 
     @mock.patch('requests.Session.request')
+    def test_ssl_verify_ca_false(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+
+        client = cwt.WPSClient('http://idontexist/wps', verify=False, ca='/test.pem')
+
+        client.get_capabilities()
+
+        mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        params={'request': 'GetCapabilities', 
+                                                'service': 'WPS'}, 
+                                        data=None, headers={}, verify=False)
+
+    @mock.patch('requests.Session.request')
+    def test_ssl_verify_ca(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+
+        client = cwt.WPSClient('http://idontexist/wps', ca='/test.pem')
+
+        client.get_capabilities()
+
+        mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        params={'request': 'GetCapabilities', 
+                                                'service': 'WPS'}, 
+                                        data=None, headers={}, verify='/test.pem')
+
+    @mock.patch('requests.Session.request')
     def test_ssl_verify_false(self, mock_request):
         mock_request.return_value.status_code = 200
 

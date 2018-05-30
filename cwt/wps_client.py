@@ -41,6 +41,8 @@ class WPSClient(object):
             language: A string language code for the WPS server to communicate in.
             log: A boolean flag to enable logging
             log_file: A string path for a log file.
+            verify: A bool to enable/disable verifying a server's TLS certificate.
+            ca: A str path to a CA bundle to use when verifiying a server's TLS certificate.
         """
         self.__url = url
         self.__version = kwargs.get('version')
@@ -51,6 +53,7 @@ class WPSClient(object):
         self.__client = requests.Session()
         self.__file_handler = None
         self.__ssl_verify = kwargs.get('verify', True)
+        self.__ssl_verify_ca = kwargs.get('ca', None)
 
         if kwargs.get('log') is not None:
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
@@ -122,6 +125,9 @@ class WPSClient(object):
             'headers': headers,
             'verify': self.__ssl_verify,
         }
+
+        if self.__ssl_verify_ca is not None and self.__ssl_verify:
+            kwargs['verify'] = self.__ssl_verify_ca
 
         try:
             response = self.__client.request(method, url, **kwargs)
