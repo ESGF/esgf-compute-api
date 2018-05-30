@@ -13,7 +13,7 @@ pipeline {
             steps {
                 checkout scm
 
-                sh 'conda create --name api python=2.7'
+                sh 'conda create --name api --yes python=2.7'
 
                 sh '''#! /bin/bash
                     source activate api
