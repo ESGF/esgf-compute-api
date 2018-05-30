@@ -76,6 +76,36 @@ class TestWPSClient(unittest.TestCase):
     def tearDown(self):
         bds.reset()
 
+    @mock.patch('requests.Session.request')
+    def test_ssl_verify_false(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+
+        client = cwt.WPSClient('http://idontexist/wps', verify=False)
+
+        client.get_capabilities()
+
+        mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        params={'request': 'GetCapabilities', 
+                                                'service': 'WPS'}, 
+                                        data=None, headers={}, verify=False)
+
+    @mock.patch('requests.Session.request')
+    def test_ssl_verify(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+
+        client = cwt.WPSClient('http://idontexist/wps')
+
+        client.get_capabilities()
+
+        mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        params={'request': 'GetCapabilities', 
+                                                'service': 'WPS'}, 
+                                        data=None, headers={}, verify=True)
+
     @mock.patch('requests.Session.request') 
     def test_get_capabilities_invalid_method(self, mock_request):
         mock_request.return_value.status_code = 200

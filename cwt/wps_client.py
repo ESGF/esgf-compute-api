@@ -50,6 +50,7 @@ class WPSClient(object):
         self.__csrf_token = None
         self.__client = requests.Session()
         self.__file_handler = None
+        self.__ssl_verify = kwargs.get('verify', True)
 
         if kwargs.get('log') is not None:
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
@@ -72,11 +73,12 @@ class WPSClient(object):
                 logger.addHandler(self.__file_handler)
 
     def __repr__(self):
-        return ('Process(url=%r, version=%r, language=%r, capabilities=%r)') % (
+        return ('Process(url=%r, version=%r, language=%r, capabilities=%r, ssl_verify=%r)') % (
             self.__url,
             self.__version,
             self.__language,
             self.__capabilities is not None,
+            self.__ssl_verify,
         )
 
     def __del__(self):
@@ -114,8 +116,15 @@ class WPSClient(object):
             # sign all requests with the api key
             params['api_key'] = self.__api_key
 
+        kwargs = {
+            'params': params,
+            'data': data,
+            'headers': headers,
+            'verify': self.__ssl_verify,
+        }
+
         try:
-            response = self.__client.request(method, url, params=params, data=data, headers=headers)
+            response = self.__client.request(method, url, **kwargs)
         except requests.RequestException as e:
             raise cwt.WPSHttpError.from_request_response(e.response)
 
