@@ -6,21 +6,21 @@ pipeline {
             agent {
                 docker {
                     image 'conda-agent'
-                    args '--network outside -v /opt/conda/pkgs:/opt/docker/jenkins/conda/pkgs'
+                    args '--network outside -v /opt/docker/jenkins/conda/pkgs:/opt/conda/pkgs'
                 }
             }
 
             steps {
                 checkout scm
 
-                sh 'conda env create --name wps python=2.7'
-
-                sh 'pip install -r requirements.txt'
-
-                sh 'pip install -r cwt/tests/requirements.txt'
+                sh 'conda create --name api python=2.7'
 
                 sh '''#! /bin/bash
-                    source activate wps
+                    source activate api
+
+                    pip install -r requirements.txt
+
+                    pip install -r cwt/tests/requirements.txt
 
                     nose2 --plugin nose2.plugins.junitxml --junit-xml cwt.tests || exit 1
                 '''
