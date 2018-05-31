@@ -49,6 +49,16 @@ pipeline {
 
                 step([$class: 'CoberturaPublisher',
                     coberturaReportFile: 'coverage.xml'])
+
+                script {
+                    emailext body: '''${SCRIPT, template="groovy-html.template"}''',
+                            mimeType: 'text/html',
+                            subject: '[Jenkins] Build',
+                            recipientProviders: [
+                                [$class: 'RequesterRecipientProvider'],
+                                [$class: 'UpstreamComitterRecipientProvider']
+                            ]
+                }
             } 
         }
     }
