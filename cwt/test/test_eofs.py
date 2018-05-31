@@ -32,7 +32,7 @@ print "Completed data prep"
 solver = Eof(d_anom, weights='area')
 print "Created solver"
 
-eof = solver.eofs(neofs=1)
+eof = solver.eofs( neofs=nModes )
 print "Computed eofs"
 
 frac = solver.varianceFraction()
