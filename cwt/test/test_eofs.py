@@ -73,6 +73,6 @@ for iPlot in range(nModes):
     percentage = str(round(float(frac[iPlot]*100.),1)) + '%'
     plot_title.string = 'EOF mode ' + str(iPlot) + ', MERRA2 TS('+str(start_year)+'-'+str(end_year)+'), '+percentage
     canvas.plot(plot_title)
-    canvas.png('eof_analysis-{0}.png'.format(iPlot))
+    canvas.png('eof_analysis-mode{0}.png'.format(iPlot))
     canvas.clear()
 
