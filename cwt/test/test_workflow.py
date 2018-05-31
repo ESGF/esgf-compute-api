@@ -827,8 +827,8 @@ class TestWorkflow:
 
 
     def timeseries_processing_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':250, 'end':250, 'crs':'values'}, 'time': { 'start':'1990-01-01T00:00:00', 'end':'1998-12-31T23:00:00', 'crs':'timestamps'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
-        v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0  )
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':250, 'end':250, 'crs':'values'}, 'time': { 'start':'1979-01-01T00:00:00', 'end':'1989-12-31T23:00:00', 'crs':'timestamps'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_cfsr_mth", "ts", domain=d0  )
 
         op0 =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "groupBy": "5-year" } )
         op1 =  cwt.Process.from_dict( { 'name': "CDSpark.noOp" } )
@@ -843,8 +843,8 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.cip_max_temp()
-#    executor.timeseries_processing_test()
+#    executor.cip_max_temp()
+    executor.timeseries_processing_test()
 
 #    executor.performance_test_conus_1mth()
 
