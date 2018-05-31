@@ -2,6 +2,7 @@
 .cache
 **/*.xml
 **/*.bak
+*.xml
 
 **/*.pyc
 

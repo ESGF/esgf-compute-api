@@ -122,7 +122,7 @@ class TestWPS(unittest.TestCase):
 
         description = wps.process_description('CDAT.subset', 'CDAT.subset', '1.0.0', [data], [output])
 
-        descriptions = wps.process_descriptions('en-US', '1.0.0', description)
+        descriptions = wps.process_descriptions('en-US', '1.0.0', [description])
 
         self.assertTrue(descriptions.validateBinding())
 
