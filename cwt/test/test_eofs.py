@@ -4,6 +4,7 @@ import cdtime
 from eofs.cdms import Eof
 import vcs
 import string
+import numpy as np
 
 #===========================================================================================================
 # DATA
@@ -43,10 +44,11 @@ template = canvas.createtemplate()
 template.blank(['title','mean','min','max','dataname','crdate','crtime','units','zvalue','tvalue','xunits','yunits','xname','yname'])
 canvas.setcolormap('bl_to_darkred')
 iso = canvas.createisofill()
-iso.levels = [-1, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+level_distribution = np.array( [-1, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] )
+iso.levels = list( level_distribution*0.01 )
 iso.ext_1 = 'y' # control colorbar edge (arrow extention on/off)
 iso.ext_2 = 'y' # control colorbar edge (arrow extention on/off)
-cols = vcs.getcolors(iso.levels)
+cols = vcs.getcolors(iso.levels, range(16,240), split=0)
 iso.fillareacolors = cols
 iso.missing = 0
 
