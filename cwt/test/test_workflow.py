@@ -675,6 +675,16 @@ class TestWorkflow:
         for dataPath in dataPaths:
             self.plotter.mpl_plot(dataPath, 0, True)
 
+    def svd_test_ts( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_cfsr_mth", "ts", domain=d0  )
+        svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"4", "grid": "uniform", "shape": "32,72", "res": "5,5" } )
+        svd.set_inputs( v0 )
+        self.wps.execute( svd, domains=[d0], async=True )
+        dataPaths = self.wps.download_result(svd, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_plot( dataPath, 0, True )
+
     def preprocess_zg1(self):
         d0 = cwt.Domain.from_dict({'id': 'd0', "lat": {"start": -80, "end": 80, "crs": "values"}, "filter": "DJF"})
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "zg", domain=d0)
@@ -816,9 +826,25 @@ class TestWorkflow:
             self.plotter.mpl_plot(plot_file, 0, True)
 
 
+    def timeseries_processing_test( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':250, 'end':250, 'crs':'values'}, 'time': { 'start':'1990-01-01T00:00:00', 'end':'1998-12-31T23:00:00', 'crs':'timestamps'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0  )
+
+        op0 =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "groupBy": "5-year" } )
+        op1 =  cwt.Process.from_dict( { 'name': "CDSpark.noOp" } )
+        op = op1
+
+        op.set_inputs( v0 )
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPaths = self.wps.download_result(op, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_timeplot( dataPath )
+
+
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.svd_test_zg1_col()
+    executor.cip_max_temp()
+#    executor.timeseries_processing_test()
 
 #    executor.performance_test_conus_1mth()
 

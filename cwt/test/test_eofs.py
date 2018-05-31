@@ -10,7 +10,8 @@ import string
 #-----------------------------------------------------------------------------------------------------------
 # Open file ---
 # data_path = '/clim_obs/obs/ocn/mo/tos/UKMETOFFICE-HadISST-v1-1/130122_HadISST_sst.nc' ## Put your file here
-data_path = '/dass/pubrepo/CREATE-IP/data/reanalysis/NOAA-NCEP/CFSR/mon/atmos/ts/ts_Amon_reanalysis_CFSR_197901-201712.nc'
+# data_path = '/dass/pubrepo/CREATE-IP/data/reanalysis/NOAA-NCEP/CFSR/mon/atmos/ts/ts_Amon_reanalysis_CFSR_197901-201712.nc'
+data_path = 'https://dataserver.nccs.nasa.gov/thredds/dodsC/bypass/CREATE-IP/Reanalysis/NASA-GMAO/GEOS-5/MERRA/mon/atmos/ts.ncml'
 f = cdms.open(data_path)
 
 # Set time period ---
