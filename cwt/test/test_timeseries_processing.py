@@ -28,4 +28,4 @@ d_anom = cdutil.ANNUALCYCLE.departures(d).squeeze()
 print "Completed data prep"
 
 plotter = PlotMgr()
-plotter.graph_data( d_anom.data )
+plotter.graph_data( d_anom.data, "MERRA2 TS(40,40)[1980-2000]: Seasonal Cycle Removed" )

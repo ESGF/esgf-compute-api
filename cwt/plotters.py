@@ -13,10 +13,11 @@ class PlotMgr:
         self.logger = logging.getLogger('cwt.wps')
 
 
-    def graph_data(self , data ):
+    def graph_data(self , data, title="" ):
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
         xvalues = range( len(data ) )
+        ax.set_title( title )
         ax.plot( xvalues, data )
         plt.show()
 
