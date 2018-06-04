@@ -837,14 +837,14 @@ class TestWorkflow:
         self.plotter.graph_data( data )
 
     def timeseries_processing_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':250, 'end':250, 'crs':'values'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':40, 'end':40, 'crs':'values'}, 'time': { 'start':'1980-01-01T00:00:00', 'end':'2000-12-31T23:00:00', 'crs':'timestamps'}  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_merra2_mth", "ts", domain=d0  )
 
         seasonal_cycle = cwt.Process.from_dict({'name': "CDSpark.ave", "groupBy": "monthOfYear", 'axes': "t"} )
         seasonal_cycle.set_inputs( v0 )
 
         seasonal_cycle_removed = cwt.Process.from_dict({'name': "CDSpark.eDiff", "domain": "d0"})
-        seasonal_cycle_removed.set_inputs( seasonal_cycle, v0 )
+        seasonal_cycle_removed.set_inputs( v0, seasonal_cycle )
         op = seasonal_cycle_removed
 
         op.set_inputs( v0 )
