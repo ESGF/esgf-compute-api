@@ -28,4 +28,4 @@ d_anom = cdutil.ANNUALCYCLE.departures(d)
 print "Completed data prep"
 
 plotter = PlotMgr()
-plotter.graph_data( d_anom.data() )
+plotter.graph_data( d_anom.data )
