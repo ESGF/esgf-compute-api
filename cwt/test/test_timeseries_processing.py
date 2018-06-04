@@ -24,7 +24,7 @@ end_time = cdtime.comptime(end_year)
 d = f('ts',time=(start_time,end_time),latitude=(40,40),longitude=(40,40))
 print "Completed data read"
 
-d_anom = cdutil.ANNUALCYCLE.departures(d).squeeze
+d_anom = cdutil.ANNUALCYCLE.departures(d).squeeze()
 print "Completed data prep"
 
 plotter = PlotMgr()
