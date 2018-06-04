@@ -12,6 +12,14 @@ class PlotMgr:
     def __init__(self):
         self.logger = logging.getLogger('cwt.wps')
 
+
+    def graph_data(self , data ):
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        xvalues = range( len(data ) )
+        ax.plot( xvalues, data )
+        plt.show()
+
     def mpl_timeplot( self, dataPath ):
         if dataPath:
             for k in range(0,30):

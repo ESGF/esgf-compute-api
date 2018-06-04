@@ -1,4 +1,5 @@
 import cwt, os, time
+import numpy as np
 # import logging, cdms2, vcs
 # from cwt.test.plotters import PlotMgr
 # import cdms2, datetime, matplotlib, urllib3
@@ -380,6 +381,7 @@ class TestWorkflow:
 
         dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
         for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
+
 
 
     def seasonal_anomaly( self ):
@@ -825,14 +827,25 @@ class TestWorkflow:
         for plot_file in plot_files:
             self.plotter.mpl_plot(plot_file, 0, True)
 
+    def data_plotter(self):
+        data =  np.array( [ 0.19393921, -1.2894897, -0.8175659, -2.628357, 0.14718628, -2.170807, 0.76083374, 1.3248596, 0.57592773, -0.674469, -0.0138549805, 0.31555176, -0.7801819, -3.9342346, 1.8656921, -0.934845, -0.072906494, -0.026885986,
+                            0.10437012, 1.9228516, -1.3204346, 1.5502625, 1.3361816, -0.23022461, -1.8243713, -0.80422974, -1.894104, -1.0467529, -0.83477783, 1.6516724, 0.19799805, 0.16830444, 0.65579224, -2.20813, 0.47097778, 0.025634766, 2.710968,
+                            -3.6307068, 2.4335632, -0.8474121, 1.7366333, 0.7738342, 0.67840576, -0.7659607, -2.5101624, 1.5240479, 0.30142212, -0.09515381, -3.1026917, 0.7971802, 0.0016784668, -0.60372925, -0.97579956, 0.21594238, -0.039855957, 0.41815186,
+                            -0.2744751, 2.3583984, -0.7037964, 1.361023, 2.7900085, -0.37365723, -1.190155, -1.7558594, 0.7376404, -0.56625366, -0.6083374, -2.4179382, 0.4194336, 0.14251709, 0.3616333, -0.475708, -0.8239746, -0.27529907, -0.020629883, -0.9572449,
+                            0.25823975, -0.5349121, -0.7706909, -1.1563416, -0.43118286, 0.7505493, 0.041534424, 0.7348938, -2.2020264, -0.52459717, 1.0487671, 0.159729, 0.4981079, -0.2133789, -0.332489, -1.0993652, 0.41140747, -1.5540161, -0.65740967, -1.0648193,
+                            1.2191467, -0.7008667, -2.1305542, -2.209137] )
+        self.plotter.graph_data( data )
 
     def timeseries_processing_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':250, 'end':250, 'crs':'values'}, 'time': { 'start':'1979-01-01T00:00:00', 'end':'1989-12-31T23:00:00', 'crs':'timestamps'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
-        v0 = cwt.Variable("collection://cip_cfsr_mth", "ts", domain=d0  )
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':250, 'end':250, 'crs':'values'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_merra2_mth", "ts", domain=d0  )
 
-        op0 =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "groupBy": "5-year" } )
-        op1 =  cwt.Process.from_dict( { 'name': "CDSpark.noOp" } )
-        op = op1
+        seasonal_cycle = cwt.Process.from_dict({'name': "CDSpark.ave", "groupBy": "monthOfYear", 'axes': "t"} )
+        seasonal_cycle.set_inputs( v0 )
+
+        seasonal_cycle_removed = cwt.Process.from_dict({'name': "CDSpark.eDiff", "domain": "d0"})
+        seasonal_cycle_removed.set_inputs( seasonal_cycle, v0 )
+        op = seasonal_cycle_removed
 
         op.set_inputs( v0 )
         self.wps.execute( op, domains=[d0], async=True )
