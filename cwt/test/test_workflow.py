@@ -837,7 +837,7 @@ class TestWorkflow:
         self.plotter.graph_data( data )
 
     def timeseries_processing_test( self ):
-        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':40, 'end':40, 'crs':'values'}, 'time': { 'start':'1980-01-01T00:00:00', 'end':'2000-12-31T23:00:00', 'crs':'timestamps'}  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':40, 'end':40, 'crs':'values'}, 'time': { 'start':'1980-01-01T00:00:00', 'end':'1988-01-01T00:00:00', 'crs':'timestamps'}  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_merra2_mth", "ts", domain=d0  )
 
         seasonal_cycle = cwt.Process.from_dict({'name': "CDSpark.ave", "groupBy": "monthOfYear", 'axes': "t"} )
@@ -851,14 +851,32 @@ class TestWorkflow:
         self.wps.execute( op, domains=[d0], async=True )
         dataPaths = self.wps.download_result(op, self.temp_dir)
         for dataPath in dataPaths:
-            self.plotter.mpl_timeplot( dataPath )
+            self.plotter.print_data( dataPath )
+
+    def eofs_test( self ):
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':-80, 'end':80,'crs':'values'}, 'time': { 'start':'1980-01-01T00:00:00', 'end':'1999-12-31T00:00:00', 'crs':'timestamps'}  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
+        v0 = cwt.Variable("collection://cip_merra2_mth", "ts", domain=d0  )
+
+        seasonal_cycle = cwt.Process.from_dict({'name': "CDSpark.ave", "groupBy": "monthOfYear", 'axes': "t"} )
+        seasonal_cycle.set_inputs( v0 )
+
+        seasonal_cycle_removed = cwt.Process.from_dict({'name': "CDSpark.eDiff", "domain": "d0"})
+        seasonal_cycle_removed.set_inputs( v0, seasonal_cycle )
+
+        eofs =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"4", "compu":"true" } )
+        eofs.set_inputs( seasonal_cycle_removed )
+
+        self.wps.execute( eofs, domains=[d0], async=True )
+        dataPaths = self.wps.download_result(eofs, self.temp_dir)
+        for dataPath in dataPaths:
+            self.plotter.mpl_plot( dataPath, 0, True )
 
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-#    executor.cip_max_temp()
-    executor.timeseries_processing_test()
+    executor.eofs_test()
 
+#    executor.cip_max_temp()
 #    executor.performance_test_conus_1mth()
 
 
