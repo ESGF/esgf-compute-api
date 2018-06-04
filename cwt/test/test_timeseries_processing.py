@@ -1,7 +1,7 @@
 import cdms2 as cdms
 import cdutil
 import cdtime
-from plotters import PlotMgr
+from cwt.plotters import PlotMgr
 import vcs
 import string
 import numpy as np
