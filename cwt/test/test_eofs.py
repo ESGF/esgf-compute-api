@@ -33,11 +33,10 @@ print "Completed data prep"
 solver = Eof( d_anom, weights='none', center=True, scale=True )
 print "Created solver"
 
-eof = solver.eofs( neofs=nModes )
+eof = solver.eofs( neofs=nModes, eofscaling=1 )
 print "Computed eofs"
 
 frac = solver.varianceFraction()
-eof = eof * -1
 
 #========================================== PLOT =================================================================
 
