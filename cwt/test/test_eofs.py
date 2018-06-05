@@ -18,7 +18,7 @@ f = cdms.open(data_path)
 start_year = 1980
 end_year = 2000
 nModes = 1
-scale = False
+scale = True
 
 start_time = cdtime.comptime(start_year)
 end_time = cdtime.comptime(end_year)
@@ -32,7 +32,7 @@ d_anom = cdutil.ANNUALCYCLE.departures(d)
 if scale:
     d_anom_center = d_anom - d_anom.mean(axis=0)
     d_anom_center_scaled = d_anom_center / d_anom_center.std(axis=0)
-    solver = Eof( d_anom_center_scaled, weights='none', center=False )
+    solver = Eof( d_anom_center_scaled, weights='none', center=True )
 else:
     solver = Eof( d_anom, weights='none', center=True )
 
