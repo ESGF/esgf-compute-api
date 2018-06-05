@@ -9,7 +9,7 @@ import numpy as np
 #===========================================================================================================
 # DATA
 #-----------------------------------------------------------------------------------------------------------
-# Open file ---
+# Open file:
 data_path = 'https://dataserver.nccs.nasa.gov/thredds/dodsC/bypass/CREATE-IP/Reanalysis/NASA-GMAO/GEOS-5/MERRA/mon/atmos/ts.ncml'
 
 # data_path = '/dass/pubrepo/CREATE-IP/data/reanalysis/NASA-GMAO/GEOS-5/MERRA2/mon/atmos/ts/ts_Amon_reanalysis_MERRA2_198001-201712.nc'
