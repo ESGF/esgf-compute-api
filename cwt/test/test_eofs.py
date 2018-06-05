@@ -33,7 +33,7 @@ if scale:
     d_anom_mean = d_anom.mean( axis=0 )
     d_anom_center = d_anom - d_anom_mean
 #    d_anom_center_scaled = d_anom_center / d_anom_center.std(axis=0)
-    solver = Eof( d_anom_center, weights='none', center=True )
+    solver = Eof( d_anom_center, weights='none', center=True, scale=True )
 else:
     solver = Eof( d_anom, weights='none', center=True )
 
