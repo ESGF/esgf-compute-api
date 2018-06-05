@@ -17,14 +17,14 @@ f = cdms.open(data_path)
 
 start_year = 1980
 end_year = 2000
-nModes = 1
+nModes = 4
 scale = True
 
 start_time = cdtime.comptime(start_year)
 end_time = cdtime.comptime(end_year)
 
-d = f('ts',time=(start_time,end_time),longitude=(120,290),latitude=(-50,50))
-# d = f('ts',time=(start_time,end_time),latitude=(-80,80))
+# d = f('ts',time=(start_time,end_time),longitude=(120,290),latitude=(-50,50))
+d = f('ts',time=(start_time,end_time),latitude=(-80,80))
 print "Completed data read"
 
 d_anom = cdutil.ANNUALCYCLE.departures(d)
