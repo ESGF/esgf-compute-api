@@ -49,8 +49,8 @@ canvas.setcolormap('bl_to_darkred')
 
 for iPlot in range(nModes):
     iso = canvas.createisofill()
-    level_distribution = np.array( [-1.6, -1.3, -1.0, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 1.3, 1.6] )
-    iso.levels = list( level_distribution*0.015 )
+    level_distribution = np.array( [-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] )
+    iso.levels = list( level_distribution*0.01 )
     iso.ext_1 = 'y' # control colorbar edge (arrow extention on/off)
     iso.ext_2 = 'y' # control colorbar edge (arrow extention on/off)
     cols = vcs.getcolors(iso.levels, range(16,240), split=0)
