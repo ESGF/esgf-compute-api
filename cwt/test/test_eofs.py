@@ -1,7 +1,7 @@
 import cdms2 as cdms
 import cdutil
 import cdtime
-from eofs.cdms import Eof
+from pyedas.eofs.cdms import Eof
 import vcs
 import string
 import numpy as np
@@ -28,15 +28,9 @@ d = f('ts',time=(start_time,end_time),longitude=(120,290),latitude=(-50,50))
 print "Completed data read"
 
 d_anom = cdutil.ANNUALCYCLE.departures(d)
+print "Completed data prep"
 
-if scale:
-    d_anom_mean = d_anom.mean( axis=0 )
-    d_anom_center = d_anom - d_anom_mean
-#    d_anom_center_scaled = d_anom_center / d_anom_center.std(axis=0)
-    solver = Eof( d_anom_center, weights='none', center=True, scale=True )
-else:
-    solver = Eof( d_anom, weights='none', center=True )
-
+solver = Eof( d_anom, weights='none', center=True, scale=True )
 print "Created solver"
 
 eof = solver.eofs( neofs=nModes )
