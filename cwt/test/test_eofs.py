@@ -42,11 +42,15 @@ frac = solver.varianceFraction()
 
 #========================================== PLOT =================================================================
 
-canvas = vcs.init(geometry=(900,800))
+canvas = vcs.init(geometry=(1400,1000))
 
 canvas.open()
 canvas.setcolormap('bl_to_darkred')
 M=EzTemplate.Multi(rows=nModes/2,columns=2)
+M.margins.top=0.1
+M.margins.bottom=0.0
+M.spacing.horizontal=.05
+M.spacing.vertical=.05
 
 for iPlot in range(nModes):
     iso = canvas.createisofill()
@@ -57,26 +61,16 @@ for iPlot in range(nModes):
     cols = vcs.getcolors(iso.levels, range(16,240), split=0)
     iso.fillareacolors = cols
     iso.missing = 0
+    variable = eof[iPlot]
     percentage = str(round(float(frac[iPlot]*100.),1)) + '%'
-    plot_title = 'EOF mode ' + str(iPlot) + ', MERRA2 TS('+str(start_year)+'-'+str(end_year)+'), '+percentage
+    plot_title_str = 'EOF mode ' + str(iPlot) + ', MERRA2 TS('+str(start_year)+'-'+str(end_year)+'), '+percentage
 
     p = vcs.createprojection()
     p.type = 'robinson'
     iso.projection = p
-    t=M.get(plot_title)
-
-    canvas.plot(eof[iPlot],iso,t)
-
-    # plot_title = vcs.createtext()
-    # plot_title.x = .5
-    # plot_title.y = .97
-    # plot_title.height = 23
-    # plot_title.halign = 'center'
-    # plot_title.valign = 'top'
-    # plot_title.color='black'
-    # plot_title.string = plot_title
-    # canvas.plot(plot_title)
-
+    t=M.get( legend='local' )
+    variable.setattribute( "long_name", plot_title_str )
+    canvas.plot(variable,iso,t)
     canvas.png('/tmp/eof_analysis-mode{0}.png'.format(iPlot))
 
 canvas.interact()
