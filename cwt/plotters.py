@@ -21,24 +21,27 @@ class PlotMgr:
         ax.plot( xvalues, data )
         plt.show()
 
-    def mpl_timeplot( self, dataPath ):
+    def mpl_timeplot( self, dataPath, numCols = 4 ):
         if dataPath:
             for k in range(0,30):
                 if( os.path.isfile(dataPath) ):
                     self.logger.info( "Plotting file: " +  dataPath )
                     f = cdms2.openDataset(dataPath) # type: cdms2.dataset.CdmsFile
-                    varNames = f.variables.keys()  # type: List[str]
+                    varNames = [ vn for vn in f.variables.keys() if not vn.endswith('bnds') ]  # type: List[str]
+                    varNames.sort()
                     fig = plt.figure()    # type: Figure
                     iplot = 1
-                    nCols = min( len(varNames), 4 )
+                    nCols = min( len(varNames), numCols )
                     nRows = math.ceil( len(varNames) / float(nCols) )
                     for varName in varNames:  # type: str
                         self.logger.info( "  ->  Plotting variable: " +  varName + ", subplot: " + str(iplot) )
-                        timeSeries = f( varName, squeeze=1 )
+                        timeSeries = f( varName, squeeze=1 )  # type: cdms2.Variable
+                        long_name = timeSeries.attributes.get('long_name')
                         datetimes = [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, int(x.second)) for x in timeSeries.getTime().asComponentTime()]
                         dates = matplotlib.dates.date2num(datetimes)
                         ax = fig.add_subplot( nRows, nCols, iplot )
-                        ax.set_title( varName )
+                        title = varName if long_name is None else long_name
+                        ax.set_title( title )
                         ax.plot(dates, timeSeries.data )
                         ax.xaxis.set_major_formatter( mdates.DateFormatter('%b %Y') )
                         ax.grid(True)
