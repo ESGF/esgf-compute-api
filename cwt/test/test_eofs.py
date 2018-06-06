@@ -2,7 +2,7 @@ import cdms2 as cdms
 import cdutil
 import cdtime
 from pyedas.eofs.cdms import Eof
-import vcs
+import vcs, EzTemplate
 import string
 import numpy as np
 
@@ -43,9 +43,8 @@ frac = solver.varianceFraction()
 canvas = vcs.init(geometry=(900,800))
 
 canvas.open()
-template = canvas.createtemplate()
-template.blank(['title','mean','min','max','dataname','crdate','crtime','units','zvalue','tvalue','xunits','yunits','xname','yname'])
 canvas.setcolormap('bl_to_darkred')
+M=EzTemplate.Multi(rows=nModes/2,columns=2)
 
 for iPlot in range(nModes):
     iso = canvas.createisofill()
@@ -56,23 +55,27 @@ for iPlot in range(nModes):
     cols = vcs.getcolors(iso.levels, range(16,240), split=0)
     iso.fillareacolors = cols
     iso.missing = 0
+    percentage = str(round(float(frac[iPlot]*100.),1)) + '%'
+    plot_title = 'EOF mode ' + str(iPlot) + ', MERRA2 TS('+str(start_year)+'-'+str(end_year)+'), '+percentage
 
     p = vcs.createprojection()
     p.type = 'robinson'
     iso.projection = p
+    t=M.get(plot_title)
 
-    canvas.plot(eof[iPlot],iso,template)
+    canvas.plot(eof[iPlot],iso,t)
 
-    plot_title = vcs.createtext()
-    plot_title.x = .5
-    plot_title.y = .97
-    plot_title.height = 23
-    plot_title.halign = 'center'
-    plot_title.valign = 'top'
-    plot_title.color='black'
-    percentage = str(round(float(frac[iPlot]*100.),1)) + '%'
-    plot_title.string = 'EOF mode ' + str(iPlot) + ', MERRA2 TS('+str(start_year)+'-'+str(end_year)+'), '+percentage
-    canvas.plot(plot_title)
+    # plot_title = vcs.createtext()
+    # plot_title.x = .5
+    # plot_title.y = .97
+    # plot_title.height = 23
+    # plot_title.halign = 'center'
+    # plot_title.valign = 'top'
+    # plot_title.color='black'
+    # plot_title.string = plot_title
+    # canvas.plot(plot_title)
+
     canvas.png('/tmp/eof_analysis-mode{0}.png'.format(iPlot))
-    canvas.clear()
+
+canvas.interact()
 
