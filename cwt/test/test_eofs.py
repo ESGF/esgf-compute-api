@@ -48,7 +48,7 @@ canvas.open()
 canvas.setcolormap('bl_to_darkred')
 M=EzTemplate.Multi(rows=nModes/2,columns=2)
 M.margins.top=0.1
-M.margins.bottom=0.0
+M.margins.bottom=0.05
 M.spacing.horizontal=.05
 M.spacing.vertical=.05
 
