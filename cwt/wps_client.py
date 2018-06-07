@@ -41,6 +41,9 @@ class WPSClient(object):
             language: A string language code for the WPS server to communicate in.
             log: A boolean flag to enable logging
             log_file: A string path for a log file.
+            verify: A bool to enable/disable verifying a server's TLS certificate.
+            ca: A str path to a CA bundle to use when verifiying a server's TLS certificate.
+            cert: A str path to an SSL client cert or a tuple as ('cert', 'key').
         """
         self.__url = url
         self.__version = kwargs.get('version')
@@ -50,6 +53,9 @@ class WPSClient(object):
         self.__csrf_token = None
         self.__client = requests.Session()
         self.__file_handler = None
+        self.__ssl_verify = kwargs.get('verify', True)
+        self.__ssl_verify_ca = kwargs.get('ca', None)
+        self.__ssl_cert = kwargs.get('cert', None)
 
         if kwargs.get('log') is not None:
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
@@ -72,11 +78,12 @@ class WPSClient(object):
                 logger.addHandler(self.__file_handler)
 
     def __repr__(self):
-        return ('Process(url=%r, version=%r, language=%r, capabilities=%r)') % (
+        return ('Process(url=%r, version=%r, language=%r, capabilities=%r, ssl_verify=%r)') % (
             self.__url,
             self.__version,
             self.__language,
             self.__capabilities is not None,
+            self.__ssl_verify,
         )
 
     def __del__(self):
@@ -114,8 +121,21 @@ class WPSClient(object):
             # sign all requests with the api key
             params['api_key'] = self.__api_key
 
+        kwargs = {
+            'params': params,
+            'data': data,
+            'headers': headers,
+            'verify': self.__ssl_verify,
+        }
+
+        if self.__ssl_verify_ca is not None and self.__ssl_verify:
+            kwargs['verify'] = self.__ssl_verify_ca
+
+        if self.__ssl_cert is not None:
+            kwargs['cert'] = self.__ssl_cert
+
         try:
-            response = self.__client.request(method, url, params=params, data=data, headers=headers)
+            response = self.__client.request(method, url, **kwargs)
         except requests.RequestException as e:
             raise cwt.WPSHttpError.from_request_response(e.response)
 
