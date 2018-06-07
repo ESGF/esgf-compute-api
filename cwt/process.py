@@ -273,7 +273,7 @@ class Process(cwt.Parameter):
         }
 
         if self.domain is not None:
-            if isinstance(self.domain, str):
+            if isinstance(self.domain, (str, unicode)):
                 params['domain'] = self.domain
             else:
                 params['domain'] = self.domain.name
@@ -281,7 +281,7 @@ class Process(cwt.Parameter):
         inputs = []
 
         for i in self.inputs:
-            if isinstance(i, str):
+            if isinstance(i, (str, unicode)):
                 inputs.append(i)
             else:
                 inputs.append(i.name)
