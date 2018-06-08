@@ -406,7 +406,7 @@ class WPSClient(object):
         else:
             raise cwt.WPSError('{} method is unsupported'.format(method))
 
-        process.response = wps.CreateFromDocument(response)
+        process.response = response
 
         if process.is_failed:
             raise Exception(process.exception_message)
