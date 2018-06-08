@@ -11,7 +11,10 @@ class CWTError(Exception):
         super(CWTError, self).__init__(fmt.format(*args, **kwargs))
 
 class WPSError(CWTError):
-    pass
+    def __init__(self, fmt, binding=None, *args, **kwargs):
+        self.binding = binding
+
+        super(WPSError, self).__init__(fmt, *args, **kwargs)
 
 class WPSHttpError(WPSError):
     @classmethod
@@ -19,3 +22,14 @@ class WPSHttpError(WPSError):
         fmt = 'Response code {status_code}: {reason}'
 
         return cls(fmt, status_code=response.status_code, reason=response.reason)
+
+class WPSExceptionError(WPSError):
+    @classmethod
+    def from_binding(cls, binding):
+        fmt = 'Code: {code} Message: {message}'
+
+        code = binding.Exception[0].exceptionCode
+
+        message = ', '.join(binding.Exception[0].ExceptionText)
+
+        return cls(fmt, binding=binding, code=code, message=message)

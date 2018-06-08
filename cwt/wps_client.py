@@ -57,7 +57,7 @@ class WPSClient(object):
         self.__ssl_verify_ca = kwargs.get('ca', None)
         self.__ssl_cert = kwargs.get('cert', None)
 
-        if kwargs.get('log') is not None:
+        if kwargs.get('log', False):
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
 
             logger.setLevel(logging.INFO)
@@ -182,7 +182,12 @@ class WPSClient(object):
        
         response = self.__http_request(method, url, params, data, headers)
 
-        return response
+        data = wps.CreateFromDocument(response)
+
+        if isinstance(data, cwt.wps.ows.CTD_ANON_9):
+            raise cwt.WPSExceptionError.from_binding(data)
+
+        return data
 
     def __get_capabilities(self, method):
         """ Builds and attempts a GetCapabilities request. """
@@ -210,9 +215,7 @@ class WPSClient(object):
         else:
             raise cwt.WPSError('{} method is unsupported'.format(method))
 
-        capabilities = wps.CreateFromDocument(response)
-
-        return capabilities
+        return response
 
     def processes(self, pattern=None, refresh=False, method='GET'):
         """ Returns a list of WPS processes.
@@ -291,9 +294,7 @@ class WPSClient(object):
         else:
             raise cwt.WPSError('{} method is unsupported'.format(method))
 
-        desc = wps.CreateFromDocument(response)
-
-        return desc
+        return response.toDOM(bds=bds).toprettyxml()
 
     @staticmethod
     def parse_data_inputs(data_inputs):
