@@ -99,7 +99,9 @@ class WPSClient(object):
         if self.__capabilities is None or refresh:
             self.__capabilities = self.__get_capabilities(method)
 
-        return self.__capabilities
+        bds.reset()
+
+        return self.__capabilities.toDOM(bds=bds).toprettyxml()
 
     def __http_request(self, method, url, params, data, headers):
         """ HTTP request
