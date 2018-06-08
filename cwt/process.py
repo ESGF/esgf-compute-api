@@ -97,6 +97,20 @@ class Process(cwt.Parameter):
             return self.binding.Identifier.value()
 
     @property
+    def title(self):
+        try:
+            return self.binding.Title.value()
+        except AttributeError:
+            raise ProcessError('Binding has not been set')
+
+    @property
+    def version(self):
+        try:
+            return self.binding.processVersion
+        except AttributeError:
+            raise ProcessError('Binding has not been set')
+
+    @property
     def processing(self):
         """ Checks if the process is still working.
 
