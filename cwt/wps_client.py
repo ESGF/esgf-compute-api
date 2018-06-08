@@ -136,14 +136,16 @@ class WPSClient(object):
 
         try:
             response = self.__client.request(method, url, **kwargs)
-        except requests.RequestException as e:
-            raise cwt.WPSHttpError.from_request_response(e.response)
+        except requests.ConnectionError as e:
+            logger.exception('Connection error')
+
+            raise cwt.WPSHttpError('Connection failed {error}', error=e)
+        except requests.HTTPError as e:
+            logger.exception('HTTP error')
+
+            raise cwt.WPSHttpError('HTTP request failed {error}', error=e)
 
         logger.debug('%s request succeeded', method)
-
-        logger.debug('Response headers %s', response.headers)
-
-        logger.debug('Response cookies %s', response.cookies)
 
         if 'csrftoken' in response.cookies:
             self.__csrf_token = response.cookies['csrftoken']
