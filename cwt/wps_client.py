@@ -103,7 +103,7 @@ class WPSClient(object):
 
         return self.__capabilities.toDOM(bds=bds).toprettyxml()
 
-    def __http_request(self, method, url, params, data, headers):
+    def http_request(self, method, url, params, data, headers):
         """ HTTP request
 
         Args:
@@ -180,7 +180,7 @@ class WPSClient(object):
         if self.__csrf_token is not None:
             headers['X-CSRFToken'] = self.__csrf_token
        
-        response = self.__http_request(method, url, params, data, headers)
+        response = self.http_request(method, url, params, data, headers)
 
         data = wps.CreateFromDocument(response)
 
@@ -373,6 +373,8 @@ class WPSClient(object):
             domain: A Domain object to be used.
             kwargs: A dict containing additional arguments.
         """
+        process.set_client(self)
+
         if inputs is None:
             inputs = []
 

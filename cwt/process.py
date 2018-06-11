@@ -43,6 +43,8 @@ class Process(cwt.Parameter):
 
         self.domain = None
 
+        self.__client = None
+
     def __repr__(self):
         return 'Process(identifier=%r, name=%r, num_inputs=%r)' % (
             self.identifier,
@@ -149,6 +151,9 @@ class Process(cwt.Parameter):
         var = cwt.Variable.from_dict(data)
 
         return var
+
+    def set_client(self, client):
+        self.__client = client
 
     def set_domain(self, domain):
         self.domain = domain
@@ -269,12 +274,9 @@ class Process(cwt.Parameter):
         if self.response is None or self.response.statusLocation is None:
             return None
 
-        try:
-            response = requests.get(self.response.statusLocation)
-        except requests.RequestException as e:
-            raise cwt.WPSHttpError.from_request_response(e.response)
+        response = self.__client.http_request('GET', self.response.statusLocation, {}, {}, {})
 
-        self.response = wps.CreateFromDocument(response.text)
+        self.response = wps.CreateFromDocument(response)
 
         if self.is_failed:
             raise cwt.WPSError('Process failed: {}'.format(self.exception_message))
