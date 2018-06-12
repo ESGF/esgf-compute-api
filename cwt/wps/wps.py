@@ -161,7 +161,7 @@ def output_data(identifier, title, value):
 
     complex_data = ComplexDataType()
 
-    complex_data.Data = value
+    complex_data.append(value)
 
     data.ComplexData = complex_data
 
@@ -203,6 +203,7 @@ def execute_response(process, status, version, lang, service_instance, status_lo
     process_outputs = CTD_ANON_5()
 
     process_outputs.Output = outputs
+    #process_outputs.Output = outputs
 
     ex.ProcessOutputs = process_outputs
 
