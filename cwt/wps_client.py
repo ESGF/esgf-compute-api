@@ -410,5 +410,5 @@ class WPSClient(object):
 
         process.response = response
 
-        if process.is_failed:
+        if process.failed:
             raise Exception(process.exception_message)

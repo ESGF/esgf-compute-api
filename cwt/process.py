@@ -135,8 +135,34 @@ class Process(cwt.Parameter):
         return exception.ExceptionText[0]
 
     @property
-    def is_failed(self):
-        return self.response is not None and self.response.Status.ProcessFailed is not None
+    def has_status(self):
+        return (self.response is not None and
+                self.response.Status is not None)
+
+    @property
+    def accepted(self):
+        return (self.has_status and
+                self.response.Status.ProcessAccepted is not None)
+
+    @property
+    def started(self):
+        return (self.has_status and
+                self.response.Status.ProcessStarted is not None)
+
+    @property
+    def paused(self):
+        return (self.has_status and
+                self.response.Status.ProcessPaused is not None)
+
+    @property
+    def failed(self):
+        return (self.has_status and
+                self.response.Status.ProcessFailed is not None)
+
+    @property
+    def succeeded(self):
+        return (self.has_status and
+                self.response.Status.ProcessSucceeded is not None)
 
     @property
     def output(self):
@@ -146,12 +172,39 @@ class Process(cwt.Parameter):
                 len(self.response.ProcessOutputs.Output) == 0):
             return None
 
-        data = json.loads(self.response.ProcessOutputs.Output[0].Data.ComplexData.Data)
+        data = json.loads(self.response.ProcessOutputs.Output[0].Data.ComplexData.content()[0])
 
-        var = cwt.Variable.from_dict(data)
+        if 'uri' in data:
+            output_data = cwt.Variable.from_dict(data)
+        else:
+            output_data = data
 
-        return var
+        return output_data
 
+    @property
+    def status(self):
+        if self.response is not None and self.response.Status is not None:
+            if self.response.Status.ProcessAccepted is not None:
+                return 'ProcessAccepted {}'.format(self.response.Status.ProcessAccepted)
+            elif self.response.Status.ProcessStarted is not None:
+                message = self.response.Status.ProcessStarted.value()
+
+                percent = self.response.Status.ProcessStarted.percentCompleted
+
+                return 'ProcessStarted {} {}'.format(message, percent)
+            elif self.response.Status.ProcessPaused is not None:
+                message = self.response.Status.ProcessPaused.value()
+
+                percent = self.response.Status.ProcessPaused.percentCompleted
+
+                return 'ProcessStarted {} {}'.format(message, percent)
+            elif self.response.Status.ProcessFailed is not None:
+                raise cwt.WPSError('ProcessFailed {}'.format(self.exception_message))
+            elif self.response.Status.ProcessSucceeded is not None:
+                return 'ProcessSucceeded {}'.format(self.response.Status.ProcessSucceeded)
+
+        return 'No Status'
+        
     def set_client(self, client):
         self.__client = client
 
@@ -278,7 +331,7 @@ class Process(cwt.Parameter):
 
         self.response = wps.CreateFromDocument(response)
 
-        if self.is_failed:
+        if self.failed:
             raise cwt.WPSError('Process failed: {}'.format(self.exception_message))
 
     def parameterize(self):
