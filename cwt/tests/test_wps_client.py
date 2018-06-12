@@ -276,7 +276,7 @@ class TestWPSClient(unittest.TestCase):
 
         client = cwt.WPSClient('http://idontexist/wps', api_key='api_key_7')
 
-        mock_request.side_effect = requests.RequestException(response=mock.MagicMock(status_code=400, reason='Not Found'))
+        mock_request.side_effect = requests.HTTPError(response=mock.MagicMock(status_code=400, reason='Not Found'))
 
         with self.assertRaises(cwt.WPSError):
             client.get_capabilities()
@@ -409,12 +409,7 @@ class TestWPSClient(unittest.TestCase):
 
         description = client.describe_process(process, method='POST')
 
-        self.assertEqual(len(description.ProcessDescription), 1)
-
-        process_description = description.ProcessDescription[0]
-
-        self.assertEqual(len(process_description.DataInputs.Input), 3)
-        self.assertEqual(len(process_description.ProcessOutputs.Output), 1)
+	self.assertIsInstance(description, unicode)
 
     @mock.patch('requests.Session.request') 
     def test_describe_process_invalid_method(self, mock_request):
@@ -441,12 +436,7 @@ class TestWPSClient(unittest.TestCase):
 
         description = client.describe_process(process)
 
-        self.assertEqual(len(description.ProcessDescription), 1)
-
-        process_description = description.ProcessDescription[0]
-
-        self.assertEqual(len(process_description.DataInputs.Input), 3)
-        self.assertEqual(len(process_description.ProcessOutputs.Output), 1)
+	self.assertIsInstance(description, unicode)
 
     @mock.patch('requests.Session.request') 
     def test_get_process_indexerror(self, mock_request):

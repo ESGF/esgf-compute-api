@@ -55,17 +55,6 @@ class TestProcess(unittest.TestCase):
 
         data = process.parameterize()
 
-    @mock.patch('requests.get')
-    def test_update_status_request_exception(self, mock_get):
-        mock_get.side_effect = requests.RequestException(response=mock.MagicMock(status_code=200, reason='some reason'))
-
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.response = self.execute
-
-        with self.assertRaises(cwt.WPSHttpError):
-            self.assertIsNone(process.update_status())
-
     def test_update_status(self):
         process = cwt.Process.from_identifier('CDAT.subset')
 
@@ -190,22 +179,28 @@ class TestProcess(unittest.TestCase):
 
         self.assertIsInstance(process.output, cwt.Variable)
 
-    @mock.patch('requests.get')
-    def test_processing_failed(self, mock_request):
-        mock_request.return_value.text = self.execute_failed.toxml(bds=bds)
-
+    def test_processing_failed(self):
         process = cwt.Process.from_identifier('CDAT.subset')
+	
+	mock_client = mock.MagicMock()
+
+	mock_client.http_request.return_value = self.execute_failed.toxml(bds=bds)
+
+	process.set_client(mock_client)
 
         process.response = self.execute_failed
 
         with self.assertRaises(cwt.WPSError):
             process.processing
 
-    @mock.patch('requests.get')
-    def test_processing(self, mock_request):
-        mock_request.return_value.text = self.execute.toxml(bds=bds)
-
+    def test_processing(self):
         process = cwt.Process.from_identifier('CDAT.subset')
+
+	mock_client = mock.MagicMock()
+
+	mock_client.http_request.return_value = self.execute.toxml(bds=bds)
+
+	process.set_client(mock_client)
 
         process.response = self.execute
 
