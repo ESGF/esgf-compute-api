@@ -111,7 +111,7 @@ class TestWPS(unittest.TestCase):
 
         output = wps.process_output_description('output', 'output', 'application/json')
 
-        description = wps.process_description('CDAT.subset', 'CDAT.subset', '1.0.0', [data], [output])
+        description = wps.process_description('CDAT.subset', 'CDAT.subset', '1.0.0', [output], data_inputs=[data])
 
         self.assertTrue(description.validateBinding())
 
@@ -120,7 +120,7 @@ class TestWPS(unittest.TestCase):
 
         output = wps.process_output_description('output', 'output', 'application/json')
 
-        description = wps.process_description('CDAT.subset', 'CDAT.subset', '1.0.0', [data], [output])
+        description = wps.process_description('CDAT.subset', 'CDAT.subset', '1.0.0', [output], data_inputs=[data])
 
         descriptions = wps.process_descriptions('en-US', '1.0.0', [description])
 
