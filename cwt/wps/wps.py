@@ -341,7 +341,7 @@ def data_input_description(identifier, title, mime_type, min_occurs, max_occurs)
 
     return description
 
-def process_description(identifier, title, version, data_inputs, process_outputs, abstract=None):
+def process_description(identifier, title, version, process_outputs, data_inputs=None, abstract=None):
     """ Process Description
 
     Args:
@@ -363,9 +363,10 @@ def process_description(identifier, title, version, data_inputs, process_outputs
     if abstract is not None:
         process.Abstract = abstract
 
-    process.DataInputs = CTD_ANON()
+    if data_inputs is not None and len(data_inputs) > 0:
+        process.DataInputs = CTD_ANON()
 
-    process.DataInputs.Input = data_inputs
+        process.DataInputs.Input = data_inputs
 
     process.ProcessOutputs = CTD_ANON_()
 
