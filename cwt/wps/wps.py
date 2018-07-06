@@ -341,13 +341,15 @@ def data_input_description(identifier, title, mime_type, min_occurs, max_occurs)
 
     return description
 
-def process_description(identifier, title, version, process_outputs, data_inputs=None, abstract=None):
+def process_description(identifier, title, version, process_outputs, metadata=None, data_inputs=None, abstract=None):
     """ Process Description
 
     Args:
         identifier (str): Process identifier.
         title (str): Process title.
         version (str): Process version.
+        metadata (dict): A dict whose key/value pairs will be combined with ':'
+            and set as the title value of the metadata element.
         data_inputs (list): List of input descriptions.
         process_outputs (list): List of output descriptions.
 
@@ -367,6 +369,14 @@ def process_description(identifier, title, version, process_outputs, data_inputs
         process.DataInputs = CTD_ANON()
 
         process.DataInputs.Input = data_inputs
+
+    if metadata is not None:
+        for key, value in metadata.iteritems():
+            item = ows.MetadataType()
+
+            item.title = '{}:{}'.format(key, value)
+
+            process.Metadata.append(item)
 
     process.ProcessOutputs = CTD_ANON_()
 
