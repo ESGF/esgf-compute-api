@@ -17,6 +17,13 @@ __all__ = ['ProcessError', 'Process']
 class ProcessError(cwt.CWTError):
     pass
 
+class ValidationError(cwt.CWTError):
+    def __init__(self, fmt, *args):
+        self.msg = fmt.format(*args)
+
+    def __str__(self):
+        return self.msg
+
 class Process(cwt.Parameter):
     """ A WPS Process
 
@@ -115,6 +122,20 @@ class Process(cwt.Parameter):
             raise ProcessError('Binding has not been set')
 
     @property
+    def abstract(self):
+        try:
+            return self.description.abstract
+        except AttributeError:
+            raise ProcessError('Abstract is not available')
+
+    @property
+    def metadata(self):
+        try:
+            return self.description.metadata
+        except AttributeError:
+            raise ProcessError('Metadata is not available')
+
+    @property
     def processing(self):
         """ Checks if the process is still working.
 
@@ -206,6 +227,21 @@ class Process(cwt.Parameter):
                 return 'ProcessSucceeded {}'.format(self.response.Status.ProcessSucceeded)
 
         return 'No Status'
+
+    def validate(self):
+        input_limit = None
+
+        if self.metadata is None:
+            return
+
+        if 'inputs' in self.metadata:
+            if self.metadata['inputs'] == '*':
+                input_limit = -1
+            else:
+                input_limit = int(self.metadata['inputs'])
+
+        if input_limit is not None and len(self.inputs) > input_limit:
+            raise ValidationError('Invalid number of inputs, expected "{}", got "{}"', input_limit, len(self.inputs))
         
     def set_client(self, client):
         self.__client = client

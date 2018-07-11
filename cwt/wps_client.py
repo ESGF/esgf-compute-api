@@ -194,6 +194,7 @@ class WPSClient(object):
             if self.language is not None:
                 params['language'] = self.language
 
+
             response = self.request(method, params=params)
         elif method.lower() == 'post':
             data = wps.describe_process(identifier, '1.0.0').toxml(bds=bds)
@@ -270,6 +271,38 @@ class WPSClient(object):
         except re.error:
             raise cwt.CWTError('Invalid pattern, see python\'s "re" module for documentation')
 
+    def request(self, method, params=None, data=None):
+        """ WPS Request
+
+        Prepares the HTTP request by fixing urls and adding extra headers.
+        
+        Args:
+            method: A string HTTP method.
+            params: A dict of HTTP parameters.
+            data: A string for data for the HTTP body.
+
+        Returns:
+            A string response from the server.
+        """
+        url = self.url
+
+        if method.lower() == 'post' and self.url[-1] != '/':
+            url = '{0}/'.format(self.url)
+
+        headers = {}
+
+        if self.csrf_token is not None:
+            headers['X-CSRFToken'] = self.csrf_token
+
+        response = self.http_request(method, url, params, data, headers)
+
+        data = wps.CreateFromDocument(response)
+
+        if isinstance(data, cwt.wps.ows.CTD_ANON_9):
+            raise cwt.WPSExceptionError.from_binding(data)
+
+        return data
+
     def http_request(self, method, url, params, data, headers):
         """ HTTP request
 
@@ -304,6 +337,8 @@ class WPSClient(object):
         if self.ssl_cert is not None:
             kwargs['cert'] = self.ssl_cert
 
+        logger.info('Request %r, %r, %r', method, url, kwargs)
+
         try:
             response = self.client.request(method, url, **kwargs)
         except requests.ConnectionError as e:
@@ -328,38 +363,6 @@ class WPSClient(object):
             raise cwt.WPSHttpError.from_request_response(response)
 
         return response.text
-
-    def request(self, method, params=None, data=None):
-        """ WPS Request
-
-        Prepares the HTTP request by fixing urls and adding extra headers.
-        
-        Args:
-            method: A string HTTP method.
-            params: A dict of HTTP parameters.
-            data: A string for data for the HTTP body.
-
-        Returns:
-            A string response from the server.
-        """
-        url = self.url
-
-        if method.lower() == 'post' and self.url[-1] != '/':
-            url = '{0}/'.format(self.url)
-
-        headers = {}
-
-        if self.csrf_token is not None:
-            headers['X-CSRFToken'] = self.csrf_token
-       
-        response = self.http_request(method, url, params, data, headers)
-
-        data = wps.CreateFromDocument(response)
-
-        if isinstance(data, cwt.wps.ows.CTD_ANON_9):
-            raise cwt.WPSExceptionError.from_binding(data)
-
-        return data
 
     @staticmethod
     def parse_data_inputs(data_inputs):
@@ -403,6 +406,9 @@ class WPSClient(object):
         """
         domains = []
 
+        if process.description is None:
+            self.describe_process(process)
+
         if domain is not None:
             process.domain = domain
 
@@ -411,6 +417,8 @@ class WPSClient(object):
         parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
         process.inputs.extend(inputs)
+
+        process.validate()
 
         process.add_parameters(*parameters)
 
