@@ -69,6 +69,22 @@ class TestWPSClient(unittest.TestCase):
         cwt.bds.reset()
 
     @mock.patch('requests.Session.request')
+    def test_timeout(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
+
+        client = cwt.WPSClient('http://idontexist/wps', timeout=(5, 3))
+
+        client.get_capabilities()
+
+        mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        timeout=(5, 3),
+                                        params={'request': 'GetCapabilities', 
+                                                'service': 'WPS'}, 
+                                        data=None, headers={}, verify=True)
+
+    @mock.patch('requests.Session.request')
     def test_ssl_cert_tuple(self, mock_request):
         mock_request.return_value.status_code = 200
 
@@ -79,6 +95,7 @@ class TestWPSClient(unittest.TestCase):
         client.get_capabilities()
 
         mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        timeout=None,
                                         cert=('/client.crt', '/client.key'),
                                         params={'request': 'GetCapabilities', 
                                                 'service': 'WPS'}, 
@@ -95,6 +112,7 @@ class TestWPSClient(unittest.TestCase):
         client.get_capabilities()
 
         mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        timeout=None,
                                         cert='/client.pem',
                                         params={'request': 'GetCapabilities', 
                                                 'service': 'WPS'}, 
@@ -111,6 +129,7 @@ class TestWPSClient(unittest.TestCase):
         client.get_capabilities()
 
         mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        timeout=None,
                                         params={'request': 'GetCapabilities', 
                                                 'service': 'WPS'}, 
                                         data=None, headers={}, verify=False)
@@ -126,6 +145,7 @@ class TestWPSClient(unittest.TestCase):
         client.get_capabilities()
 
         mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        timeout=None,
                                         params={'request': 'GetCapabilities', 
                                                 'service': 'WPS'}, 
                                         data=None, headers={}, verify='/test.pem')
@@ -141,6 +161,7 @@ class TestWPSClient(unittest.TestCase):
         client.get_capabilities()
 
         mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        timeout=None,
                                         params={'request': 'GetCapabilities', 
                                                 'service': 'WPS'}, 
                                         data=None, headers={}, verify=False)
@@ -156,6 +177,7 @@ class TestWPSClient(unittest.TestCase):
         client.get_capabilities()
 
         mock_request.assert_called_with('GET', 'http://idontexist/wps', 
+                                        timeout=None,
                                         params={'request': 'GetCapabilities', 
                                                 'service': 'WPS'}, 
                                         data=None, headers={}, verify=True)

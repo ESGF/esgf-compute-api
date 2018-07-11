@@ -40,18 +40,24 @@ class WPSClient(object):
             verify: A bool to enable/disable verifying a server's TLS certificate.
             ca: A str path to a CA bundle to use when verifiying a server's TLS certificate.
             cert: A str path to an SSL client cert or a tuple as ('cert', 'key').
+            timeout: A float or tuple. If tuple the timeout format is as follows
+                (connect timeout, read timeout).
         """
         self.url = url
+
         self.version = kwargs.get('version')
         self.language = kwargs.get('language')
         self.api_key = kwargs.get('api_key')
-        self.csrf_token = None
-        self.client = requests.Session()
-        self.file_handler = None
         self.ssl_verify = kwargs.get('verify', True)
         self.ssl_verify_ca = kwargs.get('ca', None)
         self.ssl_cert = kwargs.get('cert', None)
+        self.timeout = kwargs.get('timeout', None)
+
+        self.csrf_token = None
+        self.file_handler = None
         self.capabilities = None
+
+        self.client = requests.Session()
 
         if kwargs.get('log', False):
             formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
@@ -172,8 +178,6 @@ class WPSClient(object):
 
             params['datainputs'] = self.prepare_data_inputs(process, inputs, domain, **kwargs)
 
-            logger.debug(params)
-
             response = self.request(method, params=params)
         elif method.lower() == 'post':
             data_inputs = self.prepare_data_inputs(process, inputs, domain, **kwargs)
@@ -185,8 +189,6 @@ class WPSClient(object):
             operation = wps.data_input('operation', 'Operation', json.dumps(data_inputs['operation']))
 
             data = wps.execute(process.identifier, '1.0.0', [variables, domains, operation]).toxml(bds=bds)
-
-            logger.debug(data)
 
             response = self.request(method, data=data)
         else:
@@ -222,6 +224,7 @@ class WPSClient(object):
             'data': data,
             'headers': headers,
             'verify': self.ssl_verify,
+            'timeout': self.timeout,
         }
 
         if self.ssl_verify_ca is not None and self.ssl_verify:
