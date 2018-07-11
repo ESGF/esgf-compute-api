@@ -33,6 +33,8 @@ class Process(cwt.Parameter):
 
         self.binding = binding
 
+        self.description = None
+
         self.response = None
 
         self.processed = False

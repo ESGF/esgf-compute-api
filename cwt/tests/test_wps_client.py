@@ -53,7 +53,14 @@ class TestWPSClient(unittest.TestCase):
             wps.process_output_description('output', 'Output', 'application/json')
         ]
 
-        description = wps.process_description('CDAT.subset', 'CDAT.subset', '1.0.0', outputs, data_inputs=inputs)
+        description_args = [
+            'CDAT.subset',
+            'CDAT.subset',
+            '1.0.0',
+            outputs
+        ]
+
+        description = wps.process_description(*description_args, metadata={'inputs': 1}, abstract='abstract text', data_inputs=inputs)
 
         self.process_descriptions = wps.process_descriptions('en-US', '1.0.0', [description])
 
@@ -238,7 +245,7 @@ class TestWPSClient(unittest.TestCase):
     def test_describe_process_language(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
+        mock_request.return_value.text = self.process_descriptions.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', language='en-US')
 
@@ -457,7 +464,8 @@ class TestWPSClient(unittest.TestCase):
 
         description = client.describe_process(process, method='POST')
 
-	self.assertIsInstance(description, unicode)
+	self.assertIsInstance(description, list)
+        self.assertIsInstance(description[0], cwt.ProcessDescriptionWrapper)
 
     @mock.patch('requests.Session.request') 
     def test_describe_process_invalid_method(self, mock_request):
@@ -484,7 +492,15 @@ class TestWPSClient(unittest.TestCase):
 
         description = client.describe_process(process)
 
-	self.assertIsInstance(description, unicode)
+	self.assertIsInstance(description, list)
+        
+        subset = description[0]
+
+        self.assertIsInstance(subset, cwt.ProcessDescriptionWrapper)
+        self.assertEqual(subset.identifier, 'CDAT.subset')
+        self.assertEqual(subset.title, 'CDAT.subset')
+        self.assertEqual(subset.abstract, 'abstract text')
+        self.assertEqual(subset.metadata, {'inputs': '1'})
 
     @mock.patch('requests.Session.request') 
     def test_get_capabilities_post(self, mock_request):

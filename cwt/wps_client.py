@@ -54,6 +54,26 @@ class CapabilitiesWrapper(object):
     def service(self):
         return self.binding.service
 
+class ProcessDescriptionWrapper(object):
+    def __init__(self, binding):
+        self.binding = binding
+
+    @property
+    def identifier(self):
+        return self.binding.Identifier.value()
+
+    @property
+    def title(self):
+        return self.binding.Title.value()
+
+    @property
+    def abstract(self):
+        return self.binding.Abstract.value()
+
+    @property
+    def metadata(self):
+        return dict(x.title.split(':') for x in self.binding.Metadata)
+
 class WPSClient(object):
     def __init__(self, url, **kwargs):
         """ WPS class
@@ -158,7 +178,10 @@ class WPSClient(object):
         Returns:
             A DescribeProcessResponse object.
         """
-        identifier = process.identifier
+        if not isinstance(process, list):
+            process = [process]
+
+        identifier = ','.join([x.identifier for x in process])
 
         if method.lower() == 'get':
             params = {
@@ -171,19 +194,23 @@ class WPSClient(object):
             if self.language is not None:
                 params['language'] = self.language
 
-            logger.debug(params)
-
             response = self.request(method, params=params)
         elif method.lower() == 'post':
-            data = wps.describe_process([identifier], '1.0.0').toxml(bds=bds)
-
-            logger.debug(data)
+            data = wps.describe_process(identifier, '1.0.0').toxml(bds=bds)
 
             response = self.request(method, data=data)
         else:
             raise cwt.WPSError('{} method is unsupported'.format(method))
 
-        return response.toDOM(bds=bds).toprettyxml()
+        for x in response.ProcessDescription:
+            try:
+                p = [y for y in process if y.identifier == x.Identifier.value()][0]
+            except IndexError:
+                raise cwt.CWTError('Error matching description "{name}"', name=x.identifier)
+
+            p.description = ProcessDescriptionWrapper(x)
+
+        return [x.description for x in process]
 
     def execute(self, process, inputs=None, domain=None, method='POST', **kwargs):
         """ Execute the process on the WPS server. 
