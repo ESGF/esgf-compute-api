@@ -14,14 +14,6 @@ from cwt.wps import ows
 from cwt.wps import wps
 from cwt.wps import xlink
 
-bds = domutils.BindingDOMSupport()
-
-bds.declareNamespace(ows.Namespace, prefix='ows')
-
-bds.declareNamespace(wps.Namespace, prefix='wps')
-
-bds.declareNamespace(xlink.Namespace, prefix='xlink')
-
 class TestWPSClient(unittest.TestCase):
 
     def setUp(self):
@@ -74,13 +66,13 @@ class TestWPSClient(unittest.TestCase):
         self.execute_failed = wps.execute_response(process, wps.status_failed('failed', 10, '1.0.0'), '1.0.0', 'en-US', 'http://idontexist.com/', 'http://idontexist.com/status', [output])
 
     def tearDown(self):
-        bds.reset()
+        cwt.bds.reset()
 
     @mock.patch('requests.Session.request')
     def test_ssl_cert_tuple(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', cert=('/client.crt', '/client.key'))
 
@@ -96,7 +88,7 @@ class TestWPSClient(unittest.TestCase):
     def test_ssl_cert(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', cert='/client.pem')
 
@@ -112,7 +104,7 @@ class TestWPSClient(unittest.TestCase):
     def test_ssl_verify_ca_false(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', verify=False, ca='/test.pem')
 
@@ -127,7 +119,7 @@ class TestWPSClient(unittest.TestCase):
     def test_ssl_verify_ca(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', ca='/test.pem')
 
@@ -142,7 +134,7 @@ class TestWPSClient(unittest.TestCase):
     def test_ssl_verify_false(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', verify=False)
 
@@ -157,7 +149,7 @@ class TestWPSClient(unittest.TestCase):
     def test_ssl_verify(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -172,7 +164,7 @@ class TestWPSClient(unittest.TestCase):
     def test_get_capabilities_invalid_method(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', language='en-US')
 
@@ -183,7 +175,7 @@ class TestWPSClient(unittest.TestCase):
     def test_describe_process_language(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', language='en-US')
 
@@ -197,7 +189,7 @@ class TestWPSClient(unittest.TestCase):
     def test_get_capabilities_language(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', language='en-US')
 
@@ -211,7 +203,7 @@ class TestWPSClient(unittest.TestCase):
     def test_version(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', version='1.0.0')
 
@@ -228,7 +220,7 @@ class TestWPSClient(unittest.TestCase):
     def test_csrf_cookie_pass_through(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         mock_request.return_value.cookies = {'csrftoken': 'token'}
 
@@ -236,18 +228,11 @@ class TestWPSClient(unittest.TestCase):
 
         client.get_capabilities()
 
-        client.get_capabilities(refresh=True)
-
-        args = mock_request.call_args_list[1]
-
-        self.assertIn('headers', args[1])
-        self.assertIn('X-CSRFToken', args[1]['headers'])
-
     @mock.patch('requests.Session.request') 
     def test_csrf_cookie(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         mock_request.return_value.cookies = {'csrftoken': 'token'}
 
@@ -261,7 +246,7 @@ class TestWPSClient(unittest.TestCase):
 
         mock_request.return_value.reason = 'Forbidden'
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', api_key='api_key_7')
 
@@ -272,7 +257,7 @@ class TestWPSClient(unittest.TestCase):
     def test_requests_exception(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', api_key='api_key_7')
 
@@ -285,7 +270,7 @@ class TestWPSClient(unittest.TestCase):
     def test_api_key(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.execute.toxml(bds=bds)
+        mock_request.return_value.text = self.execute.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps', api_key='api_key_7')
 
@@ -297,7 +282,7 @@ class TestWPSClient(unittest.TestCase):
     def test_execute_failed(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.execute_failed.toxml(bds=bds)
+        mock_request.return_value.text = self.execute_failed.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -310,7 +295,7 @@ class TestWPSClient(unittest.TestCase):
     def test_execute_no_inputs(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.execute.toxml(bds=bds)
+        mock_request.return_value.text = self.execute.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -324,7 +309,7 @@ class TestWPSClient(unittest.TestCase):
     def test_execute_get(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.execute.toxml(bds=bds)
+        mock_request.return_value.text = self.execute.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -338,7 +323,7 @@ class TestWPSClient(unittest.TestCase):
     def test_execute_invalid_method(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.execute.toxml(bds=bds)
+        mock_request.return_value.text = self.execute.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -351,7 +336,7 @@ class TestWPSClient(unittest.TestCase):
     def test_execute(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.execute.toxml(bds=bds)
+        mock_request.return_value.text = self.execute.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -372,7 +357,7 @@ class TestWPSClient(unittest.TestCase):
 
         client = cwt.WPSClient('http://idontexist/wps')
 
-        data_inputs = client.prepare_data_inputs(process, [variable], domain)
+        data_inputs = client.prepare_data_inputs_str(process, [variable], domain)
 
         expected = '[variable=[{"uri": "file:///test.nc", "id": "tas|v0"}];domain=[{"id": "d0", "time": {"start": 0, "step": 1, "end": 365, "crs": "values"}}];operation=[{"input": ["v0"], "domain": "d0", "name": "CDAT.subset", "result": "subset"}]]'
 
@@ -401,7 +386,7 @@ class TestWPSClient(unittest.TestCase):
     def test_describe_process_post(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.process_descriptions.toxml(bds=bds)
+        mock_request.return_value.text = self.process_descriptions.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -415,7 +400,7 @@ class TestWPSClient(unittest.TestCase):
     def test_describe_process_invalid_method(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.process_descriptions.toxml(bds=bds)
+        mock_request.return_value.text = self.process_descriptions.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -428,7 +413,7 @@ class TestWPSClient(unittest.TestCase):
     def test_describe_process(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.process_descriptions.toxml(bds=bds)
+        mock_request.return_value.text = self.process_descriptions.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -439,64 +424,10 @@ class TestWPSClient(unittest.TestCase):
 	self.assertIsInstance(description, unicode)
 
     @mock.patch('requests.Session.request') 
-    def test_get_process_indexerror(self, mock_request):
-        mock_request.return_value.status_code = 200
-
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
-
-        client = cwt.WPSClient('http://idontexist/wps')
-
-        client.processes = mock.MagicMock()
-
-        client.processes.return_value = []
-
-        with self.assertRaises(cwt.WPSError):
-            process = client.get_process('CDAT.subset')
-
-    @mock.patch('requests.Session.request') 
-    def test_get_process(self, mock_request):
-        mock_request.return_value.status_code = 200
-
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
-
-        client = cwt.WPSClient('http://idontexist/wps')
-
-        process = client.get_process('CDAT.subset')
-
-        self.assertIsNotNone(process)
-        self.assertEqual(process.identifier, 'CDAT.subset')
-
-    @mock.patch('requests.Session.request') 
-    def test_processes_pattern(self, mock_request):
-        mock_request.return_value.status_code = 200
-
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
-
-        client = cwt.WPSClient('http://idontexist/wps')
-
-        processes = client.processes('CDAT.')
-
-        self.assertEqual(len(processes), 2)
-        self.assertEqual([x.identifier for x in processes], ['CDAT.subset', 'CDAT.regrid'])
-
-    @mock.patch('requests.Session.request') 
-    def test_processes(self, mock_request):
-        mock_request.return_value.status_code = 200
-
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
-
-        client = cwt.WPSClient('http://idontexist/wps')
-
-        processes = client.processes()
-
-        self.assertEqual(len(processes), 3)
-        self.assertEqual([x.identifier for x in processes], ['CDAT.subset', 'CDAT.regrid', 'EDAS.max'])
-
-    @mock.patch('requests.Session.request') 
     def test_get_capabilities_post(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
@@ -508,7 +439,7 @@ class TestWPSClient(unittest.TestCase):
     def test_get_capabilities_get(self, mock_request):
         mock_request.return_value.status_code = 200
 
-        mock_request.return_value.text = self.capabilities.toxml(bds=bds)
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
 
         client = cwt.WPSClient('http://idontexist/wps')
 
