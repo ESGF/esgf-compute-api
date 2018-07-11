@@ -69,6 +69,47 @@ class TestWPSClient(unittest.TestCase):
         cwt.bds.reset()
 
     @mock.patch('requests.Session.request')
+    def test_processes_filter_error(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
+
+        client = cwt.WPSClient('http://idontexist/wps')
+
+        with self.assertRaises(cwt.CWTError):
+            processes = client.processes('*.subset')
+
+    @mock.patch('requests.Session.request')
+    def test_processes_filter(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
+
+        client = cwt.WPSClient('http://idontexist/wps')
+
+        processes = client.processes('.*\.subset')
+
+        self.assertEqual(len(processes), 1)
+
+        process = processes[0]
+
+        self.assertEqual(process.identifier, 'CDAT.subset')
+        self.assertEqual(process.title, 'CDAT.subset')
+        self.assertEqual(process.version, '1.0.0')
+
+    @mock.patch('requests.Session.request')
+    def test_processes(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.capabilities.toxml(bds=cwt.bds)
+
+        client = cwt.WPSClient('http://idontexist/wps')
+
+        processes = client.processes()
+
+        self.assertEqual(len(processes), 3)
+
+    @mock.patch('requests.Session.request')
     def test_timeout(self, mock_request):
         mock_request.return_value.status_code = 200
 

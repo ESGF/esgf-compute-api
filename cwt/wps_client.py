@@ -23,6 +23,37 @@ bds = domutils.BindingDOMSupport()
 
 logger = logging.getLogger('cwt.wps_client')
 
+class CapabilitiesWrapper(object):
+    def __init__(self, binding, client):
+        self.binding = binding
+
+        self.client = client
+
+    @property
+    def processes(self):
+        data = []
+
+        for process in self.binding.ProcessOfferings.Process:
+            proc = cwt.Process.from_binding(process)
+
+            proc.set_client(self.client)
+
+            data.append(proc)
+
+        return data
+
+    @property
+    def version(self):
+        return self.binding.version
+
+    @property
+    def lang(self):
+        return self.binding.lang.Default
+
+    @property
+    def service(self):
+        return self.binding.service
+
 class WPSClient(object):
     def __init__(self, url, **kwargs):
         """ WPS class
@@ -110,10 +141,10 @@ class WPSClient(object):
         else:
             raise cwt.WPSError('{} method is unsupported'.format(method))
 
-        self.capabilities = response
-
-        if self.capabilities is None:
+        if response is None:
             raise cwt.WPSError('Recieved invalid response')
+
+        self.capabilities = CapabilitiesWrapper(response, self)
 
         return self.capabilities
 
@@ -131,8 +162,8 @@ class WPSClient(object):
 
         if method.lower() == 'get':
             params = {
-                'service': 'wps',
-                'request': 'describeprocess',
+                'service': 'WPS',
+                'request': 'DescribeProcess',
                 'version': '1.0.0',
                 'identifier': identifier,
             }
@@ -199,6 +230,19 @@ class WPSClient(object):
         if process.failed:
             raise Exception(process.exception_message)
 
+    def processes(self, pattern=None, method='GET'):
+        if self.capabilities is None:
+            self.get_capabilities(method)
+
+        if pattern is None:
+            return self.capabilities.processes
+
+        try:
+            return [x for x in self.capabilities.processes 
+                    if re.match(pattern, x.identifier)]
+        except re.error:
+            raise cwt.CWTError('Invalid pattern, see python\'s "re" module for documentation')
+
     def http_request(self, method, url, params, data, headers):
         """ HTTP request
 
@@ -243,6 +287,10 @@ class WPSClient(object):
             logger.exception('HTTP error')
 
             raise cwt.WPSHttpError('HTTP request failed {error}', error=e)
+        except requests.Timeout as e:
+            logger.exception('Timeout error')
+
+            raise cwt.WPSHttpError('Timeout error {error}', error=e)
 
         logger.debug('%s request succeeded', method)
 
