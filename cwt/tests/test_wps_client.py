@@ -346,6 +346,8 @@ class TestWPSClient(unittest.TestCase):
 
         process = cwt.Process.from_identifier('CDAT.subset')
 
+        process.description = mock.MagicMock()
+
         response = client.execute(process, [cwt.Variable('file:///test.nc', 'tas')], cwt.Domain([cwt.Dimension('time', 0, 365)]))
 
     @mock.patch('requests.Session.request') 
@@ -371,6 +373,8 @@ class TestWPSClient(unittest.TestCase):
 
         process = cwt.Process.from_identifier('CDAT.subset')
 
+        process.description = mock.MagicMock()
+
         client.execute(process, None, cwt.Domain([cwt.Dimension('time', 0, 365)]))
 
         self.assertIsNotNone(process.response)
@@ -384,6 +388,8 @@ class TestWPSClient(unittest.TestCase):
         client = cwt.WPSClient('http://idontexist/wps')
 
         process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.description = mock.MagicMock()
 
         client.execute(process, [cwt.Variable('file:///test.nc', 'tas')], cwt.Domain([cwt.Dimension('time', 0, 365)]), method='GET')
 
@@ -403,6 +409,25 @@ class TestWPSClient(unittest.TestCase):
             client.execute(process, [cwt.Variable('file:///test.nc', 'tas')], cwt.Domain([cwt.Dimension('time', 0, 365)]), method='TEST')
 
     @mock.patch('requests.Session.request') 
+    def test_execute_no_duplicates(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.execute.toxml(bds=cwt.bds)
+
+        client = cwt.WPSClient('http://idontexist/wps')
+
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.description = mock.MagicMock()
+
+        client.execute(process, [cwt.Variable('file:///test.nc', 'tas')], cwt.Domain([cwt.Dimension('time', 0, 365)]), axes=['time'])
+
+        self.assertEqual(len(process.parameters), 0)
+        self.assertIsNone(process.domain)
+        self.assertEqual(len(process.inputs), 0)
+        self.assertIsNotNone(process.response)
+
+    @mock.patch('requests.Session.request') 
     def test_execute(self, mock_request):
         mock_request.return_value.status_code = 200
 
@@ -411,6 +436,8 @@ class TestWPSClient(unittest.TestCase):
         client = cwt.WPSClient('http://idontexist/wps')
 
         process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.description = mock.MagicMock()
 
         client.execute(process, [cwt.Variable('file:///test.nc', 'tas')], cwt.Domain([cwt.Dimension('time', 0, 365)]))
 
@@ -424,6 +451,10 @@ class TestWPSClient(unittest.TestCase):
         ], name='d0')
 
         process = cwt.Process('CDAT.subset', name='subset')
+
+        process.description = mock.MagicMock()
+
+        process.description.metadata.return_value = {}
 
         client = cwt.WPSClient('http://idontexist/wps')
 

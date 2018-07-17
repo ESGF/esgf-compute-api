@@ -410,29 +410,35 @@ class WPSClient(object):
             A dictionary containing the operations, domains and variables
             associated with the process.
         """
-        domains = []
-
         if process.description is None:
             self.describe_process(process)
 
-        if domain is not None:
-            process.domain = domain
+        new_process = cwt.Process.from_identifier(process.identifier)
 
-            domains.append(domain.parameterize())
+        new_process.description = process.description
+
+        new_process.name = process.name
+
+        if domain is not None:
+            new_process.domain = domain
+
+        domains = [domain.parameterize()]
+
+        new_process.inputs = [x for x in process.inputs]
+
+        new_process.inputs.extend(inputs)
+
+        new_process.validate()
 
         parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
-        process.inputs.extend(inputs)
+        new_process.add_parameters(*parameters)
 
-        process.validate()
-
-        process.add_parameters(*parameters)
-
-        processes, variables = process.collect_input_processes()
+        processes, variables = new_process.collect_input_processes()
 
         variables = [x.parameterize() for x in variables]
 
-        operation = [process.parameterize()] + [x.parameterize() for x in processes]
+        operation = [new_process.parameterize()] + [x.parameterize() for x in processes]
 
         return {'variable': variables, 'domain': domains, 'operation': operation}
 

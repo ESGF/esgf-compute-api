@@ -35,6 +35,10 @@ class Parameter(object):
         """ Read-only name attribute. """
         return str(self._name)
 
+    @name.setter
+    def name(self, value):
+        self._name = value
+
     def parameterize(self):
         """ Return a representation of this parameter. """
         raise NotImplementedError
