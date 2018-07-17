@@ -235,9 +235,7 @@ class Process(cwt.Parameter):
             return
 
         if 'inputs' in self.metadata:
-            if self.metadata['inputs'] == '*':
-                input_limit = -1
-            else:
+            if self.metadata['inputs'] != '*':
                 input_limit = int(self.metadata['inputs'])
 
         if input_limit is not None and len(self.inputs) > input_limit:
