@@ -155,6 +155,8 @@ class WPSClient(object):
 
             response = self.request(method, params=params)
         elif method.lower() == 'post':
+            bds.reset()
+
             data = wps.get_capabilities().toxml(bds=bds)
 
             response = self.request(method, data=data)
@@ -197,6 +199,8 @@ class WPSClient(object):
 
             response = self.request(method, params=params)
         elif method.lower() == 'post':
+            bds.reset()
+
             data = wps.describe_process(identifier, '1.0.0').toxml(bds=bds)
 
             response = self.request(method, data=data)
@@ -246,6 +250,8 @@ class WPSClient(object):
             domains = wps.data_input('domain', 'Domain', json.dumps(data_inputs['domain']))
 
             operation = wps.data_input('operation', 'Operation', json.dumps(data_inputs['operation']))
+
+            bds.reset()
 
             data = wps.execute(process.identifier, '1.0.0', [variables, domains, operation]).toxml(bds=bds)
 
