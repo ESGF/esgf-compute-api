@@ -336,7 +336,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict(domain_data)
 
-        v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
+        v1 = cwt.Variable("collection://cip_cfsr_mon_1980-1995", "tas", domain=d0)
 
         v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
@@ -344,6 +344,20 @@ class TestWorkflow:
 
         self.wps.execute(v1_ave, domains=[d0], async=True)
 
+        dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
+        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
+
+    def wps_test(self):
+        #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
+        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:59:00Z','crs': 'timestamps'}}
+
+        d0 = cwt.Domain.from_dict(domain_data)
+        v1 = cwt.Variable( "https://dataserver.nccs.nasa.gov/thredds/dodsC/bypass/CREATE-IP//reanalysis/MERRA2/mon/atmos/tas.ncml", "tas", domain=d0)
+        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
+        v1_ave = cwt.Process.from_dict(v1_ave_data)
+        v1_ave.set_inputs(v1)
+
+        self.wps.execute(v1_ave, domains=[d0], async=True)
         dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
         for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
@@ -875,7 +889,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.eofs_test()
+    executor.wps_test()
 
 #    executor.cip_max_temp()
 #    executor.performance_test_conus_1mth()

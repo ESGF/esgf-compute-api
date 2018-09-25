@@ -49,7 +49,7 @@ data_path_ts = 'https://dataserver.nccs.nasa.gov/thredds/dodsC/bypass/CREATE-IP/
 data_path_zg = 'https://dataserver.nccs.nasa.gov/thredds/dodsC/bypass/CREATE-IP/Reanalysis/NASA-GMAO/GEOS-5/MERRA/mon/atmos/zg.ncml'
 outDir = "/tmp/"
 
-data_path = data_path_ts
+data_path = data_path_zg
 
 f = cdms.open(data_path)
 
@@ -64,7 +64,8 @@ start_time = cdtime.comptime(start_year)
 end_time = cdtime.comptime(end_year)
 
 # d = f('ts',time=(start_time,end_time),longitude=(120,290),latitude=(-50,50))
-d = f('ts',time=(start_time,end_time),latitude=(-80,80))  # type: cdms.AbstractVariable
+# d = f('ts',time=(start_time,end_time),latitude=(-80,80))  # type: cdms.AbstractVariable
+d = f('zg',latitude=(-80,80), level=(500,500) )  # type: cdms.AbstractVariable
 print "Completed data read"
 
 d_anom = cdutil.ANNUALCYCLE.departures(d)
@@ -94,8 +95,7 @@ for iPlot in range(nModes):
     outfile.write(v)
 outfile.close()
 
-plotter = PlotMgr()
-plotter.mpl_timeplot( outfilePath, 2 )
+
 
 
 
