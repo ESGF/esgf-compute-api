@@ -419,11 +419,11 @@ class WPS(object):
 
     def download_result( self, op, temp_dir="/tmp" ):
         status = self.status( op )
-        logger.info( "STATUS: " +  status )
+        logger.info( "*STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
             time.sleep(1)
             status = self.status( op )
-            logger.info( "STATUS: " +  status )
+            logger.info( "*STATUS: " +  status )
         if status == "ERROR":
             print "Remote execution error: check server logs"
             return []
@@ -447,19 +447,19 @@ class WPS(object):
 
     def track_status( self, op, temp_dir="/tmp" ):
         status = self.status( op )
-        logger.info( "STATUS: " +  status )
+        logger.info( "#STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
             time.sleep(1)
             status = self.status( op )
-            logger.info( "STATUS: " +  status )
+            logger.info( "#STATUS: " +  status )
         if status == "ERROR":
             print "Remote execution error: check server logs"
             return []
         elif status == "COMPLETED":
-            logger.info( "STATUS: " +  status )
+            logger.info( "#STATUS: " +  status )
             return
 
-    def downloadFile(self, file_href, file_path, fileIndex, nAttempts = 12 ):
+    def downloadFile(self, file_href, file_path, fileIndex, nAttempts = 1000 ):
         """
             @type href: str
         """
@@ -500,12 +500,12 @@ class WPS(object):
     def get_status( self, op ):
         t0 = time.time()
         status = self.status( op )
-        logger.info( "STATUS: " +  status )
+        logger.info( "@STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
             time.sleep(1)
             status = self.status( op )
-            logger.info( "STATUS: " +  status )
-        logger.info("STATUS: COMPLETED, run time = {:.2f} s, Response:".format( time.time()-t0 ) )
+            logger.info( "@STATUS: " +  status )
+        logger.info("@STATUS: COMPLETED, run time = {:.2f} s, Response:".format( time.time()-t0 ) )
         print xml.etree.ElementTree.tostring( op.response )
 
     def execute(self, process, inputs=None, domains=[], async=True, runargs={}, method='GET', **kwargs):
