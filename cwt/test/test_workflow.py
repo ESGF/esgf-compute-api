@@ -351,7 +351,7 @@ class TestWorkflow:
         domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2001-12-31T23:59:00Z','crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         v1 = cwt.Variable( "https://dataserver.nccs.nasa.gov/thredds/dodsC/bypass/CREATE-IP//reanalysis/MERRA2/mon/atmos/tas.ncml", "tas", domain=d0)
-        v1_ave_data = {'name': "xarray.ave", 'axes': "yx", "product": "Average Surface Temperature"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "yx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
         self.wps.execute(v1_ave, domains=[d0], async=True)
