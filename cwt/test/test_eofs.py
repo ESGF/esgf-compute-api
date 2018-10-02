@@ -55,7 +55,7 @@ f = cdms.open(data_path)
 
 start_year = 1980
 end_year = 2000
-nModes = 4
+nModes = 4  # type: int
 experiment = 'MERRA2-TS('+str(start_year)+'-'+str(end_year)+')'
 display_eofs = True
 
