@@ -348,15 +348,15 @@ class TestWorkflow:
         for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
 
     def wps_test(self):
-        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:59:00Z','crs': 'timestamps'}}
+        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2001-12-31T23:59:00Z','crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         v1 = cwt.Variable( "https://dataserver.nccs.nasa.gov/thredds/dodsC/bypass/CREATE-IP//reanalysis/MERRA2/mon/atmos/tas.ncml", "tas", domain=d0)
-        v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "yx", "product": "Average Surface Temperature"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
         self.wps.execute(v1_ave, domains=[d0], async=True)
         dataPaths = self.wps.download_result(v1_ave, self.temp_dir)
-        for dataPath in dataPaths:  self.plotter.print_Mdata(dataPath)
+        for dataPath in dataPaths:  self.plotter.mpl_timeplot(dataPath,1)
 
     def performance_test_conus_1y(self):
         #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }

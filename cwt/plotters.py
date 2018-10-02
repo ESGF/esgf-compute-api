@@ -27,13 +27,12 @@ class PlotMgr:
                 if( os.path.isfile(dataPath) ):
                     self.logger.info( "Plotting file: " +  dataPath )
                     f = cdms2.openDataset(dataPath) # type: cdms2.dataset.CdmsFile
-                    varNames = [ vn for vn in f.variables.keys() if not vn.endswith('bnds') ]  # type: List[str]
-                    varNames.sort()
+                    varMap = { id:v for id,v in f.variables.items() if not (("axis" in v.attributes) or (id.endswith('bnds'))) }
                     fig = plt.figure()    # type: Figure
                     iplot = 1
-                    nCols = min( len(varNames), numCols )
-                    nRows = math.ceil( len(varNames) / float(nCols) )
-                    for varName in varNames:  # type: str
+                    nCols = min( len(varMap.keys()), numCols )
+                    nRows = math.ceil( len(varMap) / float(nCols) )
+                    for varName in varMap.keys():  # type: str
                         self.logger.info( "  ->  Plotting variable: " +  varName + ", subplot: " + str(iplot) )
                         timeSeries = f( varName, squeeze=1 )  # type: cdms2.Variable
                         long_name = timeSeries.attributes.get('long_name')
