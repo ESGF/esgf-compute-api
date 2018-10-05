@@ -1,16 +1,13 @@
 pipeline {
-    agent none
+    agent any;
 
     stages {
         stage('Test API') {
-            agent {
-                docker {
-                    image 'conda-agent'
-                    args '--network outside -v /opt/docker/jenkins/conda/pkgs:/opt/conda/pkgs'
-                }
-            }
-
             steps {
+                git branch: 'devel', changelog: false, poll: false, url: 'https://github.com/ESGF/esgf-compute-api'
+                
+                sh 'conda env remove -n api || exit 1'
+                
                 sh 'conda create --name api --yes python=2.7'
 
                 sh '''#! /bin/bash
@@ -24,42 +21,13 @@ pipeline {
                 '''
             }
         }
-
-        stage('Build docker iamge') {
-            when { anyOf { branch 'bugfix-*'; branch 'release-*' } }
-
-            agent any
-
-            steps {
-                script {
-                    def version_index = env.BRANCH_NAME.indexOf('-')
-                    def version = env.BRANCH_NAME.substring(version_index+1)
-
-                    sh 'docker build -t jasonb87/cwt_api:${version} --build-arg BRANCH=${env.BRANCH_NAME} --network outside docker/'
-                }
-            }
-        }
     }
 
     post {
         always {
-            node('master') {
-                step([$class: 'XUnitBuilder',
-                    tools: [[$class: 'JUnitType', pattern: 'nose2-junit.xml']]])
+            xunit testTimeMargin: '3000', thresholdMode: 2, thresholds: [], tools: [JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'nose2-junit.xml', skipNoTestFiles: false, stopProcessingIfError: true)]
 
-                step([$class: 'CoberturaPublisher',
-                    coberturaReportFile: 'coverage.xml'])
-
-                script {
-                    emailext body: '''${SCRIPT, template="groovy-html.template"}''',
-                            mimeType: 'text/html',
-                            subject: '[Jenkins] Build',
-                            recipientProviders: [
-                                [$class: 'RequesterRecipientProvider'],
-                                [$class: 'UpstreamComitterRecipientProvider']
-                            ]
-                }
-            } 
-        }
+            cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+        } 
     }
 }
