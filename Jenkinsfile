@@ -15,7 +15,7 @@ pipeline {
 
                     pip install -r cwt/tests/requirements.txt
 
-                    nose2 --plugin nose2.plugins.junitxml --junit-xml --with-coverage --coverage-report xml cwt.tests; exit 1
+                    nose2 --plugin nose2.plugins.junitxml --junit-xml --with-coverage --coverage-report xml cwt.tests; exit 0
                 '''
             }
         }
