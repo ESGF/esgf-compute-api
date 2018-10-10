@@ -363,6 +363,22 @@ class TestWPSClient(unittest.TestCase):
         with self.assertRaises(Exception):
             client.execute(process, [cwt.Variable('file:///test.nc', 'tas')], cwt.Domain([cwt.Dimension('time', 0, 365)]))
 
+    @mock.patch('requests.Session.request')
+    def test_execute_no_domain(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.execute.toxml(bds=cwt.bds)
+
+        client = cwt.WPSClient('http://idontexist/wps')
+
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.description = mock.MagicMock()
+
+        client.execute(process, inputs=[cwt.Variable('file:///test1.nc', 'tas')])
+
+        self.assertIsNotNone(process.response)
+
     @mock.patch('requests.Session.request') 
     def test_execute_no_inputs(self, mock_request):
         mock_request.return_value.status_code = 200
