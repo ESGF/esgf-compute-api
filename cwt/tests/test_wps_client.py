@@ -444,6 +444,31 @@ class TestWPSClient(unittest.TestCase):
         self.assertIsNotNone(process.response)
 
     @mock.patch('requests.Session.request') 
+    def test_execute_block(self, mock_request):
+        mock_request.return_value.status_code = 200
+
+        mock_request.return_value.text = self.execute.toxml(bds=cwt.bds)
+
+        client = cwt.WPSClient('http://idontexist/wps')
+
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        type(process).output = mock.PropertyMock(return_value='test output')
+
+        process.wait = mock.MagicMock()
+
+        process.description = mock.MagicMock()
+
+        result = client.execute(process, 
+                                [cwt.Variable('file:///test.nc', 'tas')],
+                                cwt.Domain([cwt.Dimension('time', 0, 365)]), 
+                                block=True)
+
+        process.wait.assert_called()
+
+        self.assertEqual(result, 'test output')
+
+    @mock.patch('requests.Session.request') 
     def test_execute(self, mock_request):
         mock_request.return_value.status_code = 200
 
