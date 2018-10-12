@@ -117,18 +117,21 @@ class TestProcess(unittest.TestCase):
 
         self.assertEqual(len(process.inputs), 1)
 
+    def test_add_parameter_key_value_single(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        process.add_parameters(test='value1')
+
+        self.assertEqual(len(process.parameters), 1)
+        self.assertEqual(process.parameters.values()[0].values, ['value1'])
+
     def test_add_parameter_key_value(self):
         process = cwt.Process.from_identifier('CDAT.subset')
 
         process.add_parameters(test=['value1'])
 
         self.assertEqual(len(process.parameters), 1)
-
-    def test_add_parameter_invalid_argument_type(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        with self.assertRaises(cwt.ProcessError):
-            process.add_parameters(test='test')
+        self.assertEqual(process.parameters.values()[0].values, ['value1'])
         
     def test_add_parameter_invalid_type(self):
         process = cwt.Process.from_identifier('CDAT.subset')

@@ -459,6 +459,32 @@ class TestWPSClient(unittest.TestCase):
 
         self.assertIsNotNone(process.response)
 
+    def test_prepare_data_inputs_parameters(self):
+        variable = cwt.Variable('file:///test.nc', 'tas', name='v0')
+
+        domain = cwt.Domain([
+            cwt.Dimension('time', 0, 365),
+        ], name='d0')
+
+        process = cwt.Process('CDAT.subset', name='subset')
+
+        process.description = mock.MagicMock()
+
+        process.description.metadata.return_value = {}
+
+        client = cwt.WPSClient('http://idontexist/wps')
+
+        data_inputs = client.prepare_data_inputs_str(process, [variable],
+                                                     domain, axes=['lats',
+                                                                   'lons'],
+                                                     weightoptions='generated',
+                                                    test=cwt.NamedParameter('test',
+                                                                           'True'))
+
+        expected = '[variable=[{"uri": "file:///test.nc", "id": "tas|v0"}];domain=[{"id": "d0", "time": {"start": 0, "step": 1, "end": 365, "crs": "values"}}];operation=[{"domain": "d0", "name": "CDAT.subset", "axes": "lats|lons", "result": "subset", "weightoptions": "generated", "test": "True", "input": ["v0"]}]]'
+
+        self.assertEqual(expected, data_inputs)
+
     def test_prepare_data_inputs(self):
         variable = cwt.Variable('file:///test.nc', 'tas', name='v0')
 

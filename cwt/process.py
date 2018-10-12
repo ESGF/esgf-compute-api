@@ -284,7 +284,7 @@ class Process(cwt.Parameter):
 
         for k, v in kwargs.iteritems():
             if not isinstance(v, (tuple, list)):
-                raise ProcessError('Invalid parameter argument type {}, should be a list or tuple', type(v))
+                v = [v]
 
             self.parameters[k] = cwt.NamedParameter(k, *v)
 
