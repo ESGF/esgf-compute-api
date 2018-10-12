@@ -3,7 +3,8 @@ Process Module.
 """
 
 import json
-import logging
+import logging 
+import time
 
 import requests
 
@@ -228,6 +229,26 @@ class Process(cwt.Parameter):
 
         return 'No Status'
 
+    def wait(self):
+        status_hist = {}
+
+        def update_history(status):
+            if status not in status_hist:
+                status_hist[status] = True
+
+                logger.info('%s', status)
+
+        update_history(self.status)
+
+        while self.processing:
+            update_history(self.status)
+
+            time.sleep(1)
+
+        update_history(self.status)
+
+        return True if self.succeeded else False
+
     def validate(self):
         input_limit = None
 
@@ -366,9 +387,6 @@ class Process(cwt.Parameter):
         response = self.__client.http_request('GET', self.response.statusLocation, {}, {}, {})
 
         self.response = wps.CreateFromDocument(response)
-
-        if self.failed:
-            raise cwt.WPSError('Process failed: {}'.format(self.exception_message))
 
     def parameterize(self):
         """ Create a dictionary representation of the Process. """
