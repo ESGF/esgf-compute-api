@@ -182,11 +182,11 @@ class TestProcess(unittest.TestCase):
     def test_processing_failed(self):
         process = cwt.Process.from_identifier('CDAT.subset')
 	
-	mock_client = mock.MagicMock()
+        mock_client = mock.MagicMock()
 
-	mock_client.http_request.return_value = self.execute_failed.toxml(bds=bds)
+        mock_client.http_request.return_value = self.execute_failed.toxml(bds=bds)
 
-	process.set_client(mock_client)
+        process.set_client(mock_client)
 
         process.response = self.execute_failed
 
@@ -196,11 +196,11 @@ class TestProcess(unittest.TestCase):
     def test_processing(self):
         process = cwt.Process.from_identifier('CDAT.subset')
 
-	mock_client = mock.MagicMock()
+        mock_client = mock.MagicMock()
 
-	mock_client.http_request.return_value = self.execute.toxml(bds=bds)
+        mock_client.http_request.return_value = self.execute.toxml(bds=bds)
 
-	process.set_client(mock_client)
+        process.set_client(mock_client)
 
         process.response = self.execute
 
