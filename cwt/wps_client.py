@@ -217,7 +217,8 @@ class WPSClient(object):
 
         return [x.description for x in process]
 
-    def execute(self, process, inputs=None, domain=None, method='POST', **kwargs):
+    def execute(self, process, inputs=None, domain=None, method='POST',
+                block=False, **kwargs):
         """ Execute the process on the WPS server. 
         
         Args:
@@ -261,8 +262,14 @@ class WPSClient(object):
 
         process.response = response
 
+        if block:
+            process.wait()
+
         if process.failed:
             raise Exception(process.exception_message)
+
+        if block:
+            return process.output
 
     def processes(self, pattern=None, method='GET'):
         if self.capabilities is None:

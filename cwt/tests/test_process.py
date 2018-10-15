@@ -42,6 +42,59 @@ class TestProcess(unittest.TestCase):
     def tearDown(self):
         bds.reset()
 
+    @mock.patch('cwt.process.logger')
+    def test_wait_duplicate_status(self, mock_logger):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        type(process).processing = mock.PropertyMock(side_effect=[True, True, False])
+
+        type(process).status = mock.PropertyMock(side_effect=['status 1',
+                                                              'status 2',
+                                                              'status 2',
+                                                              'status 4'])
+
+        type(process).succeeded = mock.PropertyMock(return_value=True)
+
+        result = process.wait()
+
+        self.assertTrue(result)
+
+        self.assertEqual(mock_logger.info.call_count, 3)
+
+    def test_wait_no_success(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        type(process).processing = mock.PropertyMock(side_effect=[True, True, False])
+
+        type(process).status = mock.PropertyMock(side_effect=['status 1',
+                                                              'status 2',
+                                                              'status 3',
+                                                              'status 4',
+                                                              'status 5'])
+
+        type(process).succeeded = mock.PropertyMock(return_value=False)
+
+        result = process.wait()
+
+        self.assertFalse(result)
+
+    def test_wait(self):
+        process = cwt.Process.from_identifier('CDAT.subset')
+
+        type(process).processing = mock.PropertyMock(side_effect=[True, True, False])
+
+        type(process).status = mock.PropertyMock(side_effect=['status 1',
+                                                              'status 2',
+                                                              'status 3',
+                                                              'status 4',
+                                                              'status 5'])
+
+        type(process).succeeded = mock.PropertyMock(return_value=True)
+
+        result = process.wait()
+
+        self.assertTrue(result)
+
     def test_parameterize(self):
         process = cwt.Process.from_identifier('CDAT.subset')
 
@@ -179,22 +232,13 @@ class TestProcess(unittest.TestCase):
         process = cwt.Process.from_identifier('CDAT.subset')
 
         process.response = self.execute
+        
+        print process.response.ProcessOutputs.Output[0].Data.ComplexData.orderedContent()[0].value
+        print process.output
+
+        assert False
 
         self.assertIsInstance(process.output, cwt.Variable)
-
-    def test_processing_failed(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-	
-        mock_client = mock.MagicMock()
-
-        mock_client.http_request.return_value = self.execute_failed.toxml(bds=bds)
-
-        process.set_client(mock_client)
-
-        process.response = self.execute_failed
-
-        with self.assertRaises(cwt.WPSError):
-            process.processing
 
     def test_processing(self):
         process = cwt.Process.from_identifier('CDAT.subset')
