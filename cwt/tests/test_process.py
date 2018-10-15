@@ -232,11 +232,6 @@ class TestProcess(unittest.TestCase):
         process = cwt.Process.from_identifier('CDAT.subset')
 
         process.response = self.execute
-        
-        print process.response.ProcessOutputs.Output[0].Data.ComplexData.orderedContent()[0].value
-        print process.output
-
-        assert False
 
         self.assertIsInstance(process.output, cwt.Variable)
 

@@ -453,20 +453,22 @@ class TestWPSClient(unittest.TestCase):
 
         process = cwt.Process.from_identifier('CDAT.subset')
 
-        type(process).output = mock.PropertyMock(return_value='test output')
+        with mock.patch('cwt.process.Process.output',
+                        new_callable=mock.PropertyMock) as output:
+            output.return_value = 'test output'
 
-        process.wait = mock.MagicMock()
+            process.wait = mock.MagicMock()
 
-        process.description = mock.MagicMock()
+            process.description = mock.MagicMock()
 
-        result = client.execute(process, 
-                                [cwt.Variable('file:///test.nc', 'tas')],
-                                cwt.Domain([cwt.Dimension('time', 0, 365)]), 
-                                block=True)
+            result = client.execute(process, 
+                                    [cwt.Variable('file:///test.nc', 'tas')],
+                                    cwt.Domain([cwt.Dimension('time', 0, 365)]), 
+                                    block=True)
 
-        process.wait.assert_called()
+            process.wait.assert_called()
 
-        self.assertEqual(result, 'test output')
+            self.assertEqual(result, 'test output')
 
     @mock.patch('requests.Session.request') 
     def test_execute(self, mock_request):
