@@ -195,7 +195,8 @@ class Process(cwt.Parameter):
                 len(self.response.ProcessOutputs.Output) == 0):
             return None
 
-        data = json.loads(self.response.ProcessOutputs.Output[0].Data.ComplexData.content()[0])
+        data = json.loads(
+            self.response.ProcessOutputs.Output[0].Data.ComplexData.orderedContent()[0].value)
 
         if 'uri' in data:
             output_data = cwt.Variable.from_dict(data)
