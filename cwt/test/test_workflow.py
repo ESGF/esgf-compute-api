@@ -883,10 +883,12 @@ class TestWorkflow:
         for dataPath in dataPaths:
             self.plotter.mpl_plot( dataPath, 0, True )
 
+    def test_getCapabilities(self):
+        return self.wps.getCapabilities("",False)
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.wps_test()
+    executor.test_getCapabilities()
 
 #    executor.cip_max_temp()
 #    executor.performance_test_conus_1mth()
