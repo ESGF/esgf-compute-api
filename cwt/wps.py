@@ -495,7 +495,7 @@ class WPS(object):
              @type index: int
         """
         fpath0 = file_path[0:-3] if file_path.endswith(".nc") else file_path
-        return fpath0 + ".nc" if(index == 0) else  fpath0 + "-" + str(index) + ".nc"
+        return fpath0 if(index == 0) else  fpath0 + "-" + str(index)
 
     def get_status( self, op ):
         t0 = time.time()

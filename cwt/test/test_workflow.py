@@ -14,9 +14,9 @@ def create_tempdir():
 
 class TestWorkflow:
     plotter = cwt.initialize()
+    #    host ="https://dptomcat03-int/wps/cwt"
     host = os.environ.get( "EDAS_HOST_ADDRESS", "https://edas.nccs.nasa.gov/wps/cwt" )
     assert host != None, "Must set EDAS_HOST_ADDRESS environment variable"
-#    host ="https://dptomcat03-int/wps/cwt"
     print "Connecting to wps host: " + host
     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
     temp_dir = create_tempdir()
