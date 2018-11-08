@@ -145,7 +145,9 @@ class WPS(object):
         if   self.hasNode( process.response, "ProcessAccepted" ): status = "QUEUED"
         elif self.hasNode( process.response, "ProcessStarted" ): status = "EXECUTING"
         elif self.hasNode( process.response, "ProcessFinished" ): status = "COMPLETED"
-        elif self.hasNode( process.response, "ProcessFailed" ): status = "ERROR"
+        elif self.hasNode( process.response, "ProcessFailed" ):
+            status = "ERROR"
+            logger.error( "RECEIVED ERROR REPORT: " + response )
         return status
 
     def hasNode( self, parent_node, child_node_name, schema="wps" ):
