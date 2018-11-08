@@ -22,7 +22,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat':{'start':229,'end':279,'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'},'time':{'start':'1980-01-01T00:00:00','end':'1980-01-31T23:00:00','crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://merrra2_m2i1nxint","KE",domain="d0" )
-        op_data =  { 'name': "CDSpark.ave", 'axes':"tyx" }
+        op_data =  { 'name': "xarray.mean", 'axes':"tyx" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -38,7 +38,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0','time':{'start':'1980-01-01T00:00:00','end':'1980-01-31T23:00:00','crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection:/merrra2_m2i1nxint","KE",domain="d0" )
-        op_data =  { 'name': "CDSpark.ave", 'axes':"tyx" }
+        op_data =  { 'name': "xarray.mean", 'axes':"tyx" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -54,7 +54,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat':{'start':229,'end':279,'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'},'time':{'start':'1980-01-01T00:00:00','end':'1980-12-31T23:00:00','crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://merrra2_m2i1nxint","KE",domain="d0" )
-        op_data =  { 'name': "CDSpark.ave", 'axes':"tyx" }
+        op_data =  { 'name': "xarray.mean", 'axes':"tyx" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -70,7 +70,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0','time':{'start':'1980-01-01T00:00:00','end':'1980-12-31T23:00:00','crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection:/merrra2_m2i1nxint","KE",domain="d0" )
-        op_data =  { 'name': "CDSpark.ave", 'axes':"tyx" }
+        op_data =  { 'name': "xarray.mean", 'axes':"tyx" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -86,7 +86,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0','time':{'start':'1980-01-01T00:00:00','end':'2014-12-31T23:00:00','crs':'timestamps'} }
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://merrra2_m2i1nxint","KE",domain="d0" )
-        op_data =  { 'name': "CDSpark.ave", 'axes':"tyx" }
+        op_data =  { 'name': "xarray.mean", 'axes':"tyx" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -102,7 +102,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat':{'start':229,'end':279,'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'},'time':{'start':'1980-01-01T00:00:00','end':'2014-12-31T23:00:00','crs':'timestamps'} }
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://merrra2_m2i1nxint","KE",domain="d0" )
-        op_data =  { 'name': "CDSpark.ave", 'axes':"tyx" }
+        op_data =  { 'name': "xarray.mean", 'axes':"tyx" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -124,7 +124,7 @@ class TestWorkflow:
         print self.wps.getCapabilities( "coll", False )
 
 executor = TestWorkflow()
-executor.conus_KE_ave_35years()
-# executor.conus_KE_ave_1month()
+# executor.conus_KE_ave_35years()
+executor.conus_KE_ave_1month()
 
 

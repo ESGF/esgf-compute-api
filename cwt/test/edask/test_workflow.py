@@ -26,7 +26,7 @@ class TestWorkflow:
                         'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00','crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://cip_cfsr_mth","clt",domain="d0" )
-        op_data =  { 'name': "CDSpark.ave", 'axes':"t" }
+        op_data =  { 'name': "xarray.ave", 'axes':"t" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
         self.wps.execute( op, domains=[d0], async=True )
@@ -39,7 +39,7 @@ class TestWorkflow:
 
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain="d0")
 
-        op_data = {'name': "CDSpark.noOp", "grid": "uniform", "shape": "18,36", "res": "10,10"}
+        op_data = {'name': "xarray.noOp", "grid": "uniform", "shape": "18,36", "res": "10,10"}
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(v0)
 
@@ -55,7 +55,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain=d0 )
 
-        op_data = { 'name': "CDSpark.ave", 'weights':'cosine', 'axes': "xy" }
+        op_data = { 'name': "xarray.ave", 'weights':'cosine', 'axes': "xy" }
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(inputs)
 
@@ -70,7 +70,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain=d0 )
 
-        op_data = { 'name': "CDSpark.ave", 'axes': "xy" }
+        op_data = { 'name': "xarray.ave", 'axes': "xy" }
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(inputs)
 
@@ -88,7 +88,7 @@ class TestWorkflow:
 
         inputs = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0 )
 
-        op_data =  { 'name': "CDSpark.max", 'axes': "xy" }
+        op_data =  { 'name': "xarray.max", 'axes': "xy" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -104,7 +104,7 @@ class TestWorkflow:
 
         inputs = cwt.Variable( "collection://giss_r1i1p1", "tas", domain="d0" )
 
-        op_data =  { "name":"CDSpark.noOp", "grid":"gaussian", "shape":"32" }
+        op_data =  { "name":"xarray.noOp", "grid":"gaussian", "shape":"32" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -127,7 +127,7 @@ class TestWorkflow:
 
         inputs = cwt.Variable( "collection://iap-ua_eraint_tas1hr", "tas", domain="d0" )
 
-        op_data =  { 'name': "CDSpark.ave", 'axes': "t" }
+        op_data =  { 'name': "xarray.ave", 'axes': "t" }
         op =  cwt.Process.from_dict( op_data )
         op.set_inputs( inputs )
 
@@ -147,15 +147,15 @@ class TestWorkflow:
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0  )
         v1 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d1  )
 
-        v0_ave_data =  { 'name': "CDSpark.ave", 'axes': "xy"}
+        v0_ave_data =  { 'name': "xarray.ave", 'axes': "xy"}
         v0_ave =  cwt.Process.from_dict( v0_ave_data )
         v0_ave.set_inputs( v0 )
 
-        v1_ave_data =  { 'name': "CDSpark.ave", 'axes': "xy"}
+        v1_ave_data =  { 'name': "xarray.ave", 'axes': "xy"}
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
         v1_ave.set_inputs( v1 )
 
-        anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.eDiff", "domain": "d0" } )
+        anomaly =  cwt.Process.from_dict( { 'name': "xarray.eDiff", "domain": "d0" } )
         anomaly.set_inputs( v1_ave, v0_ave )
 
         self.wps.execute( anomaly, domains=[d0,d1], async=True )
@@ -174,15 +174,15 @@ class TestWorkflow:
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0)
         v1 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d1)
 
-        v0_ave_data = {'name': "CDSpark.ave", 'axes': "t"}
+        v0_ave_data = {'name': "xarray.ave", 'axes': "t"}
         v0_ave = cwt.Process.from_dict(v0_ave_data)
         v0_ave.set_inputs(v0)
 
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "t"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "t"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
-        anomaly = cwt.Process.from_dict( { 'name': "CDSpark.eDiff", "domain": "d0" } )
+        anomaly = cwt.Process.from_dict( { 'name': "xarray.eDiff", "domain": "d0" } )
         anomaly.set_inputs(v0_ave, v1_ave)
 
         self.wps.execute(anomaly, domains=[d0, d1], async=True)
@@ -197,7 +197,7 @@ class TestWorkflow:
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain="d0")
         v1 = cwt.Variable("collection://cip_cfsr_mth", "tas", domain="d0")
 
-        op_data = {'name': "CDSpark.eDiff","crs":"~cip_merra2_mth"}
+        op_data = {'name': "xarray.eDiff","crs":"~cip_merra2_mth"}
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(v0,v1)
 
@@ -212,7 +212,7 @@ class TestWorkflow:
 
         v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain="d0")
 
-        op_data = {'name': "CDSpark.noOp", "grid":"uniform", "shape":"18,36", "res":"5,10" }
+        op_data = {'name': "xarray.noOp", "grid":"uniform", "shape":"18,36", "res":"5,10" }
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(v0)
 
@@ -227,7 +227,7 @@ class TestWorkflow:
 
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain="d0")
 
-        op_data = {'name': "CDSpark.noOp", "grid": "uniform", "shape": "18,36", "res": "10,10"}
+        op_data = {'name': "xarray.noOp", "grid": "uniform", "shape": "18,36", "res": "10,10"}
         op = cwt.Process.from_dict(op_data)  # """:type : Process """
         op.set_inputs(v0)
 
@@ -243,7 +243,7 @@ class TestWorkflow:
         v1 = cwt.Variable("collection://cip_merra2_mth", "tas" )
         v2 = cwt.Variable("collection://cip_cfsr_mth", "tas" )
 
-        diff_data =  { 'name': "CDSpark.eDiff",  "crs":"~cip_merra2_mth" }
+        diff_data =  { 'name': "xarray.eDiff",  "crs":"~cip_merra2_mth" }
         diff_op =  cwt.Process.from_dict( diff_data )
         diff_op.set_inputs( v1, v2 )
 
@@ -262,7 +262,7 @@ class TestWorkflow:
   #     s"""[   variable=[$MERRA_mon_variable,$CFSR_mon_variable],
   #             domain=[  {"name":"d0","time":{"start":"1990-01-01T00:00:00Z","end":"1991-01-01T00:00:00Z","system":"values"}},
   #                       {"name":"d1","time":{"start":"1990-01-01T00:00:00Z","end":"1991-01-01T00:00:00Z","system":"values"},"lat":{"start":20,"end":50,"system":"values"},"lon":{"start":30,"end":40,"system":"values"}} ],
-  #             operation=[{"name":"CDSpark.eDiff","input":"v0,v1","domain":"d0","crs":"~cip_merra2_mon_1980-2015"}]]""".stripMargin.replaceAll("\\s", "")
+  #             operation=[{"name":"xarray.eDiff","input":"v0,v1","domain":"d0","crs":"~cip_merra2_mon_1980-2015"}]]""".stripMargin.replaceAll("\\s", "")
   #   val result_node = executeTest(datainputs)
   #   val result_data = CDFloatArray( getResultData( result_node ).slice(0,0,10) )
   #   println( " ** Op Result:       " + result_data.mkBoundedDataString( ", ", 200 ) )
@@ -275,7 +275,7 @@ class TestWorkflow:
 
         v1 = cwt.Variable("collection://cip_merra2_mth", "tas" )
 
-        v1_ave_data =  { 'name': "CDSpark.ave", 'axes': "xt" }
+        v1_ave_data =  { 'name': "xarray.ave", 'axes': "xt" }
         v1_ave =  cwt.Process.from_dict( v1_ave_data )
         v1_ave.set_inputs( v1 )
 
@@ -304,7 +304,7 @@ class TestWorkflow:
 
         v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
@@ -321,7 +321,7 @@ class TestWorkflow:
 
         v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
@@ -338,7 +338,7 @@ class TestWorkflow:
 
         v1 = cwt.Variable("collection://cip_cfsr_mon_1980-1995", "tas", domain=d0)
 
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
@@ -366,7 +366,7 @@ class TestWorkflow:
 
         v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
@@ -384,7 +384,7 @@ class TestWorkflow:
 
         v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
@@ -401,11 +401,11 @@ class TestWorkflow:
 
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0  )
 
-        v0_ave_data =  { 'name': "CDSpark.ave", 'axes': "t", 'groupBy': "seasonOfYear" }
+        v0_ave_data =  { 'name': "xarray.ave", 'axes': "t", 'groupBy': "seasonOfYear" }
         v0_ave =  cwt.Process.from_dict( v0_ave_data )
         v0_ave.set_inputs( v0 )
 
-        anomaly =  cwt.Process.from_dict( { 'name': "CDSpark.eDiff", "domain": "d0" } )
+        anomaly =  cwt.Process.from_dict( { 'name': "xarray.eDiff", "domain": "d0" } )
         anomaly.set_inputs( v0_ave, v0 )
 
         self.wps.execute( anomaly, domains=[d0], async=True )
@@ -416,7 +416,7 @@ class TestWorkflow:
     def seasonal_cycle( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40, 'crs':'values'}, 'lon': {'start':260, 'end':260, 'crs':'values'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1992-12-31T23:59:00Z', 'crs': 'timestamps'} } )
         v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain=d0  )
-        v0_ave_data =  { 'name': "CDSpark.ave", 'axes': "t", 'groupBy': "seasonOfYear" }
+        v0_ave_data =  { 'name': "xarray.ave", 'axes': "t", 'groupBy': "seasonOfYear" }
         v0_ave =  cwt.Process.from_dict( v0_ave_data )
         v0_ave.set_inputs( v0 )
         self.wps.execute( v0_ave, domains=[d0], async=True )
@@ -428,7 +428,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':23.7,'end':49.2,'crs':'values'}, 'lon': {'start':-125, 'end':-70.3, 'crs':'values'}, 'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00', 'crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable( "collection://cip_cfsr_mth", "clt", domain=d0 )
-        op_data = { 'name': "CDSpark.ave", 'axes': "t" }
+        op_data = { 'name': "xarray.ave", 'axes': "t" }
         op = cwt.Process.from_dict( op_data )
         op.set_inputs( inputs )
         self.wps.execute( op, domains=[d0], async=True )
@@ -440,7 +440,7 @@ class TestWorkflow:
 
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'} } )
         v0 = cwt.Variable("collection://merra2_m2t1nxlnd", "PRECTOTLAND", domain=d0  )
-        v0_ave =  cwt.Process.from_dict( { 'name': "CDSpark.ave", 'axes': "t", 'groupBy': "year" } )
+        v0_ave =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "t", 'groupBy': "year" } )
         v0_ave.set_inputs( v0 )
 
         self.wps.execute( v0_ave, domains=[d0], async=True )
@@ -453,7 +453,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://cip_merra2_mth", "pr", domain="d0" )
-        op_data =  { 'name': "CDSpark.ave", 'axes': "xy" }
+        op_data =  { 'name': "xarray.ave", 'axes': "xy" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
         self.wps.execute( op, domains=[d0], async=True )
@@ -465,7 +465,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'1990-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://cip_merra2_mth", "pr", domain="d0" )
-        op_data =  { 'name': "CDSpark.ave", 'axes': "txy", "groupBy" : "year" }
+        op_data =  { 'name': "xarray.ave", 'axes': "txy", "groupBy" : "year" }
         op =  cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
         self.wps.execute( op, domains=[d0], async=True )
@@ -486,7 +486,7 @@ class TestWorkflow:
     def lowpass_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
-        svd =  cwt.Process.from_dict( { 'name': "CDSpark.lowpass", "groupBy": "5-year" } )
+        svd =  cwt.Process.from_dict( { 'name': "xarray.lowpass", "groupBy": "5-year" } )
         svd.set_inputs( v0 )
         self.wps.execute( svd, domains=[d0], async=True )
         dataPaths = self.wps.download_result(svd, self.temp_dir)
@@ -496,7 +496,7 @@ class TestWorkflow:
     def lowpass_profile_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v1 = cwt.Variable("collection://cip_20crv2c_mth", "psl:P", domain=d0  )
-        lowpass = cwt.Process.from_dict({'name': "CDSpark.lowpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
+        lowpass = cwt.Process.from_dict({'name': "xarray.lowpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
         lowpass.set_inputs(v1)
         self.wps.execute( lowpass, domains=[d0], async=True, profile="active" )
         dataPaths = self.wps.download_result(lowpass, self.temp_dir)
@@ -506,7 +506,7 @@ class TestWorkflow:
     def highpass_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
-        highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "groupBy": "5-year" } )
+        highpass =  cwt.Process.from_dict( { 'name': "xarray.highpass", "groupBy": "5-year" } )
         highpass.set_inputs( v0 )
         self.wps.execute( highpass, domains=[d0], async=True )
         dataPaths = self.wps.download_result(highpass, self.temp_dir)
@@ -516,20 +516,20 @@ class TestWorkflow:
     def highpass_test1( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-80,"end":80,"crs":"values"} } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
-        highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year" } )
+        highpass =  cwt.Process.from_dict( { 'name': "xarray.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year" } )
         highpass.set_inputs( v0 )
         self.wps.execute( highpass, domains=[d0], async=True )
         dataPaths = self.wps.download_result(highpass, self.temp_dir)
         for dataPath in dataPaths:
             self.plotter.mpl_timeplot( dataPath )
 
- #   val datainputs = s"""[domain=[{"name":"d0","lat":{"start":25,"end":25,"system":"indices"},"lon":{"start":20,"end":20,"system":"indices"}}],variable=[{"uri":"collection:/giss_r1i1p1","name":"tas:v1","domain":"d0"}],operation=[{"name":"CDSpark.lowpass","input":"v1","domain":"d0","groupBy":"5-year"}]]"""
+ #   val datainputs = s"""[domain=[{"name":"d0","lat":{"start":25,"end":25,"system":"indices"},"lon":{"start":20,"end":20,"system":"indices"}}],variable=[{"uri":"collection:/giss_r1i1p1","name":"tas:v1","domain":"d0"}],operation=[{"name":"xarray.lowpass","input":"v1","domain":"d0","groupBy":"5-year"}]]"""
 
 
     def baseline_test( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33, 'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'}} ) # , 'time': { 'start':'1900-01-01T00:00:00', 'end':'2000-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
-        svd =  cwt.Process.from_dict( { 'name': "CDSpark.subset" } )
+        svd =  cwt.Process.from_dict( { 'name': "xarray.subset" } )
         svd.set_inputs( v0 )
         self.wps.execute( svd, domains=[d0], async=True )
         dataPaths = self.wps.download_result(svd, self.temp_dir)
@@ -540,7 +540,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'} ,
                                      'time': { 'start':'1850-01-01T00:00:00Z', 'end':'1854-01-01T00:00:00Z', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain=d0  )
-        yearlyAve =  cwt.Process.from_dict( { 'name': "CDSpark.ave", "axes":"t", "groupBy": "year" } )
+        yearlyAve =  cwt.Process.from_dict( { 'name': "xarray.ave", "axes":"t", "groupBy": "year" } )
         yearlyAve.set_inputs( v0 )
         self.wps.execute( yearlyAve, domains=[d0], async=True )
         dataPaths = self.wps.download_result(yearlyAve, self.temp_dir)
@@ -564,7 +564,7 @@ class TestWorkflow:
         #
         # """[domain=[{"name":"d0","lat":{"start":5,"end":7,"system":"indices"},"lon":{"start":5,"end":10,"system":"indices"},"time":{"start":"1850-01-01T00:00:00Z","end":"1854-01-01T00:00:00Z","system":"timestamps"}}],
         #         | variable=[{"uri":"collection:/giss_r1i1p1","name":"tas:v1","domain":"d0"}],
-        #         | operation=[{ "name":"CDSpark.ave", "axes":"t", "input":"v1", "groupBy":"year" }]]""".stripMargin
+        #         | operation=[{ "name":"xarray.ave", "axes":"t", "input":"v1", "groupBy":"year" }]]""".stripMargin
 
 
     def reset_wps( self ):
@@ -576,7 +576,7 @@ class TestWorkflow:
         domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-15T00:00:00Z', 'end': '1980-01-15T23:59:59Z', 'crs': 'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx", "weights":"cosine"} if weighted else {'name': "CDSpark.ave", 'axes': "tyx" }
+        v1_ave_data = {'name': "xarray.ave", 'axes': "tyx", "weights":"cosine"} if weighted else {'name': "xarray.ave", 'axes': "tyx" }
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
         self.wps.execute(v1_ave, domains=[d0], async=True)
@@ -595,7 +595,7 @@ class TestWorkflow:
 
         v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
@@ -619,7 +619,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-75,"end":75,"crs":"values"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas:T", domain=d0  )
         v1 = cwt.Variable("collection://cip_20crv2c_mth", "psl:P", domain=d0  )
-        highpass = cwt.Process.from_dict({'name': "CDSpark.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
+        highpass = cwt.Process.from_dict({'name': "xarray.highpass", "grid": "uniform", "shape": "32,72", "res": "5,5", "groupBy": "5-year"})
         highpass.set_inputs(v0,v1)
         svd =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"8" } )
         svd.set_inputs( highpass )
@@ -649,7 +649,7 @@ class TestWorkflow:
     def regrid_cip_20crv_zg_collection( self ):
         d0 = cwt.Domain.from_dict( { 'id': 'd0' } )
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P", domain=d0  )
-        regrid =  cwt.Process.from_dict( { 'name':"CDSpark.noOp", "grid":"uniform", "shape":"32,72", "res":"5,5" } )
+        regrid =  cwt.Process.from_dict( { 'name':"xarray.noOp", "grid":"uniform", "shape":"32,72", "res":"5,5" } )
         regrid.set_inputs( v0 )
         self.wps.execute( regrid, domains=[d0], async=True, runargs={ "responseForm":"collection:cip_20crv2c_mth_zg_32x72" } )
         self.wps.track_status(regrid)
@@ -669,7 +669,7 @@ class TestWorkflow:
         v0 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P0", domain=d0)
         #        d1 = cwt.Domain.from_dict( { 'id': 'd1', "lat":{"start":-75,"end":75,"crs":"values"}, "level":{"start":10,"end":10,"crs":"indices"}, "filter":"DJF" } ) #  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         #        v1 = cwt.Variable("collection://cip_20crv2c_mth", "zg:P1", domain=d1  )
-        highpass =  cwt.Process.from_dict( { 'name': "CDSpark.highpass", "domain": "d0", "groupBy": "5-year", "grid": "uniform", "shape": "30,72", "res": "5,5" } )
+        highpass =  cwt.Process.from_dict( { 'name': "xarray.highpass", "domain": "d0", "groupBy": "5-year", "grid": "uniform", "shape": "30,72", "res": "5,5" } )
         highpass.set_inputs( v0 )
         svd = cwt.Process.from_dict(  {'name': "SparkML.svd", "modes": "8" } )
         svd.set_inputs( highpass )
@@ -710,7 +710,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         v1 = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0 )
 
-        op_data = { 'name': "CDSpark.ave", "weights":"cosine", 'axes': "t" }
+        op_data = { 'name': "xarray.ave", "weights":"cosine", 'axes': "t" }
         op = cwt.Process.from_dict( op_data )
         op.set_inputs( v1 )
 
@@ -726,7 +726,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
 
-        v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx", "cache":"true"}
+        v1_ave_data = {'name': "xarray.ave", 'axes': "tyx", "cache":"true"}
         v1_ave = cwt.Process.from_dict(v1_ave_data)
         v1_ave.set_inputs(v1)
 
@@ -741,7 +741,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         v1 = cwt.Variable("collection://cip_cfsr_mth", "clt",domain=d0 )
 
-        op_data = { 'name': "CDSpark.ave", "weights":"cosine", 'axes': "t" }
+        op_data = { 'name': "xarray.ave", "weights":"cosine", 'axes': "t" }
         op = cwt.Process.from_dict( op_data )
         op.set_inputs( v1 )
 
@@ -754,7 +754,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         v0 = cwt.Variable("collection://cip_merra2_mth", "pr",domain=d0 )
 
-        op_data = { 'name': "CDSpark.max", 'axes': "xy" }
+        op_data = { 'name': "xarray.max", 'axes': "xy" }
         op = cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( v0 )
 
@@ -767,11 +767,11 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
 
         inputs = cwt.Variable("collection://cip_merra2_6hr", "pr",domain=d0 )
-        op_data = { 'name': "CDSpark.sum", 'axes': "xy" }
+        op_data = { 'name': "xarray.sum", 'axes': "xy" }
         op = cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
-        op_data1 = { 'name': "CDSpark.sum", 'axes': "t" }
+        op_data1 = { 'name': "xarray.sum", 'axes': "t" }
         op1 = cwt.Process.from_dict( op_data1 ) # """:type : Process """
         op1.set_inputs( inputs )
 
@@ -788,7 +788,7 @@ class TestWorkflow:
         domain_data = { 'id': 'd0', 'lat': {'start':46, 'end':47,'crs':'values'},'lon': {'start':5, 'end':15, 'crs':'values'},'time':{'start':'1980-06-01T00:00:00', 'end':'2016-08-31T23:00:00', 'crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         v0 = cwt.Variable( "collection://cip_eraint_mth", "tas", domain=d0 )
-        op_data = { 'name': "CDSpark.max", 'axes': "xy" }
+        op_data = { 'name': "xarray.max", 'axes': "xy" }
         op = cwt.Process.from_dict( op_data )
         op.set_inputs( v0 )
         self.wps.execute( op, domains=[d0], async=True )
@@ -801,7 +801,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         v0 = cwt.Variable("collection://cip_eraint_6hr", "tas",domain=d0 )
 
-        op_data = { 'name': "CDSpark.max", 'axes': "xy" }
+        op_data = { 'name': "xarray.max", 'axes': "xy" }
         op = cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( v0 )
 
@@ -812,7 +812,7 @@ class TestWorkflow:
         d1 = cwt.Domain.from_dict(domain_data)
         v1 = cwt.Variable("collection://cip_eraint_6hr", "tas",domain=d1 )
 
-        op_data1 = { 'name': "CDSpark.max", 'axes': "xy" }
+        op_data1 = { 'name': "xarray.max", 'axes': "xy" }
         op1 = cwt.Process.from_dict( op_data1 ) # """:type : Process """
         op1.set_inputs( v1 )
 
@@ -826,7 +826,7 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict(domain_data)
         inputs = cwt.Variable("collection://iap-ua_nra_tas1hr", "tas", domain=d0 )
 
-        op_data = { 'name': "CDSpark.min", 'axes': "xy" }
+        op_data = { 'name': "xarray.min", 'axes': "xy" }
         op = cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( inputs )
 
@@ -851,10 +851,10 @@ class TestWorkflow:
         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':40, 'end':40,'crs':'values'}, 'lon': {'start':40, 'end':40, 'crs':'values'}, 'time': { 'start':'1980-01-01T00:00:00', 'end':'1988-01-01T00:00:00', 'crs':'timestamps'}  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_merra2_mth", "ts", domain=d0  )
 
-        seasonal_cycle = cwt.Process.from_dict({'name': "CDSpark.ave", "groupBy": "monthOfYear", 'axes': "t"} )
+        seasonal_cycle = cwt.Process.from_dict({'name': "xarray.ave", "groupBy": "monthOfYear", 'axes': "t"} )
         seasonal_cycle.set_inputs( v0 )
 
-        seasonal_cycle_removed = cwt.Process.from_dict({'name': "CDSpark.eDiff", "domain": "d0"})
+        seasonal_cycle_removed = cwt.Process.from_dict({'name': "xarray.eDiff", "domain": "d0"})
         seasonal_cycle_removed.set_inputs( v0, seasonal_cycle )
         op = seasonal_cycle_removed
 
@@ -869,10 +869,10 @@ class TestWorkflow:
     #         d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':-50, 'end':50,'crs':'values'}, 'lon': {'start':120, 'end':290,'crs':'values'}, 'time': { 'start':'1980-01-01T00:00:00', 'end':'1999-12-31T00:00:00', 'crs':'timestamps'}  } ) # , 'time': { 'start':'1990-01-01T00:00:00', 'end':'1995-12-31T23:00:00', 'crs':'timestamps'} } )
         v0 = cwt.Variable("collection://cip_merra2_mth", "ts", domain=d0  )
 
-        seasonal_cycle = cwt.Process.from_dict({'name': "CDSpark.ave", "groupBy": "monthOfYear", 'axes': "t"} )
+        seasonal_cycle = cwt.Process.from_dict({'name': "xarray.ave", "groupBy": "monthOfYear", 'axes': "t"} )
         seasonal_cycle.set_inputs( v0 )
 
-        seasonal_cycle_removed = cwt.Process.from_dict({'name': "CDSpark.eDiff", "domain": "d0"})
+        seasonal_cycle_removed = cwt.Process.from_dict({'name': "xarray.eDiff", "domain": "d0"})
         seasonal_cycle_removed.set_inputs( v0, seasonal_cycle )
 
         eofs =  cwt.Process.from_dict( { 'name': "SparkML.svd", "modes":"4", "compu":"true" } )
@@ -902,7 +902,7 @@ if __name__ == '__main__':
 #     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
 #     d0 = cwt.Domain.from_dict(  {'id': 'd0', 'lat': {'start': 5, 'end': 7, 'crs': 'indices'}, 'lon': {'start': 5, 'end': 10, 'crs': 'indices'}, 'time': {'start': '1850-01-01T00:00:00Z', 'end': '1854-01-01T00:00:00Z', 'crs': 'timestamps'}})
 #     v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain=d0)
-#     yearlyAve = cwt.Process.from_dict({'name': "CDSpark.ave", "axes": "t", "groupBy": "year"})
+#     yearlyAve = cwt.Process.from_dict({'name': "xarray.ave", "axes": "t", "groupBy": "year"})
 #     yearlyAve.set_inputs(v0)
 #     wps.execute(yearlyAve, domains=[d0], async=True)
 #     dataPaths = wps.download_result(yearlyAve)
@@ -918,7 +918,7 @@ if __name__ == '__main__':
 #     wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
 #     d0 = cwt.Domain.from_dict(  {'id': 'd0', 'lat': {'start': 5, 'end': 7, 'crs': 'indices'}, 'lon': {'start': 5, 'end': 10, 'crs': 'indices'}, 'time': {'start': '1850-01-01T00:00:00Z', 'end': '1854-01-01T00:00:00Z', 'crs': 'timestamps'}})
 #     v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain=d0)
-#     yearlyAve = cwt.Process.from_dict({'name': "CDSpark.ave", "axes": "t", "groupBy": "year"})
+#     yearlyAve = cwt.Process.from_dict({'name': "xarray.ave", "axes": "t", "groupBy": "year"})
 #     yearlyAve.set_inputs(v0)
 #     wps.execute(yearlyAve, domains=[d0], async=True)
 #     dataPaths = wps.download_result(yearlyAve)
