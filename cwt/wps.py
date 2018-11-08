@@ -425,7 +425,7 @@ class WPS(object):
             status = self.status( op )
             logger.info( "*STATUS: " +  status )
         if status == "ERROR":
-            print "Remote execution error: check server logs"
+            print "*** Remote execution error: check server logs"
             return []
         elif status == "COMPLETED":
             print "HREFS: " + str( op.hrefs )
@@ -453,7 +453,7 @@ class WPS(object):
             status = self.status( op )
             logger.info( "#STATUS: " +  status )
         if status == "ERROR":
-            print "Remote execution error: check server logs"
+            print "**** Remote execution error: check server logs"
             return []
         elif status == "COMPLETED":
             logger.info( "#STATUS: " +  status )
