@@ -553,8 +553,6 @@ class WPS(object):
 #        process.response = self.__parse_response(response, operations.ExecuteResponse)
         process.response = xml.etree.ElementTree.fromstring( response )
 
-        print " $$$ WPS EXE RESPONSE: " + response
-
         for ref in process.response.iter( '{http://www.opengis.net/wps/1.0.0}Reference' ):
             process.hrefs[ ref.attrib.get('id') ] = ref.attrib.get('href')
 
