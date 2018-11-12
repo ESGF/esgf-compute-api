@@ -432,7 +432,7 @@ class WPS(object):
         elif status == "COMPLETED":
             print "HREFS: " + str( op.hrefs )
             file_href = op.hrefs.get("file")
-            file_path = temp_dir + "/" + file_href.split('=')[ -1 ]
+            file_path = temp_dir + "/" + file_href.split('/')[ -1 ]
 
             downloaded_files = []
             nFiles = 1000
@@ -489,7 +489,7 @@ class WPS(object):
              @type index: int
         """
         href = file_href[0:-3] if file_href.endswith(".nc") else file_href
-        return href if(index == 0) else  href + "-" + str(index)
+        return href + ".nc" if(index == 0) else  href + "-" + str(index) + ".nc"
 
     def getDownloadFile(self, file_path, index ):
         """
@@ -497,7 +497,7 @@ class WPS(object):
              @type index: int
         """
         fpath0 = file_path[0:-3] if file_path.endswith(".nc") else file_path
-        return file_path if(index == 0) else  fpath0 + "-" + str(index) + ".nc"
+        return fpath0 + ".nc" if(index == 0) else  fpath0 + "-" + str(index) + ".nc"
 
     def get_status( self, op ):
         t0 = time.time()
