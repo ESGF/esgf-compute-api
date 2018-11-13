@@ -419,7 +419,8 @@ class WPS(object):
 
         return request(**base_params)
 
-    def download_result( self, op, temp_dir="/tmp" ):
+
+    def download_result( self, op, temp_dir=os.getenv( "ESGF_CWT_CACHE_DIR", "/tmp" ) ):
         status = self.status( op )
         logger.info( "*STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
@@ -447,7 +448,7 @@ class WPS(object):
 
             return downloaded_files
 
-    def track_status( self, op, temp_dir="/tmp" ):
+    def track_status( self, op ):
         status = self.status( op )
         logger.info( "#STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
