@@ -144,7 +144,9 @@ class WPS(object):
         status = "UNKNOWN"
         if   self.hasNode( process.response, "ProcessAccepted" ): status = "QUEUED"
         elif self.hasNode( process.response, "ProcessStarted" ): status = "EXECUTING"
-        elif self.hasNode( process.response, "ProcessFinished" ): status = "COMPLETED"
+        elif self.hasNode( process.response, "ProcessFinished" ):
+            status = "COMPLETED"
+            logger.error( "RECEIVED COMPLETION REPORT: " + response )
         elif self.hasNode( process.response, "ProcessFailed" ):
             status = "ERROR"
             logger.error( "RECEIVED ERROR REPORT: " + response )
