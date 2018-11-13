@@ -201,6 +201,8 @@ class Process(cwt.Parameter):
 
         if 'uri' in data:
             output_data = cwt.Variable.from_dict(data)
+        elif 'outputs' in data:
+            output_data = [cwt.Variable.from_dict(x) for x in data['outputs']]
         else:
             output_data = data
 
