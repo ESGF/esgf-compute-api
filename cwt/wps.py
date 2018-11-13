@@ -433,7 +433,7 @@ class WPS(object):
         elif status == "COMPLETED":
             print "HREFS: " + str( op.hrefs )
             file_href = op.hrefs.get("file")
-            file_path = temp_dir + "/" + file_href.split('/')[ -1 ]
+            file_path = temp_dir + "/" + file_href.split('=')[ -1 ]
 
             downloaded_files = []
             nFiles = 1000
