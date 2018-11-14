@@ -156,7 +156,10 @@ class WPS(object):
         bracketingText = "wps:ProcessFinished"
         beginIndex = response.find( bracketingText, 0 ) + len( bracketingText )
         endIndex = response.find( "wps:ProcessFinished", beginIndex )
-        return response[beginIndex:endIndex]
+        raw_report = response[beginIndex:endIndex]
+        repl_map = { "&amp;quot;":'"', "&cr;":"\n", "&tab;":"\t", "&lt;":"<", "&gt;":">", "&amp;lt;":"<", "&amp;gt;":">" }
+        for key,value in repl_map.items(): raw_report.replace( key, value )
+        return raw_report
 
     def hasNode( self, parent_node, child_node_name, schema="wps" ):
         if   schema == "wps": schemaLocation = "{http://www.opengis.net/wps/1.0.0}"
