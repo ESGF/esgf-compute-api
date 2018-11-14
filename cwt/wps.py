@@ -157,8 +157,8 @@ class WPS(object):
         beginIndex = response.find( bracketingText, 0 ) + len( bracketingText )
         endIndex = response.find( "wps:ProcessFinished", beginIndex )
         raw_report = response[beginIndex:endIndex]
-        repl_map = { "&amp;quot;":'"', "&cr;":"\n", "&tab;":"\t", "&lt;":"<", "&gt;":">", "&amp;lt;":"<", "&amp;gt;":">" }
-        for key,value in repl_map.items(): raw_report.replace( key, value )
+        repl_map = { "&amp;quot;":'"', "&lt;":"<", "&gt;":">", "&amp;lt;":"<", "&amp;gt;":">" }
+        for key,value in repl_map.items(): raw_report = raw_report.replace( key, value )
         return raw_report
 
     def hasNode( self, parent_node, child_node_name, schema="wps" ):
