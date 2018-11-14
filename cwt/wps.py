@@ -149,8 +149,14 @@ class WPS(object):
             logger.error( "RECEIVED COMPLETION REPORT: " + response )
         elif self.hasNode( process.response, "ProcessFailed" ):
             status = "ERROR"
-            logger.error( "RECEIVED ERROR REPORT: " + response )
+            logger.error( "RECEIVED ERROR REPORT: " + self.extractErrorReport( response ) )
         return status
+
+    def extractErrorReport(self, response ):
+        bracketingText = "wps:ProcessFinished"
+        beginIndex = response.find( bracketingText, 0 ) + len( bracketingText )
+        endIndex = response.find( "wps:ProcessFinished", beginIndex )
+        return response[beginIndex:endIndex]
 
     def hasNode( self, parent_node, child_node_name, schema="wps" ):
         if   schema == "wps": schemaLocation = "{http://www.opengis.net/wps/1.0.0}"
