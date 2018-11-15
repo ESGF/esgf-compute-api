@@ -111,7 +111,7 @@ class PlotMgr:
                     iplot = 1
                     for varName in varNames:
                         variable = f( varName )
-                        if len( variable.shape ) > 1:
+                        if (variable.getLatitude() is not None) and (variable.getLongitude() is not None):
                             ax = fig.add_subplot( nRows, nCols, iplot )
                             ax.set_title(varName)
                             spatialData = variable( time=slice(timeIndex,timeIndex+1), squeeze=1 )
