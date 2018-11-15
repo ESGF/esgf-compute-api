@@ -12,7 +12,7 @@ v0 = cwt.Variable("collection://cip_20crv2c_mth", "ts", domain=d0  )
 decycle = cwt.Process.from_dict({'name': "xarray.decycle", "axis": "t", "norm": "true" } )
 decycle.set_inputs( v0 )
 
-detrend = cwt.Process.from_dict({'name': "xarray.detrend", "axis": "t", "wsize": 50 })
+detrend = cwt.Process.from_dict({'name': "xarray.detrend", "axis": "t", "wsize": "50" })
 detrend.set_inputs( decycle )
 
 eofs =  cwt.Process.from_dict( { 'name': "xarray.eof", "modes" :"4" } )
