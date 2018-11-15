@@ -125,6 +125,7 @@ class PlotMgr:
                             lon, lat = np.meshgrid( lons, lats )
                             xi, yi = m(lon, lat)
                             smoothing = 'gouraud' if smooth else 'flat'
+                            self.logger.info(" Plotting variable: " + varName + ", shape = " + str(spatialData.shape) )
                             cs2 = m.pcolormesh(xi, yi, spatialData, cmap='jet', shading=smoothing )
                             lats_space = abs(lats[0])+abs(lats[len(lats)-1])
                             m.drawparallels(np.arange(lats[0],lats[len(lats)-1], round(lats_space/5, 0)), labels=[1,0,0,0], dashes=[6,900])
