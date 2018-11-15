@@ -35,6 +35,14 @@ class TestWorkflow:
 
         self.plotter.print_data(dataPath)
 
+    def demo_request( self ):
+        wps = cwt.WPS( "https://edas.nccs.nasa.gov/wps/cwt" )
+        d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat':{'start':229,'end':279}, 'lon': {'start':88, 'end':181 } } )
+        inputs = cwt.Variable("collection://merrra2_m2i1nxint","KE",domain="d0" )
+        op =  cwt.Process.from_dict( { 'name': "xarray.mean", 'axes':"tyx" } )
+        op.set_inputs( inputs )
+        wps.execute( op, domains=[d0], async=False )
+
     def global_KE_ave_1month( self ):
         domain_data = { 'id': 'd0','time':{'start':'1980-01-01T00:00:00','end':'1980-01-31T23:00:00','crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)

@@ -761,6 +761,19 @@ class TestWorkflow:
         dataPaths  = self.wps.download_result(op)
         for dataPath in dataPaths: self.plotter.mpl_timeplot(dataPath)
 
+    def cip_max_tas_dap(self):
+        domain_data = { 'id': 'd0', 'lat': {'start':37, 'end':38,'crs':'values'}, 'lon': {'start':0, 'end':100, 'crs':'values'}, 'time':{'start':'2014-09-01T00:00:00', 'end':'2017-03-31T23:00:00', 'crs':'timestamps'}}
+        d0 = cwt.Domain.from_dict(domain_data)
+        v0 = cwt.Variable("https://dataserver.nccs.nasa.gov/thredds/dodsC/bypass/CREATE-IP//reanalysis/MERRA2/mon/atmos/tas.ncml", "tas",domain=d0 )
+
+        op_data = { 'name': "xarray.max", 'axes': "xy" }
+        op = cwt.Process.from_dict( op_data ) # """:type : Process """
+        op.set_inputs( v0 )
+
+        self.wps.execute( op, domains=[d0], async=True )
+        dataPaths  = self.wps.download_result(op)
+        for dataPath in dataPaths: self.plotter.mpl_timeplot(dataPath)
+
     def cip_precip_sum(self):
         domain_data = { 'id': 'd0', 'lat': {'start':20, 'end':57,'crs':'values'}, 'lon': {'start':-190, 'end':-118, 'crs':'values'}, 'time':{'start':'2014-12-15T00:00:00', 'end':'2014-12-20T23:00:00', 'crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
@@ -887,7 +900,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.cip_high_precip()
+    executor.cip_max_tas_dap()
 
 #    executor.cip_max_temp()
 #    executor.performance_test_conus_1mth()
