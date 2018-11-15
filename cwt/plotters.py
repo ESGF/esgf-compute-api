@@ -60,20 +60,16 @@ class PlotMgr:
                 if( (atype == "Z") and axis.isLevel() ): return axis[:]
                 if( (atype == "T") and axis.isTime() ): return axis[:]
             except Exception as ex:
-                print "Exception in getAxis({0})".format(atype), ex
+                self.logger.error( "Can't find axis with type {0}".format(atype) )
         return None
 
     def isLongitude(self, axis ):
-        id = axis.id.lower()
-        hasAxis = hasattr(axis, 'axis')
-        isX = axis.axis == 'X'
-        if ( hasAxis and isX ): return True
-        return ( id.startswith( 'lon' ) )
+        if ( hasattr(axis, 'axis') and (axis.axis == 'X') ): return True
+        return ( axis.id.lower().startswith( 'lon' ) )
 
     def isLatitude(self, axis ):
-        id = axis.id.lower()
         if (hasattr(axis, 'axis') and axis.axis == 'Y'): return True
-        return ( id.startswith( 'lat' ) )
+        return ( axis.id.lower().startswith( 'lat' ) )
 
     def getRowsCols( self, number ):
         largest_divisor = 1
@@ -101,12 +97,12 @@ class PlotMgr:
         if dataPath:
             for k in range(0,30):
                 if( os.path.isfile(dataPath) ):
-                    self.logger.info( "Plotting file: " +  dataPath )
                     f = cdms2.openDataset(dataPath) # type: cdms2.dataset.CdmsFile
                     vars = f.variables.values()
                     axes = f.axes.values()
-                    lons = self.getAxis( axes , "lon" )
-                    lats = self.getAxis( axes , "lat" )
+                    self.logger.info( "Plotting file: " +  dataPath + ", axes = " + str( f.axes.keys() ) )
+                    lons = self.getAxis( axes , "X" )
+                    lats = self.getAxis( axes , "Y" )
                     fig = plt.figure()
                     varNames = list( map( lambda v: v.id, vars ) )
                     varNames.sort()
