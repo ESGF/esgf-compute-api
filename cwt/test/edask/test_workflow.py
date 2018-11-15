@@ -748,12 +748,12 @@ class TestWorkflow:
         dataPaths = self.wps.download_result(op)
         for dataPath in dataPaths: self.plotter.mpl_spaceplot(dataPath)
 
-    def cip_high_precip(self):
+    def cip_high_precip( self, kmod ):
         domain_data = { 'id': 'd0', 'lat': {'start':37, 'end':38,'crs':'values'}, 'lon': {'start':0, 'end':100, 'crs':'values'}, 'time':{'start':'2014-09-01T00:00:00', 'end':'2017-03-31T23:00:00', 'crs':'timestamps'}}
         d0 = cwt.Domain.from_dict(domain_data)
         v0 = cwt.Variable("collection://cip_merra2_mth", "pr",domain=d0 )
 
-        op_data = { 'name': "xarray.max", 'axes': "xy" }
+        op_data = { 'name': kmod + ".max", 'axes': "xy" }
         op = cwt.Process.from_dict( op_data ) # """:type : Process """
         op.set_inputs( v0 )
 
@@ -900,7 +900,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.cip_max_tas_dap()
+    executor.cip_high_precip("xarray")
 
 #    executor.cip_max_temp()
 #    executor.performance_test_conus_1mth()

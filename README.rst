@@ -45,6 +45,11 @@ Quickstart
     
     >>>         print process.status
 
+Docker image
+============
+
+Docker image containing the `jupyter notebook and API <https://github.com/ESGF/esgf-compute-api/tree/master/docs/source/cwt_docker.md>`_
+
 Examples
 ========
 

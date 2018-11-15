@@ -144,11 +144,22 @@ class WPS(object):
         status = "UNKNOWN"
         if   self.hasNode( process.response, "ProcessAccepted" ): status = "QUEUED"
         elif self.hasNode( process.response, "ProcessStarted" ): status = "EXECUTING"
-        elif self.hasNode( process.response, "ProcessFinished" ): status = "COMPLETED"
+        elif self.hasNode( process.response, "ProcessFinished" ):
+            status = "COMPLETED"
+            logger.error( "RECEIVED COMPLETION REPORT: " + response )
         elif self.hasNode( process.response, "ProcessFailed" ):
             status = "ERROR"
-            logger.error( "RECEIVED ERROR REPORT: " + response )
+            logger.error( "RECEIVED ERROR REPORT: " + self.extractErrorReport( response ) )
         return status
+
+    def extractErrorReport(self, response ):
+        bracketingText = "wps:ProcessFinished"
+        beginIndex = response.find( bracketingText, 0 ) + len( bracketingText )
+        endIndex = response.find( "wps:ProcessFinished", beginIndex )
+        raw_report = response[beginIndex:endIndex]
+        repl_map = { "&amp;":"&", "&quot;":'"', "&lt;":"<", "&gt;":">" }
+        for key,value in repl_map.items(): raw_report = raw_report.replace( key, value )
+        return raw_report
 
     def hasNode( self, parent_node, child_node_name, schema="wps" ):
         if   schema == "wps": schemaLocation = "{http://www.opengis.net/wps/1.0.0}"
@@ -419,7 +430,8 @@ class WPS(object):
 
         return request(**base_params)
 
-    def download_result( self, op, temp_dir="/tmp" ):
+
+    def download_result( self, op, temp_dir=os.getenv( "ESGF_CWT_CACHE_DIR", "/tmp" ) ):
         status = self.status( op )
         logger.info( "*STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
@@ -447,7 +459,7 @@ class WPS(object):
 
             return downloaded_files
 
-    def track_status( self, op, temp_dir="/tmp" ):
+    def track_status( self, op ):
         status = self.status( op )
         logger.info( "#STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
@@ -489,7 +501,7 @@ class WPS(object):
              @type index: int
         """
         href = file_href[0:-3] if file_href.endswith(".nc") else file_href
-        return href if(index == 0) else  href + "-" + str(index)
+        return href + ".nc" if(index == 0) else  href + "-" + str(index) + ".nc"
 
     def getDownloadFile(self, file_path, index ):
         """
@@ -497,7 +509,7 @@ class WPS(object):
              @type index: int
         """
         fpath0 = file_path[0:-3] if file_path.endswith(".nc") else file_path
-        return fpath0 if(index == 0) else  fpath0 + "-" + str(index)
+        return fpath0 + ".nc" if(index == 0) else  fpath0 + "-" + str(index) + ".nc"
 
     def get_status( self, op ):
         t0 = time.time()
