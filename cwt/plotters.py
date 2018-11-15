@@ -105,8 +105,8 @@ class PlotMgr:
                     f = cdms2.openDataset(dataPath) # type: cdms2.dataset.CdmsFile
                     vars = f.variables.values()
                     axes = f.axes.values()
-                    lons = self.getAxis( axes , "X" )
-                    lats = self.getAxis( axes , "Y" )
+                    lons = self.getAxis( axes , "lon" )
+                    lats = self.getAxis( axes , "lat" )
                     fig = plt.figure()
                     varNames = list( map( lambda v: v.id, vars ) )
                     varNames.sort()
