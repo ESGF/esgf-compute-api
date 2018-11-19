@@ -900,7 +900,7 @@ class TestWorkflow:
 
 if __name__ == '__main__':
     executor = TestWorkflow()
-    executor.cip_high_precip("rrasfe")
+    executor.cip_high_precip("xarray")
 
 #    executor.cip_max_temp()
 #    executor.performance_test_conus_1mth()
