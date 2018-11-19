@@ -3,6 +3,10 @@ WPS Client library imports.
 """
 from __future__ import absolute_import
 
+import logging
+
+logging.captureWarnings(True)
+
 __version__ = '2.0.0'
 
 from .errors import *
