@@ -239,7 +239,7 @@ class Process(cwt.Parameter):
             if status not in status_hist:
                 status_hist[status] = True
 
-                logger.info('%s', status)
+                print status
 
         update_history(self.status)
 
