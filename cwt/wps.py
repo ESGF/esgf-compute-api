@@ -140,6 +140,7 @@ class WPS(object):
         params = { parm_toks[0]: parm_toks[1] }
         headers = {}
         response = self.__http_request("get", url, params, None, headers)
+        message = response
         process.response = xml.etree.ElementTree.fromstring( response )
         status = "UNKNOWN"
         if   self.hasNode( process.response, "ProcessAccepted" ): status = "QUEUED"
@@ -149,8 +150,9 @@ class WPS(object):
             logger.error( "RECEIVED COMPLETION REPORT: " + response )
         elif self.hasNode( process.response, "ProcessFailed" ):
             status = "ERROR"
-            logger.error( "RECEIVED ERROR REPORT: " + self.extractErrorReport( response ) )
-        return status
+            message = self.extractErrorReport( response )
+            logger.error( "RECEIVED ERROR REPORT: " + message )
+        return status, message
 
     def extractErrorReport(self, response ):
         bracketingText = "wps:ProcessFinished"
@@ -432,14 +434,17 @@ class WPS(object):
 
 
     def download_result( self, op, temp_dir=os.getenv( "ESGF_CWT_CACHE_DIR", "/tmp" ) ):
-        status = self.status( op )
+        status, message = self.status( op )
         logger.info( "*STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
             time.sleep(1)
-            status = self.status( op )
+            status, message = self.status( op )
             logger.info( "*STATUS: " +  status )
         if status == "ERROR":
-            print "*** Remote execution error: check server logs"
+            msg_toks = message.split(">~>")
+            print "\n\n\n ------------------------------------------------------------------------------------------------------------------------------"
+            print " *** Remote execution error: " + message
+            print "\n ------------------>>" + msg_toks[0]
             return []
         elif status == "COMPLETED":
             print "HREFS: " + str( op.hrefs )
@@ -460,14 +465,17 @@ class WPS(object):
             return downloaded_files
 
     def track_status( self, op ):
-        status = self.status( op )
+        status, message = self.status( op )
         logger.info( "#STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
             time.sleep(1)
-            status = self.status( op )
+            statu, messages = self.status( op )
             logger.info( "#STATUS: " +  status )
         if status == "ERROR":
-            print "**** Remote execution error: check server logs"
+            msg_toks = message.split(">~>")
+            print "\n\n\n ------------------------------------------------------------------------------------------------------------------------------"
+            print "**** Remote execution error: " + message
+            print "\n\nServer Error: " + msg_toks[0]
             return []
         elif status == "COMPLETED":
             logger.info( "#STATUS: " +  status )
@@ -513,11 +521,11 @@ class WPS(object):
 
     def get_status( self, op ):
         t0 = time.time()
-        status = self.status( op )
+        status, message = self.status( op )
         logger.info( "@STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
             time.sleep(1)
-            status = self.status( op )
+            status, message = self.status( op )
             logger.info( "@STATUS: " +  status )
         logger.info("@STATUS: COMPLETED, run time = {:.2f} s, Response:".format( time.time()-t0 ) )
         print xml.etree.ElementTree.tostring( op.response )
