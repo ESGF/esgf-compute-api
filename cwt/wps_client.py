@@ -129,6 +129,8 @@ class WPSClient(object):
                 self.file_handler.setFormatter(formatter)
 
                 logger.addHandler(self.file_handler)
+        else:
+            logger.addHandler(logging.NullHandler())
 
     def __repr__(self):
         return ('Process(url=%r, version=%r, language=%r, capabilities=%r, ssl_verify=%r)') % (
