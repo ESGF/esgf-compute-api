@@ -433,7 +433,7 @@ class WPS(object):
         return request(**base_params)
 
 
-    def download_result( self, op, temp_dir=os.getenv( "ESGF_CWT_CACHE_DIR", "/tmp" ) ):
+    def download_result( self, op, temp_dir=os.getenv( "ESGF_CWT_CACHE_DIR", "/tmp" ), raiseErrors=False ):
         status, message = self.status( op )
         logger.info( "*STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
@@ -445,6 +445,7 @@ class WPS(object):
             print "\n\n\n ------------------------------------------------------------------------------------------------------------------------------"
             print " *** Remote execution error: " + message
             print "\n ------------------>>" + msg_toks[0]
+            if raiseErrors: raise Exception( msg_toks[0] )
             return []
         elif status == "COMPLETED":
             print "HREFS: " + str( op.hrefs )

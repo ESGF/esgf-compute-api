@@ -28,7 +28,7 @@ def test_kernel_error(plot=False):
     op =  cwt.Process.from_dict( op_data ) # """:type : Process """
     op.set_inputs( inputs )
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op, temp_dir)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
@@ -41,7 +41,7 @@ def test_clt_time_ave(plot=False):
     op =  cwt.Process.from_dict( op_data ) # """:type : Process """
     op.set_inputs( inputs )
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op, temp_dir)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_weighted_spatial_ave(plot=False):
@@ -56,7 +56,7 @@ def test_weighted_spatial_ave(plot=False):
 
     wps.execute(op, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(op, temp_dir)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_nonweighted_spatial_ave(plot=False):
@@ -71,7 +71,7 @@ def test_nonweighted_spatial_ave(plot=False):
 
     wps.execute(op, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(op, temp_dir)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_spatial_max(plot=False):
@@ -87,7 +87,7 @@ def test_spatial_max(plot=False):
 
     wps.execute( op, domains=[d0], async=True )
 
-    dataPaths = wps.download_result(op, temp_dir)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_sia_comparison_time_ave(plot=False):
@@ -109,7 +109,7 @@ def test_sia_comparison_time_ave(plot=False):
     start = time.time()
     wps.execute( op, domains=[d0], async=True )
 
-    dataPaths = wps.download_result( op, temp_dir )
+    dataPaths = wps.download_result(op, temp_dir, True )
     end = time.time()
     print "\nCompleted execution in " + str(end-start) + " secs\n"
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
@@ -134,7 +134,7 @@ def test_anomaly(plot=False):
 
     wps.execute( anomaly, domains=[d0,d1], async=True )
 
-    dataPaths = wps.download_result( anomaly, temp_dir )
+    dataPaths = wps.download_result( anomaly, temp_dir, True )
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
@@ -161,7 +161,7 @@ def test_climate_change_anomaly(plot=False):
 
     wps.execute(anomaly, domains=[d0, d1], async=True)
 
-    dataPaths = wps.download_result(anomaly, temp_dir)
+    dataPaths = wps.download_result(anomaly, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_diff_WITH_REGRID(plot=False):
@@ -177,7 +177,7 @@ def test_diff_WITH_REGRID(plot=False):
 
     wps.execute(op, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(op, temp_dir)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_diff_with_regrid1(plot=False):
@@ -195,7 +195,7 @@ def test_diff_with_regrid1(plot=False):
 
     wps.execute(diff_op, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(diff_op, temp_dir)
+    dataPaths = wps.download_result(diff_op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
@@ -212,7 +212,7 @@ def test_average(plot=False):
 
     wps.execute(v1_ave, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
@@ -224,7 +224,7 @@ def test_testClock(plot=False):
     util_op = cwt.Process.from_dict(util_data)
 
     wps.execute(util_op, domains=[d0], async=True)
-    dataPaths = wps.download_result(util_op, temp_dir)
+    dataPaths = wps.download_result(util_op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
@@ -242,7 +242,7 @@ def test_performance_test_global_1day(plot=False):
 
     wps.execute(v1_ave, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
@@ -261,7 +261,7 @@ def test_performance_test_global_1mth(plot=False):
 
     wps.execute(v1_ave, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_performance_test_global_1y(plot=False):
@@ -278,7 +278,7 @@ def test_performance_test_global_1y(plot=False):
 
     wps.execute(v1_ave, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_wps_test(plot=False):
@@ -289,7 +289,7 @@ def test_wps_test(plot=False):
     v1_ave = cwt.Process.from_dict(v1_ave_data)
     v1_ave.set_inputs(v1)
     wps.execute(v1_ave, domains=[d0], async=True)
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath,1)
 
 def test_performance_test_conus_1y(plot=False):
@@ -306,7 +306,7 @@ def test_performance_test_conus_1y(plot=False):
 
     wps.execute(v1_ave, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
@@ -323,7 +323,7 @@ def test_performance_test_global(plot=False):
 
     wps.execute(v1_ave, domains=[d0], async=True)  # , profile="active" )
 
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_seasonal_anomaly(plot=False):
@@ -339,7 +339,7 @@ def test_seasonal_anomaly(plot=False):
     anomaly.set_inputs(v0_ave, v0)
 
     wps.execute(anomaly, domains=[d0], async=True)
-    dataPaths = wps.download_result(anomaly, temp_dir)
+    dataPaths = wps.download_result(anomaly, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_seasonal_cycle(plot=False):
@@ -353,7 +353,7 @@ def test_seasonal_cycle(plot=False):
     v0_ave = cwt.Process.from_dict(v0_ave_data)
     v0_ave.set_inputs(v0)
     wps.execute(v0_ave, domains=[d0], async=True)
-    dataPaths = wps.download_result(v0_ave, temp_dir)
+    dataPaths = wps.download_result(v0_ave, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
@@ -368,7 +368,7 @@ def test_spatial_ave(plot=False):
     op = cwt.Process.from_dict(op_data)
     op.set_inputs(inputs)
     wps.execute(op, domains=[d0], async=True)
-    dataPaths = wps.download_result(op)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
@@ -383,7 +383,7 @@ def test_precip_test(plot=False):
 
     wps.execute( v0_ave, domains=[d0], async=True )
 
-    dataPaths = wps.download_result( v0_ave, temp_dir )
+    dataPaths = wps.download_result( v0_ave, temp_dir, True )
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
@@ -395,7 +395,7 @@ def test_time_selection_test(plot=False):
     op =  cwt.Process.from_dict( op_data ) # """:type : Process """
     op.set_inputs( inputs )
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op, temp_dir)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
@@ -407,7 +407,7 @@ def test_time_bin_selection_test(plot=False):
     op =  cwt.Process.from_dict( op_data ) # """:type : Process """
     op.set_inputs( inputs )
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op, temp_dir)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
@@ -424,7 +424,7 @@ def test_lowpass_test(plot=False):
     svd =  cwt.Process.from_dict( { 'name': "xarray.lowpass", "wsize": 60 } )
     svd.set_inputs( v0 )
     wps.execute( svd, domains=[d0], async=True )
-    dataPaths = wps.download_result(svd, temp_dir)
+    dataPaths = wps.download_result(svd, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata( dataPath )
 
@@ -434,7 +434,7 @@ def test_highpass_test(plot=False):
     highpass =  cwt.Process.from_dict( { 'name': "xarray.detrend", "wsize": 60 } )
     highpass.set_inputs( v0 )
     wps.execute( highpass, domains=[d0], async=True )
-    dataPaths = wps.download_result(highpass, temp_dir)
+    dataPaths = wps.download_result(highpass, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata( dataPath )
 
@@ -444,7 +444,7 @@ def test_highpass_test1(plot=False):
     highpass =  cwt.Process.from_dict( { 'name': "xarray.detrend", "wsize": 60  } )
     highpass.set_inputs( v0 )
     wps.execute( highpass, domains=[d0], async=True )
-    dataPaths = wps.download_result(highpass, temp_dir)
+    dataPaths = wps.download_result(highpass, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata( dataPath )
 
@@ -457,7 +457,7 @@ def test_baseline_test(plot=False):
     svd =  cwt.Process.from_dict( { 'name': "xarray.subset" } )
     svd.set_inputs( v0 )
     wps.execute( svd, domains=[d0], async=True )
-    dataPaths = wps.download_result(svd, temp_dir)
+    dataPaths = wps.download_result(svd, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata( dataPath )
 
@@ -468,7 +468,7 @@ def test_binning_test(plot=False):
     yearlyAve =  cwt.Process.from_dict( { 'name': "xarray.ave", "axes":"t", "groupBy": "t.year" } )
     yearlyAve.set_inputs( v0 )
     wps.execute( yearlyAve, domains=[d0], async=True )
-    dataPaths = wps.download_result(yearlyAve, temp_dir)
+    dataPaths = wps.download_result(yearlyAve, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_data( dataPath )
 
@@ -482,7 +482,7 @@ def test_performance_test_conus_1day(self, weighted):
     v1_ave = cwt.Process.from_dict(v1_ave_data)
     v1_ave.set_inputs(v1)
     wps.execute(v1_ave, domains=[d0], async=True)
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
@@ -503,7 +503,7 @@ def test_performance_test_conus(plot=False):
 
     wps.execute(v1_ave, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
@@ -517,7 +517,7 @@ def test_cloud_cover_demo(plot=False):
     op.set_inputs( v1 )
 
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
@@ -534,7 +534,7 @@ def test_performance_test_conus_1mth(plot=False):
 
     wps.execute(v1_ave, domains=[d0], async=True)
 
-    dataPaths = wps.download_result(v1_ave, temp_dir)
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_cip_cloud_cover(plot=False):
@@ -548,7 +548,7 @@ def test_cip_cloud_cover(plot=False):
     op.set_inputs( v1 )
 
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths: plotter.print_Mdata(dataPath)
 
 def test_cip_high_precip(plot=False):
@@ -561,7 +561,7 @@ def test_cip_high_precip(plot=False):
     op.set_inputs( v0 )
 
     wps.execute( op, domains=[d0], async=True )
-    dataPaths  = wps.download_result(op)
+    dataPaths  = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths: plotter.print_Mdata(dataPath)
 
 def test_cip_precip_sum(plot=False):
@@ -578,10 +578,10 @@ def test_cip_precip_sum(plot=False):
     op1.set_inputs( inputs )
 
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op)
+    dataPaths = wps.download_result(op, temp_dir, True)
 
     wps.execute( op1, domains=[d0], async=True )
-    dataPaths1 = wps.download_result(op1)
+    dataPaths1 = wps.download_result(op1, temp_dir, True)
 
     for dataPath in dataPaths: plotter.print_Mdata(dataPath)
     for dataPath1 in dataPaths1: plotter.print_Mdata(dataPath1)
@@ -594,7 +594,7 @@ def test_cip_max_temp(plot=False):
     op = cwt.Process.from_dict( op_data )
     op.set_inputs( v0 )
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
@@ -608,7 +608,7 @@ def test_cip_max_temp_heatwave(plot=False):
     op.set_inputs( v0 )
 
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op)
+    dataPaths = wps.download_result(op, temp_dir, True)
 
     domain_data = { 'id': 'd1', 'lat': {'start':46,'end':47,'crs':'values'},'lon': {'start':5, 'end':15, 'crs':'values'},'time':{'start':'2003-06-01T00:00:00','end':'2003-08-31T23:00:00', 'crs':'timestamps'}}
     d1 = cwt.Domain.from_dict(domain_data)
@@ -619,7 +619,7 @@ def test_cip_max_temp_heatwave(plot=False):
     op1.set_inputs( v1 )
 
     wps.execute( op1, domains=[d1], async=True )
-    dataPaths1 = wps.download_result(op1)
+    dataPaths1 = wps.download_result(op1, temp_dir, True)
     for dataPath in dataPaths: plotter.print_Mdata(dataPath)
     for dataPath1 in dataPaths1: plotter.print_Mdata(dataPath1)
 
@@ -633,7 +633,7 @@ def test_cip_min_temp(plot=False):
     op.set_inputs( inputs )
 
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths: plotter.print_Mdata(dataPath)
 
 def test_timeseries_processing_test(plot=False):
@@ -648,7 +648,7 @@ def test_timeseries_processing_test(plot=False):
     op = seasonal_cycle_removed
     op.set_inputs( v0 )
     wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op, temp_dir)
+    dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_data( dataPath )
 
