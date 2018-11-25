@@ -77,30 +77,6 @@ def test_spatial_max(plot=False):
     dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
-def test_sia_comparison_time_ave(plot=False):
-
-    start_year = 1960     #  Holdings:  1958 - 2001
-    end_year = 1969
-
-    domain_data = { 'id': 'd0','time': {'start':str(start_year)+'-01-01T00:00:00','end':str(end_year)+'-12-31T23:00:00','crs':'timestamps'  } }
-    d0 = cwt.Domain.from_dict(domain_data)
-
-    print "\nExecuing global time average for variable 'tas' from collection 'iap-ua_eraint_tas1hr' for " + str(end_year-start_year+1) + " years, starting with " + str(start_year) +"\n"
-
-    inputs = cwt.Variable( "collection://iap-ua_eraint_tas1hr", "tas", domain="d0" )
-
-    op_data =  { 'name': "xarray.ave", 'axes': "t" }
-    op =  cwt.Process.from_dict( op_data )
-    op.set_inputs( inputs )
-
-    start = time.time()
-    wps.execute( op, domains=[d0], async=True )
-
-    dataPaths = wps.download_result(op, temp_dir, True )
-    end = time.time()
-    print "\nCompleted execution in " + str(end-start) + " secs\n"
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
-
 def test_anomaly(plot=False):
 
     d0 = cwt.Domain.from_dict( { 'id': 'd0' } )
@@ -200,18 +176,6 @@ def test_average(plot=False):
     wps.execute(v1_ave, domains=[d0], async=True)
 
     dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
-
-
-def test_testClock(plot=False):
-    domain_data = {'id': 'd0'}
-    d0 = cwt.Domain.from_dict(domain_data)
-
-    util_data = {'name': "util.testClock"}
-    util_op = cwt.Process.from_dict(util_data)
-
-    wps.execute(util_op, domains=[d0], async=True)
-    dataPaths = wps.download_result(util_op, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
