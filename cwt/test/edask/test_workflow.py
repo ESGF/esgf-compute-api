@@ -236,7 +236,7 @@ def test_spatial_ave(plot=False):
 
 def test_precip(plot=False):
     d0 = cwt.Domain.from_dict(  {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'}})
-    v0 = cwt.Variable("collection://merra2_m2t1nxlnd", "PRECTOTLAND", domain=d0  )
+    v0 = cwt.Variable("collection://cip_merra_6hr", "PRECTOTLAND", domain=d0  )
     v0_ave =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "t", 'groupBy': "t.year" } )
     v0_ave.set_inputs( v0 )
     wps.execute( v0_ave, domains=[d0], async=True )
@@ -260,11 +260,12 @@ def test_time_bin_selection(plot=False):
     domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'1990-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
     d0 = cwt.Domain.from_dict(domain_data)
     inputs = cwt.Variable("collection://cip_merra2_mth", "pr", domain="d0" )
-    op_data =  { 'name': "xarray.ave", 'axes': "txy", "groupby" : "t.year" }
-    op =  cwt.Process.from_dict( op_data ) # """:type : Process """
-    op.set_inputs( inputs )
-    wps.execute( op, domains=[d0], async=True )
-    dataPaths = wps.download_result(op, temp_dir, True)
+    op0 =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "xy" } ) # """:type : Process """
+    op0.set_inputs( inputs )
+    op1 =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "t", "groupby" : "t.year" } ) # """:type : Process """
+    op1.set_inputs( op0 )
+    wps.execute( op1, domains=[d0], async=True )
+    dataPaths = wps.download_result(op1, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
@@ -318,7 +319,7 @@ def test_baseline(plot=False):
 def test_binning(plot=False):
     d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'} ,
                                  'time': { 'start':'1850-01-01T00:00:00Z', 'end':'1854-01-01T00:00:00Z', 'crs':'timestamps'} } )
-    v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain=d0  )
+    v0 = cwt.Variable("collection://giss_E2-R_rcp26_r1i1p1", "tas", domain=d0  )
     yearlyAve =  cwt.Process.from_dict( { 'name': "xarray.ave", "axes":"t", "groupBy": "t.year" } )
     yearlyAve.set_inputs( v0 )
     wps.execute( yearlyAve, domains=[d0], async=True )

@@ -69,7 +69,7 @@ class Process(parameter.Parameter):
                     if key == 'gridder':
                         proc_params[key] = gridder.Gridder.from_dict(d)
                 else:
-                    proc_params[key] = named_parameter.NamedParameter.from_string(key, d)
+                    proc_params[key] = named_parameter.NamedParameter.from_string(key, str(d) )
 
         obj.parameters = proc_params
 
