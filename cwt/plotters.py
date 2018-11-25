@@ -145,8 +145,11 @@ class PlotMgr:
             if( os.path.isfile(dataPath) ):
                 f = cdms2.openDataset(dataPath)
                 for variable in f.variables.values():
-                    self.logger.info( "Produced result " + variable.id + ", shape: " +  str( variable.shape ) + ", dims: " + variable.getOrder() + " from file: " + dataPath )
-                    self.logger.info( "Data Sample: " + str( variable[0] ) )
+                    try:
+                        self.logger.info( "Produced result " + variable.id + ", shape: " +  str( variable.shape ) + ", dims: " + variable.getOrder() + " from file: " + dataPath )
+                        self.logger.info( "Data Sample: " + str( variable.getValue()[0] ) )
+                    except Exception as err:
+                        self.logger.warn(" Error printing data: " + getattr( err, "message", repr(err) ) )
                     return
             else: time.sleep(1)
 
