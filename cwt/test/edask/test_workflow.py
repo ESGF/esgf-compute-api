@@ -152,7 +152,7 @@ def test_climate_change_anomaly(plot=False):
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_diff_WITH_REGRID(plot=False):
-    domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '1980-02-31T23:00:00', 'crs': 'timestamps'}  }
+    domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '1980-02-29T23:00:00', 'crs': 'timestamps'}  }
     d0 = cwt.Domain.from_dict(domain_data)
 
     v0 = cwt.Variable("collection://cip_merra2_mth", "tas", domain="d0")
@@ -277,7 +277,7 @@ def test_wps_test(plot=False):
     v1_ave.set_inputs(v1)
     wps.execute(v1_ave, domains=[d0], async=True)
     dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath,1)
+    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_performance_test_conus_1y(plot=False):
     domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2015-12-31T23:59:00Z', 'crs': 'timestamps'}}
