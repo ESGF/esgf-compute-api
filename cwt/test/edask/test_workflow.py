@@ -179,60 +179,7 @@ def test_average(plot=False):
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 
-def test_performance_test_global_1day(plot=False):
-    domain_data = {'id': 'd0',
-                   'time': {'start': '1980-01-15T00:00:00Z', 'end': '1980-01-15T23:59:00Z', 'crs': 'timestamps'}}
-
-    d0 = cwt.Domain.from_dict(domain_data)
-
-    v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
-
-    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
-    v1_ave = cwt.Process.from_dict(v1_ave_data)
-    v1_ave.set_inputs(v1)
-
-    wps.execute(v1_ave, domains=[d0], async=True)
-
-    dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
-
-
-def test_performance_test_global_1mth(plot=False):
-    #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-
-    domain_data = {'id': 'd0',
-                   'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:59Z', 'crs': 'timestamps'}}
-    d0 = cwt.Domain.from_dict(domain_data)
-
-    v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
-
-    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
-    v1_ave = cwt.Process.from_dict(v1_ave_data)
-    v1_ave.set_inputs(v1)
-
-    wps.execute(v1_ave, domains=[d0], async=True)
-
-    dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
-
-def test_performance_test_global_1y(plot=False):
-    #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-    domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:59:00Z', 'crs': 'timestamps'}}
-
-    d0 = cwt.Domain.from_dict(domain_data)
-
-    v1 = cwt.Variable("collection://cip_cfsr_mth", "tas", domain=d0)
-
-    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
-    v1_ave = cwt.Process.from_dict(v1_ave_data)
-    v1_ave.set_inputs(v1)
-
-    wps.execute(v1_ave, domains=[d0], async=True)
-
-    dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
-
-def test_wps_test(plot=False):
+def test_wps(plot=False):
     domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2001-12-31T23:59:00Z','crs': 'timestamps'}}
     d0 = cwt.Domain.from_dict(domain_data)
     v1 = cwt.Variable( "https://dataserver.nccs.nasa.gov/thredds/dodsC/bypass/CREATE-IP//reanalysis/MERRA2/mon/atmos/tas.ncml", "tas", domain=d0)
@@ -240,39 +187,6 @@ def test_wps_test(plot=False):
     v1_ave = cwt.Process.from_dict(v1_ave_data)
     v1_ave.set_inputs(v1)
     wps.execute(v1_ave, domains=[d0], async=True)
-    dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
-
-def test_performance_test_conus_1y(plot=False):
-    domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2015-12-31T23:59:00Z', 'crs': 'timestamps'}}
-
-    d0 = cwt.Domain.from_dict(domain_data)
-
-    v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
-
-    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
-    v1_ave = cwt.Process.from_dict(v1_ave_data)
-    v1_ave.set_inputs(v1)
-
-    wps.execute(v1_ave, domains=[d0], async=True)
-
-    dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
-
-
-
-def test_performance_test_global(plot=False):
-    domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2015-01-01T00:00:00Z', 'crs': 'timestamps'} }
-    d0 = cwt.Domain.from_dict(domain_data)
-
-    v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
-
-    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
-    v1_ave = cwt.Process.from_dict(v1_ave_data)
-    v1_ave.set_inputs(v1)
-
-    wps.execute(v1_ave, domains=[d0], async=True)  # , profile="active" )
-
     dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
@@ -320,7 +234,7 @@ def test_spatial_ave(plot=False):
         plotter.print_Mdata(dataPath)
 
 
-def test_precip_test(plot=False):
+def test_precip(plot=False):
     d0 = cwt.Domain.from_dict(  {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'}})
     v0 = cwt.Variable("collection://merra2_m2t1nxlnd", "PRECTOTLAND", domain=d0  )
     v0_ave =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "t", 'groupBy': "t.year" } )
@@ -330,7 +244,7 @@ def test_precip_test(plot=False):
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
-def test_time_selection_test(plot=False):
+def test_time_selection(plot=False):
     domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
     d0 = cwt.Domain.from_dict(domain_data)
     inputs = cwt.Variable("collection://cip_merra2_mth", "pr", domain="d0" )
@@ -342,7 +256,7 @@ def test_time_selection_test(plot=False):
     for dataPath in dataPaths:
         plotter.print_Mdata(dataPath)
 
-def test_time_bin_selection_test(plot=False):
+def test_time_bin_selection(plot=False):
     domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'1990-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
     d0 = cwt.Domain.from_dict(domain_data)
     inputs = cwt.Variable("collection://cip_merra2_mth", "pr", domain="d0" )
@@ -361,7 +275,7 @@ def test_ListCollections(plot=False):
     print wps.getCapabilities( "coll", False )
 
 
-def test_lowpass_test(plot=False):
+def test_lowpass(plot=False):
     d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } )
     v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
     svd =  cwt.Process.from_dict( { 'name': "xarray.lowpass", "wsize": 60 } )
@@ -371,7 +285,7 @@ def test_lowpass_test(plot=False):
     for dataPath in dataPaths:
         plotter.print_Mdata( dataPath )
 
-def test_highpass_test(plot=False):
+def test_highpass(plot=False):
     d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } )
     v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
     highpass =  cwt.Process.from_dict( { 'name': "xarray.detrend", "wsize": 60 } )
@@ -381,7 +295,7 @@ def test_highpass_test(plot=False):
     for dataPath in dataPaths:
         plotter.print_Mdata( dataPath )
 
-def test_highpass_test1(plot=False):
+def test_highpass1(plot=False):
     d0 = cwt.Domain.from_dict( { 'id': 'd0', "lat":{"start":-80,"end":80,"crs":"values"} } )
     v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
     highpass =  cwt.Process.from_dict( { 'name': "xarray.detrend", "wsize": 60  } )
@@ -391,7 +305,7 @@ def test_highpass_test1(plot=False):
     for dataPath in dataPaths:
         plotter.print_Mdata( dataPath )
 
-def test_baseline_test(plot=False):
+def test_baseline(plot=False):
     d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33, 'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'}} )
     v0 = cwt.Variable("collection://cip_20crv2c_mth", "psl", domain=d0  )
     svd =  cwt.Process.from_dict( { 'name': "xarray.subset" } )
@@ -401,7 +315,7 @@ def test_baseline_test(plot=False):
     for dataPath in dataPaths:
         plotter.print_Mdata( dataPath )
 
-def test_binning_test(plot=False):
+def test_binning(plot=False):
     d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'} ,
                                  'time': { 'start':'1850-01-01T00:00:00Z', 'end':'1854-01-01T00:00:00Z', 'crs':'timestamps'} } )
     v0 = cwt.Variable("collection://giss_r1i1p1", "tas", domain=d0  )
@@ -412,36 +326,8 @@ def test_binning_test(plot=False):
     for dataPath in dataPaths:
         plotter.print_data( dataPath )
 
-def test_performance_test_conus_1day(self, weighted):
-    domain_data = {'id': 'd0', 'lat': {'start': 229, 'end': 279, 'crs': 'indices'},
-                   'lon': {'start': 88, 'end': 181, 'crs': 'indices'},
-                   'time': {'start': '1980-01-15T00:00:00Z', 'end': '1980-01-15T23:59:59Z', 'crs': 'timestamps'}}
-    d0 = cwt.Domain.from_dict(domain_data)
-    v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
-    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx" } if weighted else {'name': "xarray.ave", 'axes': "tyx"}
-    v1_ave = cwt.Process.from_dict(v1_ave_data)
-    v1_ave.set_inputs(v1)
-    wps.execute(v1_ave, domains=[d0], async=True)
-    dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:
-        plotter.print_Mdata(dataPath)
-
 def test_test_getCollections(plot=False):
     return wps.getCapabilities("coll", False)
-
-def test_performance_test_conus(plot=False):
-    domain_data = {'id': 'd0', 'lat': {'start': 229, 'end': 279, 'crs': 'indices'},
-                   'lon': {'start': 88, 'end': 181, 'crs': 'indices'},
-                   'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'}}
-    d0 = cwt.Domain.from_dict(domain_data)
-    v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
-    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
-    v1_ave = cwt.Process.from_dict(v1_ave_data)
-    v1_ave.set_inputs(v1)
-    wps.execute(v1_ave, domains=[d0], async=True)
-    dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:
-        plotter.print_Mdata(dataPath)
 
 def test_cloud_cover_demo(plot=False):
     domain_data = { 'id': 'd0', 'lat': {'start':23.7,'end':49.2,'crs':'values'}, 'lon': {'start':-125, 'end':-70.3, 'crs':'values'}, 'time':{'start':'1980-01-01T00:00:00','end':'2016-12-31T23:00:00', 'crs':'timestamps'}}
@@ -452,20 +338,6 @@ def test_cloud_cover_demo(plot=False):
     op.set_inputs( v1 )
     wps.execute( op, domains=[d0], async=True )
     dataPaths = wps.download_result(op, temp_dir, True)
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
-
-
-def test_performance_test_conus_1mth(plot=False):
-    #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-
-    domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-01-31T23:59:59Z', 'crs': 'timestamps'}}
-    d0 = cwt.Domain.from_dict(domain_data)
-    v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
-    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx" }
-    v1_ave = cwt.Process.from_dict(v1_ave_data)
-    v1_ave.set_inputs(v1)
-    wps.execute(v1_ave, domains=[d0], async=True)
-    dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 def test_cip_cloud_cover(plot=False):
@@ -580,6 +452,39 @@ def test_timeseries_processing(plot=False):
     dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:
         plotter.print_data( dataPath )
+
+def test_KE_ave_conus_1y(plot=False):
+    domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2015-12-31T23:59:00Z', 'crs': 'timestamps'}}
+
+    d0 = cwt.Domain.from_dict(domain_data)
+
+    v1 = cwt.Variable("collection://merra2_inst1_2d_int_Nx", "KE", domain=d0)
+
+    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
+    v1_ave = cwt.Process.from_dict(v1_ave_data)
+    v1_ave.set_inputs(v1)
+
+    wps.execute(v1_ave, domains=[d0], async=True)
+
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
+    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
+
+def test_test_KE_ave_global_1y(plot=False):
+    #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
+    domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:59:00Z', 'crs': 'timestamps'}}
+
+    d0 = cwt.Domain.from_dict(domain_data)
+
+    v1 = cwt.Variable("collection://cip_cfsr_mth", "tas", domain=d0)
+
+    v1_ave_data = {'name': "xarray.ave", 'axes': "tyx"}
+    v1_ave = cwt.Process.from_dict(v1_ave_data)
+    v1_ave.set_inputs(v1)
+
+    wps.execute(v1_ave, domains=[d0], async=True)
+
+    dataPaths = wps.download_result(v1_ave, temp_dir, True)
+    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 if __name__ == '__main__':
     test_timeseries_processing()
