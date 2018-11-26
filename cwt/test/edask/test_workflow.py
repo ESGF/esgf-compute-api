@@ -492,4 +492,5 @@ def test_test_KE_ave_global_1y(plot=False):
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 if __name__ == '__main__':
-    test_timeseries_processing()
+    test_binning()
+#    test_precip()
