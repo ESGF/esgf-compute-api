@@ -22,7 +22,7 @@ temp_dir = create_tempdir()
 def test_binning(plot=False):
     d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'}, 'time': { 'start':'1850-01-01T00:00:00Z', 'end':'1880-01-01T00:00:00Z', 'crs':'timestamps'} } )
     v0 = cwt.Variable("collection://giss_E2-R_rcp26_r1i1p1", "tas", domain=d0  )
-    yearlyAve =  cwt.Process.from_dict( { 'name': "xarray.ave", "axes":"t", "groupBy": "t.year" } )
+    yearlyAve =  cwt.Process.from_dict( { 'name': "xarray.ave", "axes":"t", "groupby": "t.year" } )
     yearlyAve.set_inputs( v0 )
     wps.execute( yearlyAve, domains=[d0], async=True )
     dataPaths = wps.download_result(yearlyAve, temp_dir, True)
@@ -32,7 +32,7 @@ def test_binning(plot=False):
 def test_precip(plot=False):
     d0 = cwt.Domain.from_dict(  {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'}})
     v0 = cwt.Variable("collection://cip_merra_6hr", "pr", domain=d0  )
-    v0_ave =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "t", 'groupBy': "t.year" } )
+    v0_ave =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "t", 'groupby': "t.year" } )
     v0_ave.set_inputs( v0 )
     wps.execute( v0_ave, domains=[d0], async=True )
     dataPaths = wps.download_result( v0_ave, temp_dir, True )
