@@ -20,7 +20,7 @@ wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), ve
 temp_dir = create_tempdir()
 
 def test_binning(plot=False):
-    d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'}, 'time': { 'start':'1850-01-01T00:00:00Z', 'end':'1880-01-01T00:00:00Z', 'crs':'timestamps'} } )
+    d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'}, 'time': { 'start':'1950-01-01T00:00:00Z', 'end':'2001-01-01T00:00:00Z', 'crs':'timestamps'} } )
     v0 = cwt.Variable("collection://giss_E2-R_rcp26_r1i1p1", "tas", domain=d0  )
     yearlyAve =  cwt.Process.from_dict( { 'name': "xarray.ave", "axes":"t", "groupby": "t.year" } )
     yearlyAve.set_inputs( v0 )
