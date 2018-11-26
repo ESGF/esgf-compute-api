@@ -31,7 +31,7 @@ def test_binning(plot=False):
 
 def test_precip(plot=False):
     d0 = cwt.Domain.from_dict(  {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'}})
-    v0 = cwt.Variable("collection://cip_merra_6hr", "pr", domain=d0  )
+    v0 = cwt.Variable("collection://cip_merra_6hr", "tas", domain=d0  )
     v0_ave =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "t", 'groupby': "t.year" } )
     v0_ave.set_inputs( v0 )
     wps.execute( v0_ave, domains=[d0], async=True )
