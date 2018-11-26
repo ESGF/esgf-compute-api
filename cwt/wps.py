@@ -551,7 +551,7 @@ class WPS(object):
                 'version': '1.0.0',
                 'identifier': process.identifier,
                 'status': str(async).lower(),
-                'client': '2.0'
+#                'client': '2.0'
                 }
 
         params.update( runargs )
