@@ -27,7 +27,7 @@ def test_binning(plot=False):
     wps.execute( yearlyAve, domains=[d0], async=True )
     dataPaths = wps.download_result(yearlyAve, temp_dir, True)
     for dataPath in dataPaths:
-        plotter.print_data( dataPath )
+        plotter.print_Mdata( dataPath )
 
 def test_precip(plot=False):
     d0 = cwt.Domain.from_dict(  {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'}})
@@ -492,5 +492,5 @@ def test_test_KE_ave_global_1y(plot=False):
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
 if __name__ == '__main__':
-    test_binning()
-#    test_precip()
+#    test_binning()
+    test_precip()
