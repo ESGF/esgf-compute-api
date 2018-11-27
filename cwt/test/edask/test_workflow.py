@@ -491,23 +491,6 @@ def test_KE_ave_global_1y(plot=False):
     dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
 
-def error_KE_ave_global_1y(plot=False):
-    #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
-    domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:59:00Z', 'crs': 'timestamps'}}
-
-    d0 = cwt.Domain.from_dict(domain_data)
-
-    v1 = cwt.Variable("collection://cip_cfsr_mth", "tas", domain=d0)
-
-    v1_ave_data = {'name': "CDSpark.ave", 'axes': "tyx"}
-    v1_ave = cwt.Process.from_dict(v1_ave_data)
-    v1_ave.set_inputs(v1)
-
-    wps.execute(v1_ave, domains=[d0], async=True)
-
-    dataPaths = wps.download_result(v1_ave, temp_dir, True)
-    for dataPath in dataPaths:  plotter.print_Mdata(dataPath)
-
 if __name__ == '__main__':
 #    test_binning()
-    error_KE_ave_global_1y()
+    test_KE_ave_global_1y()
