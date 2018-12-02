@@ -1,10 +1,8 @@
 #! /bin/bash
 
-SED_FLAGS=-i.bak
-
-if [[ $# -lt 2 ]]
+if [[ $# -lt 3 ]]
 then
-  echo -e "Usage: $0 version git_tag"
+  echo -e "Usage: $0 version git_tag build"
 
   exit 1
 fi
@@ -13,8 +11,12 @@ VERSION=$1
 
 TAG=$2
 
-sed $SED_FLAGS "s|\(.*version: \"\).*|\1$VERSION\"|" ./conda/meta.yaml
+BUILD=$3
 
-sed $SED_FLAGS "s|\(.*git_rev: \).*|\1$TAG|" ./conda/meta.yaml
+sed -i "s|\(.*version: \"\).*|\1$VERSION\"|" ./conda/meta.yaml
 
-sed $SED_FLAGS "s|\(__version__ = '\).*\('\)|\1$VERSION\2|" ./cwt/__init__.py
+sed -i "s|\(.*git_rev: \).*|\1$TAG|" ./conda/meta.yaml
+
+sed -i "s|\(.*number: \).*|\1$BUILD|" ./conda/meta.yaml
+
+sed -i "s|\(__version__ = '\).*\('\)|\1$VERSION\2|" ./cwt/__init__.py
