@@ -9,7 +9,7 @@ Supported WPS version: 1.0.0
 ### Installation
 
 ```
-conda install -c conda-forge -c uvcdat esgf-compute-api
+conda install -c conda-forge -c cdat esgf-compute-api
 ```
 
 or
@@ -25,7 +25,7 @@ python setup.py install
 
 ### Quickstart
 
-> [Getting Started](blob/master/examples/1_getting_started.ipynb)
+> [Getting Started](blob/master/examples/getting_started.ipynb)
 
 or
 
@@ -38,23 +38,18 @@ wps = cwt.WPSClient('http://localhost:8000/wps')
 
 process = wps.get_process('CDAT.subset')
 
-wps.execute(process, inputs=[tas], axes=['x', 'y'])
+wps.execute(process, inputs=[tas], axes='xy')
 
-while process.processing:
-  print process.status
+process.wait()
 ```
 
 ### Docker image
 
-Docker [image](blob/master/docs/source/cwt_docker.md) containing Jupyter notebook and ESGF CWT end-user api.
+Docker [image](blob/master/docs/source/cwt_docker.md) containing Jupyter lab and ESGF CWT end-user api.
 
 ### Examples
 
 Jupyter Notebook cotnaining examples can be found [here](tree/master/examples)
-
-### Documentation
-
-Documentation can be found on [here](tree/master/docs/source)
 
 ### Compatibility
 
