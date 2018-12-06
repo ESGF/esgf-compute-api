@@ -151,7 +151,6 @@ class WPS(object):
         elif self.hasNode( process.response, "ProcessFailed" ):
             status = "ERROR"
             message = self.extractErrorReport( response )
-            logger.error( "RECEIVED ERROR REPORT: " + message )
         return status, message
 
     def extractErrorReport(self, response ):
@@ -551,7 +550,8 @@ class WPS(object):
                 'request': 'Execute',
                 'version': '1.0.0',
                 'identifier': process.identifier,
-                'status': str(async).lower()
+                'status': str(async).lower(),
+#                'client': '2.0'
                 }
 
         params.update( runargs )

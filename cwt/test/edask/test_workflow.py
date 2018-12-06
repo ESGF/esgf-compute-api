@@ -25,9 +25,9 @@ wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), ve
 temp_dir = create_tempdir()
 
 def test_binning(plot=False):
-    d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'}, 'time': { 'start':'1850-01-01T00:00:00Z', 'end':'1880-01-01T00:00:00Z', 'crs':'timestamps'} } )
-    v0 = cwt.Variable("collection://giss_E2-R_rcp26_r1i1p1", "tas", domain=d0  )
-    yearlyAve =  cwt.Process.from_dict( { 'name': "xarray.ave", "axes":"t", "groupBy": "t.year" } )
+    d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'}, 'time': { 'start':'1950-01-01T00:00:00Z', 'end':'2001-01-01T00:00:00Z', 'crs':'timestamps'} } )
+    v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
+    yearlyAve =  cwt.Process.from_dict( { 'name': "xarray.ave", "axes":"t", "groupby": "t.year" } )
     yearlyAve.set_inputs( v0 )
     wps.execute( yearlyAve, domains=[d0], async=True )
     dataPaths = wps.download_result(yearlyAve, temp_dir, True)
@@ -36,8 +36,8 @@ def test_binning(plot=False):
 
 def test_precip(plot=False):
     d0 = cwt.Domain.from_dict(  {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2014-12-31T23:59:00Z', 'crs': 'timestamps'}})
-    v0 = cwt.Variable("collection://cip_merra_6hr", "pr", domain=d0  )
-    v0_ave =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "t", 'groupBy': "t.year" } )
+    v0 = cwt.Variable("collection://cip_merra_6hr", "tas", domain=d0  )
+    v0_ave =  cwt.Process.from_dict( { 'name': "xarray.ave", 'axes': "t", 'groupby': "t.year" } )
     v0_ave.set_inputs( v0 )
     wps.execute( v0_ave, domains=[d0], async=True )
     dataPaths = wps.download_result( v0_ave, temp_dir, True )
@@ -81,8 +81,6 @@ def test_spatial_ave(plot=False):
     for dataPath in dataPaths:
         generate_output( dataPath, plot )
 
-
-
 def test_time_selection(plot=False):
     domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
     d0 = cwt.Domain.from_dict(domain_data)
@@ -95,14 +93,11 @@ def test_time_selection(plot=False):
     for dataPath in dataPaths:
         generate_output( dataPath, plot )
 
-
 def test_ListKernels(plot=False):
     print wps.getCapabilities( "", False )
 
 def test_ListCollections(plot=False):
     print wps.getCapabilities( "coll", False )
-
-
 
 def test_highpass(plot=False):
     d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':33, 'end':33,'crs':'indices'}, 'lon': {'start':33, 'end':33, 'crs':'indices'} } )
@@ -478,7 +473,7 @@ def test_KE_ave_conus_1y(plot=False):
     dataPaths = wps.download_result(v1_ave, temp_dir, True)
     for dataPath in dataPaths:  generate_output( dataPath, plot )
 
-def test_test_KE_ave_global_1y(plot=False):
+def test_KE_ave_global_1y(plot=False):
     #       domain_data = { 'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2015-12-31T23:00:00', 'crs': 'timestamps'} }
     domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00Z', 'end': '1980-12-31T23:59:00Z', 'crs': 'timestamps'}}
 
@@ -496,4 +491,5 @@ def test_test_KE_ave_global_1y(plot=False):
     for dataPath in dataPaths:  generate_output( dataPath, plot )
 
 if __name__ == '__main__':
-    test_timeseries_processing()
+#    test_binning()
+    test_KE_ave_global_1y()

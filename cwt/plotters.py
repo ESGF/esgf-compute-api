@@ -147,7 +147,7 @@ class PlotMgr:
                 for variable in f.variables.values():
                     try:
                         self.logger.info( "Produced result " + variable.id + ", shape: " +  str( variable.shape ) + ", dims: " + variable.getOrder() + " from file: " + dataPath )
-                        self.logger.info( "Data Sample: " + str( variable.getValue()[0] ) )
+                        self.logger.info( "Data: " + str( variable.getValue() ) )
                     except Exception as err:
                         self.logger.warn(" Error printing data: " + getattr( err, "message", repr(err) ) )
                     return
