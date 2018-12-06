@@ -16,7 +16,7 @@ def create_tempdir():
 
 def generate_output( dataPath, plot ):
     if plot: plotter.mpl_plot( dataPath )
-    else: plotter.print_data( dataPath, plot )
+    else: plotter.print_data( dataPath )
 
 host = os.environ.get( "EDAS_HOST_ADDRESS", "https://edas.nccs.nasa.gov/wps/cwt" )
 assert host != None, "Must set EDAS_HOST_ADDRESS environment variable"
