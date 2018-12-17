@@ -435,6 +435,11 @@ class WPSClient(object):
 
             domains.append(domain.parameterize())
 
+        if process.domain is not None:
+            new_process.domain = process.domain
+
+            domains.append(process.domain.parameterize())
+
         new_process.inputs = [x for x in process.inputs]
 
         new_process.inputs.extend(inputs)
@@ -444,6 +449,9 @@ class WPSClient(object):
         parameters = [cwt.NamedParameter(x, y) for x, y in kwargs.iteritems()]
 
         new_process.add_parameters(*parameters)
+
+        if len(process.parameters) > 0:
+            new_process.add_parameters(*process.parameters.values())
 
         processes, variables = new_process.collect_input_processes()
 
