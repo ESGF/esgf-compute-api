@@ -241,6 +241,8 @@ class Process(cwt.Parameter):
         last_update = None
 
         def update_history(status):
+            global stale_count
+
             if status not in status_hist:
                 status_hist[status] = True
 
