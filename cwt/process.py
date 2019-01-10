@@ -5,6 +5,7 @@ Process Module.
 import json
 import logging 
 import time
+import datetime
 
 import requests
 
@@ -232,14 +233,27 @@ class Process(cwt.Parameter):
 
         return 'No Status'
 
-    def wait(self):
+    def wait(self, stale_threshold=4):
         status_hist = {}
+
+        stale_count = 0
+
+        last_update = None
 
         def update_history(status):
             if status not in status_hist:
                 status_hist[status] = True
 
                 print status
+
+                stale_count = 0
+
+                last_update = datetime.datetime.now()
+            else:
+                stale_count += 1
+
+                if stale_count > stale_threshold:
+                    raise cwt.WPSError('Job appears to be stale no update since {!s}', last_update)
 
         update_history(self.status)
 
