@@ -5,6 +5,10 @@ from __future__ import absolute_import
 
 import logging
 
+import urllib3
+
+urllib3.disable_warnings()
+
 logging.captureWarnings(True)
 
 __version__ = '2.0.0'
