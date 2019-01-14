@@ -233,7 +233,10 @@ class Process(cwt.Parameter):
 
         return 'No Status'
 
-    def wait(self, stale_threshold=4):
+    def wait(self, stale_threshold=None, timeout=None):
+        if stale_threshold is None:
+            stale_threshold = 4
+
         status_hist = {}
 
         stale_count = 0
@@ -255,15 +258,22 @@ class Process(cwt.Parameter):
             else:
                 stale_count += 1
 
-                if stale_count > stale_threshold:
-                    raise cwt.WPSError('Job appears to be stale no update since "{!s}"', last_update)
-
         update_history(self.status)
+
+        start = datetime.datetime.now()
 
         while self.processing:
             update_history(self.status)
 
             time.sleep(1)
+
+            elapsed = datetime.datetime.now() - start
+
+            if timeout is not None and elapsed.total_seconds() > timeout:
+                raise cwt.WPSError('Job has timed out after "{!s}" seconds', elapsed.total_seconds())
+
+            if stale_count > stale_threshold and timeout is None:
+                raise cwt.WPSError('Job appears to be stale no update since "{!s}"', last_update)
 
         update_history(self.status)
 
