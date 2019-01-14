@@ -11,9 +11,7 @@ class CWTError(Exception):
         super(CWTError, self).__init__(fmt.format(*args, **kwargs))
 
 class WPSError(CWTError):
-    def __init__(self, fmt, binding=None, *args, **kwargs):
-        self.binding = binding
-
+    def __init__(self, fmt, *args, **kwargs):
         super(WPSError, self).__init__(fmt, *args, **kwargs)
 
 class WPSHttpError(WPSError):
@@ -32,4 +30,8 @@ class WPSExceptionError(WPSError):
 
         message = ', '.join(binding.Exception[0].ExceptionText)
 
-        return cls(fmt, binding=binding, code=code, message=message)
+        obj = cls(fmt, code=code, message=message)
+
+        obj.binding = binding
+
+        return obj

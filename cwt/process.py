@@ -242,6 +242,7 @@ class Process(cwt.Parameter):
 
         def update_history(status):
             global stale_count
+            global last_update
 
             if status not in status_hist:
                 status_hist[status] = True
@@ -255,7 +256,7 @@ class Process(cwt.Parameter):
                 stale_count += 1
 
                 if stale_count > stale_threshold:
-                    raise cwt.WPSError('Job appears to be stale no update since {!s}', last_update)
+                    raise cwt.WPSError('Job appears to be stale no update since "{!s}"', last_update)
 
         update_history(self.status)
 
