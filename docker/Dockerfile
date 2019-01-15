@@ -1,16 +1,6 @@
 FROM continuumio/miniconda:4.3.27
 
-ARG GIT_BRANCH=master
-
-ARG API_VERSION=2.1.0
-
-RUN git clone https://github.com/ESGF/esgf-compute-api && \
-      cd esgf-compute-api && \
-      git checkout ${GIT_BRANCH}
-
-RUN conda install -c conda-forge jupyterlab nb_conda_kernels && \
-	conda clean -y --all && \
-  rm -rf /opt/conda/pkgs/*
+ARG API_VERSION
 
 RUN apt-get update && \
 	apt-get install --no-install-recommends -y build-essential && \
@@ -19,8 +9,17 @@ RUN apt-get update && \
 	rm -rf /usr/share/locale && \
 	rm -rf /var/lib/apt/lists/*
 
-COPY jupyter_notebook_config.json /root/.jupyter/jupyter_notebook_config.json
-COPY entrypoint.sh entrypoint.sh
+RUN conda install -c conda-forge -c cdat jupyterlab nb_conda_kernels esgf-compute-api=${API_VERSION} cdms2 mesalib vcs nodejs && \
+	conda clean -y --all && \
+  rm -rf /opt/conda/pkgs/*
+
+RUN ln -sf /usr/bin/nodejs /usr/bin/node
+
+COPY docker/jupyter_notebook_config.json /root/.jupyter/jupyter_notebook_config.json
+
+COPY docker/entrypoint.sh entrypoint.sh
+
+COPY . /esgf-compute-api
 
 EXPOSE 9999
 
