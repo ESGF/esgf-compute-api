@@ -133,7 +133,7 @@ class WPSClient(object):
             logger.addHandler(logging.NullHandler())
 
     def __repr__(self):
-        return ('Process(url=%r, version=%r, language=%r, capabilities=%r, ssl_verify=%r)') % (
+        return ('WPSClient(url=%r, version=%r, language=%r, capabilities=%r, ssl_verify=%r)') % (
             self.url,
             self.version,
             self.language,
