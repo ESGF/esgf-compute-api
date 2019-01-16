@@ -9,11 +9,10 @@ RUN apt-get update && \
 	rm -rf /usr/share/locale && \
 	rm -rf /var/lib/apt/lists/*
 
-RUN conda install -c conda-forge -c cdat jupyterlab nb_conda_kernels esgf-compute-api=${API_VERSION} cdms2 mesalib vcs nodejs && \
-	conda clean -y --all && \
-  rm -rf /opt/conda/pkgs/*
-
-RUN ln -sf /usr/bin/nodejs /usr/bin/node
+RUN conda install -c conda-forge jupyterlab nb_conda_kernels nodejs && \
+      conda create -n esgf-compute-api -c conda-forge -c cdat python=2 esgf-compute-api=${API_VERSION} nomkl mesalib cdms2 vcs ipykernel && \
+      conda clean -y --all && \
+      rm -rf /opt/conda/pkgs/*
 
 COPY docker/jupyter_notebook_config.json /root/.jupyter/jupyter_notebook_config.json
 
