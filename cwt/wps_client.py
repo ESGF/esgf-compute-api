@@ -121,7 +121,7 @@ class WPSClient(object):
 
             logger.addHandler(stream_handler)
 
-            log_file = kwargs.get('log_file')
+            log_file = kwargs.get('log_file', None)
 
             if log_file is not None:
                 self.file_handler = logging.FileHandler(log_file)
