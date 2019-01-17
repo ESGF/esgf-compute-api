@@ -59,8 +59,6 @@ class TestProcess(unittest.TestCase):
 
         self.assertTrue(result)
 
-        self.assertEqual(mock_logger.info.call_count, 3)
-
     def test_wait_no_success(self):
         process = cwt.Process.from_identifier('CDAT.subset')
 

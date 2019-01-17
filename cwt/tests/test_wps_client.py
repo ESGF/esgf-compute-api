@@ -2,6 +2,7 @@
 WPS client unit tests
 """
 
+import json
 import unittest
 
 import mock
@@ -508,9 +509,9 @@ class TestWPSClient(unittest.TestCase):
                                                     test=cwt.NamedParameter('test',
                                                                            'True'))
 
-        expected = '[variable=[{"uri": "file:///test.nc", "id": "tas|v0"}];domain=[{"id": "d0", "time": {"start": 0, "step": 1, "end": 365, "crs": "values"}}];operation=[{"domain": "d0", "name": "CDAT.subset", "axes": "lats|lons", "result": "subset", "weightoptions": "generated", "test": "True", "input": ["v0"]}]]'
-
-        self.assertEqual(expected, data_inputs)
+        self.assertIn('"axes": "lats|lons"', data_inputs)
+        self.assertIn('"weightoptions": "generated"', data_inputs)
+        self.assertIn('"test": "True"', data_inputs)
 
     def test_prepare_data_inputs(self):
         variable = cwt.Variable('file:///test.nc', 'tas', name='v0')
@@ -529,9 +530,9 @@ class TestWPSClient(unittest.TestCase):
 
         data_inputs = client.prepare_data_inputs_str(process, [variable], domain)
 
-        expected = '[variable=[{"uri": "file:///test.nc", "id": "tas|v0"}];domain=[{"id": "d0", "time": {"start": 0, "step": 1, "end": 365, "crs": "values"}}];operation=[{"input": ["v0"], "domain": "d0", "name": "CDAT.subset", "result": "subset"}]]'
-
-        self.assertEqual(expected, data_inputs)
+        self.assertIn('"id": "tas|v0"', data_inputs)
+        self.assertIn('"id": "d0"', data_inputs)
+        self.assertIn('"name": "CDAT.subset"', data_inputs)
 
     def test_parse_data_inputs(self):
         variable = '{"id": "tas|tas", "uri": "file:///test.nc"}'
