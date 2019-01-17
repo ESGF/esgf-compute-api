@@ -430,6 +430,8 @@ class WPSClient(object):
 
         new_process.name = process.name
 
+        new_process.domain = process.domain
+
         domains = {}
 
         if domain is not None:
