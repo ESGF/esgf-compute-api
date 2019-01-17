@@ -233,7 +233,10 @@ class Process(cwt.Parameter):
 
         return 'No Status'
 
-    def wait(self, stale_threshold=None, timeout=None):
+    def wait(self, stale_threshold=None, timeout=None, sleep=None):
+        if sleep is None:
+            sleep = 1.0
+
         if stale_threshold is None:
             stale_threshold = 4
 
@@ -265,7 +268,7 @@ class Process(cwt.Parameter):
         while self.processing:
             update_history(self.status)
 
-            time.sleep(1)
+            time.sleep(sleep)
 
             elapsed = datetime.datetime.now() - start
 

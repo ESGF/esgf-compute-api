@@ -32,7 +32,7 @@ def process_started(message, percent):
     """
     started = ProcessStartedType(message)
 
-    started.percentComplete = percent
+    started.percentCompleted = percent
 
     return started
 

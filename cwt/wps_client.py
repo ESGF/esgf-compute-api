@@ -377,6 +377,8 @@ class WPSClient(object):
         if response.status_code > 200:
             raise cwt.WPSHttpError.from_request_response(response)
 
+        logger.info('%r', response.text)
+
         return response.text
 
     @staticmethod
@@ -428,17 +430,10 @@ class WPSClient(object):
 
         new_process.name = process.name
 
-        domains = []
+        domains = {}
 
         if domain is not None:
-            new_process.domain = domain
-
-            domains.append(domain.parameterize())
-
-        if process.domain is not None:
-            new_process.domain = process.domain
-
-            domains.append(process.domain.parameterize())
+            domains[domain.name] = domain.parameterize()
 
         new_process.inputs = [x for x in process.inputs]
 
@@ -456,6 +451,12 @@ class WPSClient(object):
         processes, variables = new_process.collect_input_processes()
 
         variables = [x.parameterize() for x in variables]
+
+        for x in [new_process] + processes:
+            if x.domain is not None and x.name not in domains:
+                domains[x.name] = x.domain.parameterize()
+
+        domains = domains.values()
 
         operation = [new_process.parameterize()] + [x.parameterize() for x in processes]
 
