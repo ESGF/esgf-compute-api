@@ -39,8 +39,12 @@ BUILD_DIR=${PWD}/.build
 
 BUILD=$(conda search -c cdat esgf-compute-api | grep ${VERSION} | tail -n1 | tr -s " " | cut -d " " -f 3 | cut -d "_" -f 2)
 
-if [[ ${NEW} -eq 1 ]]; then
-  BUILD=$((++BUILD))
+if [[ -z ${BUILD} ]]; then
+  BUILD=0
+else
+  if [[ ${NEW} -eq 1 ]]; then
+    BUILD=$((++BUILD))
+  fi
 fi
 
 echo ""
