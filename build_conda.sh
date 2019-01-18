@@ -35,6 +35,8 @@ done
 
 VERSION=$(git branch | grep \* | cut -d " " -f 2)
 
+VERSION=${VERSION##*/}
+
 BUILD_DIR=${PWD}/.build
 
 BUILD=$(conda search -c cdat esgf-compute-api | grep ${VERSION} | tail -n1 | tr -s " " | cut -d " " -f 3 | cut -d "_" -f 2)
