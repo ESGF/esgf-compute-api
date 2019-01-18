@@ -1,20 +1,25 @@
 #! /bin/bash
 
+set -e
+
 function usage() {
-  echo "${0} --new --push-conda --push-docker"
+  echo "${0} --new --push-conda --push-docker --docker-args=<args>"
   echo ""
   echo "Builds conda package and docker container from BRANCH."
   echo ""
   echo "Options:"
-  echo "      --new:      Increments the conda build number"
-  echo "      --push:     Pushes the conda package and docker container"
-  echo "  -h, --help:     Prints usage"
+  echo "      --new:              Increments the conda build number"
+  echo "      --push-conda:       Push conda package"
+  echo "      --push-docker:      Push docker image"
+  echo "      --docker-args:      Arguments to pass docker build command"
+  echo "  -h, --help:             Prints usage"
   echo ""
 }
 
 PUSH_CONDA=0
 PUSH_DOCKER=0
 NEW=0
+DOCKER_ARGS=""
 
 while [[ ${#} -gt 0 ]]
 do
@@ -29,6 +34,9 @@ do
       ;;
     --new)
       NEW=1
+      ;;
+    --docker-args)
+      DOCKER_ARGS=${1} && shift
       ;;
     -h|--help|*):
       usage
@@ -67,7 +75,7 @@ sed -i "s|\(.*jasonb87/cwt_api:\)|\1${VERSION}|" docs/source/cwt_docker.md
 
 conda build -c conda-forge -c cdat --output-folder ${BUILD_DIR} conda/
 
-docker build -t jasonb87/cwt_api:${VERSION} -f docker/Dockerfile .
+docker build ${DOCKER_ARGS} -t jasonb87/cwt_api:${VERSION} -f docker/Dockerfile .
 
 if [[ ${PUSH_CONDA} -eq 1 ]]; then
   anaconda login
