@@ -1,45 +1,67 @@
 #! /bin/bash
 
 function usage() {
-  echo -e "./${0} version build git_branch [--push]"
+  echo "${0} --new --push"
+  echo ""
+  echo "This will build the conda package using the current build number"
+  echo ""
+  echo "Options:"
+  echo "      --new:      Increments the build number"
+  echo "      --push:     Pushes new build to \"cdat\" channel"
+  echo "  -h, --help:     Prints usage"
+  echo ""
 }
 
-[[ $# -lt 3 ]] && usage && exit 1
-
-VERSION=$1
-shift
-
-BUILD=$1
-shift
-
-GIT_BRANCH=$1
-shift
-
 PUSH=0
+NEW=0
 
-while [[ $# -gt 0 ]]
+while [[ ${#} -gt 0 ]]
 do
-  NAME=$1
-  shift
+  NAME=${1} && shift
 
   case "${NAME}" in
     --push)
       PUSH=1
       ;;
+    --new)
+      NEW=1
+      ;;
+    -h|--help|*):
+      usage
+
+      exit 0
   esac
 done
 
-./bump_version.sh ${VERSION} ${GIT_BRANCH} ${BUILD}
+VERSION=$(git branch | grep \* | cut -d " " -f 2)
 
-conda build -c conda-forge --output-folder ${PWD}/_build conda/
+BUILD_DIR=${PWD}/.build
 
-if [[ $PUSH -eq 1 ]]
+BUILD=$(conda search -c cdat esgf-compute-api | grep ${VERSION} | tail -n1 | tr -s " " | cut -d " " -f 3 | cut -d "_" -f 2)
+
+if [[ ${NEW} -eq 1 ]]; then
+  BUILD=$((++BUILD))
+fi
+
+echo ""
+
+sed "s/\(.*number: \).*/\1${BUILD}/" conda/meta.yaml 
+
+echo ""
+
+read -p "Confirm the conda meta file [ENTER]: "
+
+sed -i.bak "s/\(.*number: \).*/\1${BUILD}/" conda/meta.yaml 
+
+conda build -c conda-forge -c cdat --output-folder ${BUILD_DIR} conda/
+
+if [[ ${PUSH} -eq 1 ]]
 then
   anaconda login
 
-  PACKAGE=$(conda build -c conda-forge --output-folder ${PWD}/_build --output conda/)
+  PACKAGE=$(conda build -c conda-forge --output-folder ${BUILD_DIR} --output conda/)
 
-  conda convert -p osx-64 --output-dir ${PWD}/_build ${PACKAGE}
+  conda convert -p osx-64 --output-dir ${BUILD_DIR} ${PACKAGE}
 
   anaconda upload -u cdat --force ${PACKAGE}
 

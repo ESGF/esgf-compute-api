@@ -11,7 +11,7 @@ urllib3.disable_warnings()
 
 logging.captureWarnings(True)
 
-__version__ = '2.1.0'
+__version__ = 'devel'
 
 from .errors import *
 from .parameter import *

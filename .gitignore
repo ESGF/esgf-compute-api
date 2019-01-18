@@ -10,6 +10,7 @@
 *.log
 *.ipynb_*
 
+.build/
 _build/
 build/
 dist/

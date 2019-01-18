@@ -1,7 +1,7 @@
 #! /bin/bash
 
 function usage {
-  echo -e "Usage: $0 docker_tag [--push]"
+  echo -e "Usage: $0 version [--push]"
 }
 
 if [[ $# -lt 1 ]]
@@ -11,7 +11,7 @@ then
   exit 1
 fi
 
-TAG=$1
+VERSION=$1
 
 shift
 
@@ -35,11 +35,13 @@ do
   esac
 done
 
-docker build -t jasonb87/cwt_api:$TAG --build-arg API_VERSION=${TAG} -f docker/Dockerfile .
+git checkout ${VERSION}
+
+docker build -t jasonb87/cwt_api:${VERSION} -f docker/Dockerfile .
 
 if [[ $PUSH -eq 1 ]]
 then
   docker login
 
-  docker push jasonb87/cwt_api:$TAG
+  docker push jasonb87/cwt_api:${VERSION}
 fi
