@@ -13,6 +13,6 @@ sed -i "s|\(.*version: \).*|\1\"${VERSION}\"|" ./conda/meta.yaml
 
 sed -i "s|\(.*git_rev: \).*|\1${VERSION}|" ./conda/meta.yaml
 
-sed -i "s|\(__version__ = ).*|\1\'${VERSION}\'|" ./cwt/__init__.py
+sed -i "s|\(__version__ = \).*|\1\'${VERSION}\'|" ./cwt/__init__.py
 
 sed -i "s|\(.*jasonb87/cwt_api:\)|\1${VERSION}|" ./docs/source/cwt_docker.md
