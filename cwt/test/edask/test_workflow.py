@@ -24,6 +24,37 @@ print "Connecting to wps host: " + host
 wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
 temp_dir = create_tempdir()
 
+
+def test_spatial_ave_clt(plot=False):
+    domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
+                   'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
+                   'time': {'start': '1980-01-01', 'end': '2016-12-3', 'crs': 'timestamps'}}
+    d0 = cwt.Domain.from_dict(domain_data)
+    #    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
+    #    inputs = cwt.Variable("collection://cip_merra2_mth", "clt", domain=d0)
+    inputs = cwt.Variable("collection://cip_merra2_6hr", "clt", domain=d0)
+    op_data = {'name': "xarray.ave", 'axes': "t"}
+    op = cwt.Process.from_dict(op_data)
+    op.set_inputs(inputs)
+    wps.execute(op, domains=[d0], async=True)
+    dataPaths = wps.download_result(op, temp_dir, True)
+    for dataPath in dataPaths:
+        generate_output(dataPath, plot)
+
+def test_spatial_ave(plot=False):
+    domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
+                   'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
+                   'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
+    d0 = cwt.Domain.from_dict(domain_data)
+    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
+    op_data = {'name': "xarray.ave", 'axes': "t"}
+    op = cwt.Process.from_dict(op_data)
+    op.set_inputs(inputs)
+    wps.execute(op, domains=[d0], async=True)
+    dataPaths = wps.download_result(op, temp_dir, True)
+    for dataPath in dataPaths:
+        generate_output( dataPath, plot )
+
 def test_binning(plot=False):
     d0 = cwt.Domain.from_dict( { 'id': 'd0', 'lat': {'start':5, 'end':7,'crs':'indices'}, 'lon': {'start':5, 'end':10, 'crs':'indices'}, 'time': { 'start':'1950-01-01T00:00:00Z', 'end':'2001-01-01T00:00:00Z', 'crs':'timestamps'} } )
     v0 = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
@@ -67,40 +98,7 @@ def test_lowpass(plot=False):
     for dataPath in dataPaths:
         generate_output( dataPath, plot )
 
-def test_spatial_ave(plot=False):
-    domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
-                   'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
-                   'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
-    d0 = cwt.Domain.from_dict(domain_data)
-    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
-    op_data = {'name': "xarray.ave", 'axes': "t"}
-    op = cwt.Process.from_dict(op_data)
-    op.set_inputs(inputs)
-    wps.execute(op, domains=[d0], async=True)
-    dataPaths = wps.download_result(op, temp_dir, True)
-    for dataPath in dataPaths:
-        generate_output( dataPath, plot )
 
-def test_spatial_ave_clt(plot=False):
-    domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
-                   'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
-                   'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
-
-    # domain_data = {'id': 'd0', 'lat': {'start': -90, 'end': 90, 'crs': 'values'},
-    #                   'lon': {'start': 0, 'end': 360, 'crs': 'values'},
-    #                   'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
-
-    d0 = cwt.Domain.from_dict(domain_data)
-    #    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
-    #    inputs = cwt.Variable("collection://cip_merra2_mth", "clt", domain=d0)
-    inputs = cwt.Variable("collection://cip_merra2_6hr", "clt", domain=d0)
-    op_data = {'name': "xarray.ave", 'axes': "t"}
-    op = cwt.Process.from_dict(op_data)
-    op.set_inputs(inputs)
-    wps.execute(op, domains=[d0], async=True)
-    dataPaths = wps.download_result(op, temp_dir, True)
-    for dataPath in dataPaths:
-        generate_output(dataPath, plot)
 
 def test_time_selection(plot=False):
     domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
