@@ -18,8 +18,10 @@ def generate_output( dataPath, plot ):
     if plot: plotter.mpl_plot( dataPath )
     else: plotter.print_Mdata( dataPath )
 
-host = os.environ.get( "EDAS_HOST_ADDRESS", "https://edas.nccs.nasa.gov/wps/cwt" )
-assert host != None, "Must set EDAS_HOST_ADDRESS environment variable"
+#host = os.environ.get( "EDAS_HOST_ADDRESS", "https://edas.nccs.nasa.gov/wps/cwt" )
+#assert host != None, "Must set EDAS_HOST_ADDRESS environment variable"
+# host = "https://edas.nccs.nasa.gov/wps/cwt"
+host = "https://dptomcatdev01.nccs.nasa.gov/wps/cwt"
 print "Connecting to wps host: " + host
 wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
 temp_dir = create_tempdir()
@@ -80,6 +82,27 @@ def test_spatial_ave(plot=False):
     dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:
         generate_output( dataPath, plot )
+
+def test_spatial_ave_clt(plot=False):
+    domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
+                   'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
+                   'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
+
+    # domain_data = {'id': 'd0', 'lat': {'start': -90, 'end': 90, 'crs': 'values'},
+    #                   'lon': {'start': 0, 'end': 360, 'crs': 'values'},
+    #                   'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
+
+    d0 = cwt.Domain.from_dict(domain_data)
+    #    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
+    #    inputs = cwt.Variable("collection://cip_merra2_mth", "clt", domain=d0)
+    inputs = cwt.Variable("collection://cip_merra2_6hr", "clt", domain=d0)
+    op_data = {'name': "xarray.ave", 'axes': "t"}
+    op = cwt.Process.from_dict(op_data)
+    op.set_inputs(inputs)
+    wps.execute(op, domains=[d0], async=True)
+    dataPaths = wps.download_result(op, temp_dir, True)
+    for dataPath in dataPaths:
+        generate_output(dataPath, plot)
 
 def test_time_selection(plot=False):
     domain_data = { 'id': 'd0', 'lat': {'start':-90, 'end':90,'crs':'values'}, 'lon': {'start':-180, 'end':180, 'crs':'values'}, 'time': { 'start':'2010-01-01T00:00:00', 'end':'2010-12-31T23:00:00', 'crs':'timestamps'}}
@@ -492,4 +515,4 @@ def test_KE_ave_global_1y(plot=False):
 
 if __name__ == '__main__':
 #    test_binning()
-    test_anomaly(True)
+    test_spatial_ave_clt(True)

@@ -12,7 +12,6 @@ class PlotMgr:
     def __init__(self):
         self.logger = logging.getLogger('cwt.wps')
 
-
     def graph_data(self , data, title="" ):
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
