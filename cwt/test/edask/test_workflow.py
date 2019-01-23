@@ -32,7 +32,7 @@ def test_spatial_ave_clt(plot=False):
     d0 = cwt.Domain.from_dict(domain_data)
     #    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
     #    inputs = cwt.Variable("collection://cip_merra2_mth", "clt", domain=d0)
-    inputs = cwt.Variable("collection://cip_merra2_6hr", "clt", domain=d0)
+    inputs = cwt.Variable("collection://cip_merra2_6hr", "ts", domain=d0)
     op_data = {'name': "xarray.ave", 'axes': "t"}
     op = cwt.Process.from_dict(op_data)
     op.set_inputs(inputs)
