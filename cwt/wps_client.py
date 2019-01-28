@@ -437,6 +437,8 @@ class WPSClient(object):
         if domain is not None:
             domains[domain.name] = domain.parameterize()
 
+            new_process.domain = domain
+
         new_process.inputs = [x for x in process.inputs]
 
         new_process.inputs.extend(inputs)
