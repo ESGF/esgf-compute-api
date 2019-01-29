@@ -457,8 +457,8 @@ class WPSClient(object):
         variables = [x.parameterize() for x in variables]
 
         for x in [new_process] + processes:
-            if x.domain is not None and x.name not in domains:
-                domains[x.name] = x.domain.parameterize()
+            if x.domain is not None and x.domain.name not in domains:
+                domains[x.domain.name] = x.domain.parameterize()
 
         domains = domains.values()
 
