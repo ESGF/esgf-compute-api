@@ -54,11 +54,18 @@ class Domain(cwt.Parameter):
                 else:
                     step = 1
 
+                if all(isinstance(x, (float, int)) for x in value[:2]):
+                    crs = cwt.VALUES
+                elif all(isinstance(x, str) for x in value[:2]):
+                    crs = cwt.TIMESTAMPS
+                else:
+                    raise cwt.WPSError('Could not determin dimension crs')
+
                 args = [
                     name,
                     value[0],
                     value[1],
-                    cwt.VALUES,
+                    crs,
                     step
                 ]
             else:
