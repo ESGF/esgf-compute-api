@@ -12,6 +12,7 @@ function usage() {
   echo "      --push-conda:       Push conda package"
   echo "      --push-docker:      Push docker image"
   echo "      --docker-args:      Arguments to pass docker build command"
+  echo "      --version:          Override version"
   echo "  -h, --help:             Prints usage"
   echo ""
 }
@@ -38,6 +39,9 @@ do
     --docker-args)
       DOCKER_ARGS=${1} && shift
       ;;
+    --version)
+      VERSION=${1} && shift
+      ;;
     -h|--help|*):
       usage
 
@@ -51,7 +55,9 @@ read -p "Building from branch \"${BRANCH}\" [ENTER]: "
 
 git checkout ${BRANCH}
 
-VERSION=${BRANCH##*/}
+[[ -z "${VERSION}" ]] && VERSION=${BRANCH##*/}
+
+echo "Setting version to ${VERSION}"
 
 BUILD_DIR=${PWD}/.build
 
@@ -71,7 +77,7 @@ sed -i "s|\(.*git_rev: \).*|\1${BRANCH}|" conda/meta.yaml
 
 sed -i "s|\(__version__ = \).*|\1\'${VERSION}\'|" cwt/__init__.py
 
-sed -i "s|\(.*jasonb87/cwt_api:\)|\1${VERSION}|" docs/source/cwt_docker.md
+sed -i "s|\(.*jasonb87/cwt_api:\).*|\1${VERSION}|" docs/source/cwt_docker.md
 
 conda build -c conda-forge -c cdat --output-folder ${BUILD_DIR} conda/
 
