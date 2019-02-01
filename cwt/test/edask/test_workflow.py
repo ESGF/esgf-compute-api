@@ -24,6 +24,49 @@ print "Connecting to wps host: " + host
 wps = cwt.WPS( host, log=True, log_file=os.path.expanduser("~/esgf_api.log"), verify=False )
 temp_dir = create_tempdir()
 
+def test_telemap(plot=False):
+    domain_data = { 'time': {'start': '1980-01-01', 'end': '2016-12-3', 'crs': 'timestamps' }, 'lat': {'start': 0.0, 'end': 80.0, 'crs': 'values'} }
+    d0 = cwt.Domain.from_dict(domain_data)
+    inputs = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
+
+    op_data0 = {'name': "xarray.filter", "axis": "t", "sel": "djf" }
+    op0 = cwt.Process.from_dict(op_data0)
+    op0.set_inputs(inputs)
+
+    op_data1 = {'name': "xarray.detrend", "axis": "t", "wsize": 15  }
+    op1 = cwt.Process.from_dict(op_data1)
+    op1.set_inputs(op0)
+
+    op_data2 = {'name': "xarray.telemap", 'lat': 60.0, 'lon': 310.0 }
+    op2 = cwt.Process.from_dict(op_data2)
+    op2.set_inputs(op1)
+
+    wps.execute(op2, domains=[d0], async=True)
+    dataPaths = wps.download_result(op2, temp_dir, True)
+    for dataPath in dataPaths:
+        generate_output(dataPath, plot)
+
+def test_eofs(plot=False):
+    domain_data = { 'time': {'start': '1980-01-01', 'end': '2016-12-3', 'crs': 'timestamps' }, 'lat': {'start': -80.0, 'end': 80.0, 'crs': 'values'} }
+    d0 = cwt.Domain.from_dict(domain_data)
+    inputs = cwt.Variable("collection://cip_20crv2c_mth", "tas", domain=d0  )
+
+    op_data1 = { 'name': "xarray.decycle", 'norm': True }
+    op1 = cwt.Process.from_dict( op_data1 ) # """:type : Process """
+    op1.set_inputs( inputs )
+
+    op_data2 = { 'name': "xarray.detrend", "axis":"t", "wsize": 50 }
+    op2 = cwt.Process.from_dict( op_data2 ) # """:type : Process """
+    op2.set_inputs( op1 )
+
+    op_data3 = { 'name': "xarray.eofs", "modes": 4 }
+    op3 = cwt.Process.from_dict( op_data3 ) # """:type : Process """
+    op3.set_inputs( op2 )
+
+    wps.execute(op3, domains=[d0], async=True)
+    dataPaths = wps.download_result(op3, temp_dir, True)
+    for dataPath in dataPaths:
+        generate_output(dataPath, plot)
 
 def test_spatial_ave_clt(plot=False):
     domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
