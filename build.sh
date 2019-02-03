@@ -10,6 +10,7 @@ function usage() {
   echo "Options:"
   echo "      --new:              Increments the conda build number"
   echo "      --push-conda:       Push conda package"
+  echo "      --build-docker:     Build docker image"
   echo "      --push-docker:      Push docker image"
   echo "      --docker-args:      Arguments to pass docker build command"
   echo "      --version:          Override version"
@@ -18,6 +19,7 @@ function usage() {
 }
 
 PUSH_CONDA=0
+BUILD_DOCKER=0
 PUSH_DOCKER=0
 NEW=0
 DOCKER_ARGS=""
@@ -29,6 +31,9 @@ do
   case "${NAME}" in
     --push-conda)
       PUSH_CONDA=1
+      ;;
+    --build-docker)
+      BUILD_DOCKER=${1} && shift
       ;;
     --push-docker)
       PUSH_DOCKER=1
@@ -51,13 +56,11 @@ done
 
 BRANCH=$(git branch | grep \* | cut -d " " -f 2)
 
-read -p "Building from branch \"${BRANCH}\" [ENTER]: "
-
-git checkout ${BRANCH}
-
 [[ -z "${VERSION}" ]] && VERSION=${BRANCH##*/}
 
-echo "Setting version to ${VERSION}"
+read -p "Building from branch \"${BRANCH}\" tagged as version \"${VERSION}\" [ENTER]: "
+
+git checkout ${BRANCH}
 
 BUILD_DIR=${PWD}/.build
 
@@ -81,8 +84,6 @@ sed -i "s|\(.*jasonb87/cwt_api:\).*|\1${VERSION}|" docs/source/cwt_docker.md
 
 conda build -c conda-forge -c cdat --output-folder ${BUILD_DIR} conda/
 
-docker build ${DOCKER_ARGS} -t jasonb87/cwt_api:${VERSION} -f docker/Dockerfile .
-
 if [[ ${PUSH_CONDA} -eq 1 ]]; then
   anaconda login
 
@@ -97,8 +98,12 @@ if [[ ${PUSH_CONDA} -eq 1 ]]; then
   anaconda upload -u cdat --force ${PACKAGE_OSX}
 fi
 
-if [[ ${PUSH_DOCKER} -eq 1 ]]; then
-  docker login
+if [[ ${BUILD_DOCKER} -eq 1 ]]; then
+  docker build ${DOCKER_ARGS} -t jasonb87/cwt_api:${VERSION} -f docker/Dockerfile .
 
-  docker push jasonb87/cwt_api:${VERSION}
+  if [[ ${PUSH_DOCKER} -eq 1 ]]; then
+    docker login
+
+    docker push jasonb87/cwt_api:${VERSION}
+  fi
 fi
