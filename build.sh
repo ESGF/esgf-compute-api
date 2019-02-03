@@ -82,20 +82,12 @@ sed -i "s|\(__version__ = \).*|\1\'${VERSION}\'|" cwt/__init__.py
 
 sed -i "s|\(.*jasonb87/cwt_api:\).*|\1${VERSION}|" docs/source/cwt_docker.md
 
-conda build -c conda-forge -c cdat --output-folder ${BUILD_DIR} conda/
+conda build -c conda-forge -c cdat conda/
 
 if [[ ${PUSH_CONDA} -eq 1 ]]; then
   anaconda login
 
-  PACKAGE=$(conda build -c conda-forge --output-folder ${BUILD_DIR} --output conda/)
-
-  conda convert -p osx-64 --output-dir ${BUILD_DIR} ${PACKAGE}
-
-  anaconda upload -u cdat --force ${PACKAGE}
-
-  PACKAGE_OSX=$(echo ${PACKAGE} | sed "s/linux-64/osx-64/")
-
-  anaconda upload -u cdat --force ${PACKAGE_OSX}
+  #anaconda upload -u cdat ${PACKAGE_OSX}
 fi
 
 if [[ ${BUILD_DOCKER} -eq 1 ]]; then

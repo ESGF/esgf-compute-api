@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-import cwt
-from distutils.core import setup
+from setuptools import setup
 
-setup(name='esgf-compute-api',
-      version=cwt.__version__,
-      description='Compute Working Team End-User API',
-      author='Jason Boutte',
-      author_email='boutte3@llnl.gov',
-      url='https://github.com/ESGF/esgf-compute-api',
-      packages=['cwt', 'cwt.wps', 'cwt.wps.raw'],
+setup(
+    name='esgf-compute-api',
+    description='Compute Working Team End-User API',
+    packages=['cwt', 'cwt.wps', 'cwt.wps.raw'],
+    author='Jason Boutte',
+    author_email='boutte3@llnl.gov',
+    version='2.1.0',
+    url='https://github.com/ESGF/esgf-compute-api',
 )
