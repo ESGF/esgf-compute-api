@@ -1,19 +1,22 @@
 package:
   name: esgf-compute-api
-  version: "devel"
-
-build:
-  number: 5
+  version: "2.1.0"
 
 source:
   git_rev: devel
   git_url: https://github.com/ESGF/esgf-compute-api.git
 
+build:
+  number: 5
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+  noarch: python
+
 requirements:
   build:
+    - git
+
+  host:
     - python
-    - requests
-    - pyxb
 
   run:
     - python
@@ -22,3 +25,4 @@ requirements:
 
 about:
   home: https://github.com/ESGF/esgf-compute-api
+  summary: End-user API for ESGF compute services
