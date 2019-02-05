@@ -6,6 +6,13 @@ import numpy as np
 # import matplotlib.pyplot as plt
 # host = 'https://www-proxy-dev.nccs.nasa.gov/edas/wps/cwt'
 
+TAS = [
+    'https://aims3.llnl.gov/thredds/dodsC/css03_data/CMIP6/CMIP/NASA-GISS/GISS-E2-1-G/amip/r1i1p1f1/Amon/tas/gn/v20181016/tas_Amon_GISS-E2-1-G_amip_r1i1p1f1_gn_185001-190012.nc',
+    'https://aims3.llnl.gov/thredds/dodsC/css03_data/CMIP6/CMIP/NASA-GISS/GISS-E2-1-G/amip/r1i1p1f1/Amon/tas/gn/v20181016/tas_Amon_GISS-E2-1-G_amip_r1i1p1f1_gn_190101-195012.nc',
+    'https://aims3.llnl.gov/thredds/dodsC/css03_data/CMIP6/CMIP/NASA-GISS/GISS-E2-1-G/amip/r1i1p1f1/Amon/tas/gn/v20181016/tas_Amon_GISS-E2-1-G_amip_r1i1p1f1_gn_195101-200012.nc',
+    'https://aims3.llnl.gov/thredds/dodsC/css03_data/CMIP6/CMIP/NASA-GISS/GISS-E2-1-G/amip/r1i1p1f1/Amon/tas/gn/v20181016/tas_Amon_GISS-E2-1-G_amip_r1i1p1f1_gn_200101-201412.nc',
+]
+
 plotter = cwt.initialize()
 
 def create_tempdir():
@@ -76,6 +83,23 @@ def test_spatial_ave_clt(plot=False):
     #    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
     #    inputs = cwt.Variable("collection://cip_merra2_mth", "clt", domain=d0)
     inputs = cwt.Variable("collection://cip_merra2_6hr", "ts", domain=d0)
+    op_data = {'name': "xarray.ave", 'axes': "t"}
+    op = cwt.Process.from_dict(op_data)
+    op.set_inputs(inputs)
+    wps.execute(op, domains=[d0], async=True)
+    dataPaths = wps.download_result(op, temp_dir, True)
+    for dataPath in dataPaths:
+        generate_output(dataPath, plot)
+
+
+def test_spatial_ave_dap(plot=False):
+    domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
+                   'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
+                   'time': {'start': '1980-01-01', 'end': '2016-12-3', 'crs': 'timestamps'}}
+    d0 = cwt.Domain.from_dict(domain_data)
+    #    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
+    #    inputs = cwt.Variable("collection://cip_merra2_mth", "clt", domain=d0)
+    inputs = cwt.Variable( TAS[0], "tas", domain=d0 )
     op_data = {'name': "xarray.ave", 'axes': "t"}
     op = cwt.Process.from_dict(op_data)
     op.set_inputs(inputs)
@@ -554,4 +578,4 @@ def test_KE_ave_global_1y(plot=False):
 
 if __name__ == '__main__':
 #    test_binning()
-    test_spatial_ave_clt(True)
+    test_spatial_ave_dap(True)
