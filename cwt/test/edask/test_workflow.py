@@ -95,7 +95,7 @@ def test_spatial_ave_clt(plot=False):
 def test_spatial_ave_dap(plot=False):
     domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
                    'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
-                   'time': {'start': '1980-01-01', 'end': '2016-12-3', 'crs': 'timestamps'}}
+                   'time': {'start': '1860-01-01', 'end': '1900-01-01', 'crs': 'timestamps'}}
     d0 = cwt.Domain.from_dict(domain_data)
     #    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
     #    inputs = cwt.Variable("collection://cip_merra2_mth", "clt", domain=d0)
