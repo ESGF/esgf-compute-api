@@ -3,26 +3,31 @@ WPS Client library imports.
 """
 from __future__ import absolute_import
 
-import logging
+import warnings
+
+warnings.simplefilter('default')
 
 import urllib3
 
 urllib3.disable_warnings()
 
-logging.captureWarnings(True)
+__version__ = '2.1.0'
 
-__version__ = 'devel'
-
-from .errors import *
-from .parameter import *
-from .dimension import *
-from .domain import *
-from .gridder import *
-from .mask import *
-from .named_parameter import *
-from .process import *
-from .variable import *
-from .wps_client import *
+from cwt.dimension import CRS
+from cwt.dimension import VALUES
+from cwt.dimension import INDICES
+from cwt.dimension import TIMESTAMPS
+from cwt.dimension import Dimension
+from cwt.domain import Domain
+from cwt.errors import CWTError
+from cwt.errors import MissingRequiredKeyError
+from cwt.errors import WPSClientError
+from cwt.gridder import Gridder
+from cwt.mask import Mask
+from cwt.named_parameter import NamedParameter
+from cwt.process import Process
+from cwt.variable import Variable
+from cwt.wps_client import WPSClient
 
 NorthernHemisphere = Dimension('latitude', 0, 90)
 SouthernHemisphere = Dimension('latitude', -90, 0)

@@ -2,7 +2,11 @@
 Dimension module.
 """
 
-import cwt
+import warnings
+
+from cwt.errors import CWTError
+from cwt.errors import MissingRequiredKeyError
+from cwt.parameter import Parameter
 
 # pylint: disable=too-few-public-methods
 class CRS(object):
@@ -16,6 +20,12 @@ class CRS(object):
     def __init__(self, name):
         """ CRS init. """
         self.name = name
+
+    def to_dict(self):
+        """ Returns a dictionary representation."""
+        return {
+            'crs': self.name,
+        }
 
     def __eq__(self, other):
         return self.name == other.name
@@ -36,7 +46,15 @@ def int_or_float(data):
     except ValueError:
         return float(data)
 
-class Dimension(cwt.Parameter):
+def get_crs_value(crs, value):
+    if crs == VALUES or crs == INDICES:
+        return int_or_float(value)
+    elif crs == TIMESTAMPS:
+        return crs
+    else:
+        raise CWTError('Could not handle CRS {!r}', crs)
+
+class Dimension(Parameter):
     """ Dimension.
 
     Describes a dimension of a plane. This dimension can be constrained 
@@ -70,10 +88,7 @@ class Dimension(cwt.Parameter):
 
         self.start = start
 
-        if end is not None:
-            self.end = end
-        else:
-            self.end = None
+        self.end = end
 
         self.step = step
 
@@ -85,31 +100,21 @@ class Dimension(cwt.Parameter):
     @classmethod
     def from_dict(cls, data, name):
         """ Create dimension from dict representation. """
-        if 'crs' in data:
+        try:
             crs = CRS(data['crs'])
-        else:
-            raise cwt.ParameterError('Must provide a CRS value.')
 
-        if 'start' in data:
-            if isinstance(data['start'], str) and crs != TIMESTAMPS:
-                start = int_or_float(data['start'])
-            else:
-                start = data['start']
-        else:
-            raise cwt.ParameterError('Must provide a start value.')
+            start = get_crs_value(crs, data['start'])
 
-        end = None
+            end = get_crs_value(crs, data['end'])
+        except KeyError as e:
+            raise MissingRequiredKeyError(e)
 
-        if 'end' in data:
-            if isinstance(data['end'], str) and crs != TIMESTAMPS:
-                end = int_or_float(data['end'])
-            else:
-                end = data['end']
-
-        step = None
-
-        if 'step' in data:
-            step = data['step']
+        try:
+            step = int_or_float(data['step'])
+        except KeyError:
+            step = 0
+        except ValueError:
+            raise CWTError('Dimension step value is an unsupported type {!r}', type(data['step']))
         
         return cls(name, start, end, crs, step)
 
@@ -123,21 +128,24 @@ class Dimension(cwt.Parameter):
         """ Creates dimension from single value. """
         return cls(name, value, value, VALUES, step=step)
 
-    def parameterize(self):
-        """ Parameterizes object for get queries. """
-        params = {
+    def to_dict(self):
+        data = {
             'start': self.start,
             'end': self.end,
             'step': self.step,
-            'crs': self.crs.name,
         }
 
-        return params
+        data.update(self.crs.to_dict())
+
+        return data
+
+    def parameterize(self):
+        """ Parameterizes object for get queries. """
+        warnings.warn('parameterize is deprecated, use to_dict instead',
+                      DeprecationWarning)
+
+        return self.to_dict()
 
     def __repr__(self):
-        return 'Dimension(name=%r, start=%r, end=%r, step=%r, crs=%r)' % (
-            self.name,
-            self.start,
-            self.end,
-            self.step,
-            self.crs)
+        return 'Dimension(name=%r, start=%r, end=%r, step=%r, crs=%r)'.format(
+            self.name, self.start, self.end, self.step, self.crs)

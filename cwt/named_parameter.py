@@ -2,11 +2,11 @@
 NamedParameter Module.
 """
 
-import cwt
+import warnings
 
-__all__ = ['NamedParameter']
+from cwt.parameter import Parameter
 
-class NamedParameter(cwt.Parameter):
+class NamedParameter(Parameter):
     """ Named Parameter.
 
     Describes a parameter to be passed to an Operation.
@@ -23,35 +23,30 @@ class NamedParameter(cwt.Parameter):
         name: Name of the parameter.
         *args: Values of the parameter.
     """
-    def __init__(self, name, args):
+    def __init__(self, name, *values):
         """ NamedParameter init. """
         super(NamedParameter, self).__init__(name)
 
-        if isinstance(args, (str, unicode)):
-            self.values = args.split('|')
-        else:
-            self.values = args
+        self.values = values
 
     @classmethod
-    def from_string(cls, name, values):
+    def from_string(cls, name, data):
         """ Creates NamedParameter from string value. """
-        return cls(name, values.split('|'))
-
-    def parameterize(self):
-        """ Parameterizes NamedParameter for GET request. """
-        if isinstance(self.values, (list, tuple)) and all(isinstance(x, (str, unicode)) for x in self.values):
-            value = '|'.join(self.values)
-        elif isinstance(self.values, cwt.Parameter):
-            value = self.values.parameterize()
-        else:
-            raise cwt.ParameterError('Unknown value type {}', type(self.values))
-
-        return value
+        return cls(name, *values.split('|'))
 
     def __eq__(self, other):
         return self.name == other.name and self.values == other.values
 
     def __repr__(self):
-        return 'NamedParameter(name=%r, values=%r)' % (
-            self.name,
-            self.values)
+        return 'NamedParameter(name={!r}, values={!r})'.format(self.name, self.values)
+
+    def to_dict(self):
+        """ Returns dict representation."""
+        return { self.name: '|'.join(self.values) }
+
+    def parameterize(self):
+        """ Parameterizes NamedParameter for GET request. """
+        warnings.warn('parameterize is deprecated, use to_dict instead',
+                      DeprecationWarning)
+
+        return self.to_dict()

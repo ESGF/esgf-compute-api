@@ -2,15 +2,11 @@
 Variable module.
 """
 
-import os
+import warnings
 
-import requests
+from cwt.parameter import Parameter
 
-import cwt
-
-__all__ = ['Variable']
-
-class Variable(cwt.Parameter):
+class Variable(Parameter):
     """ Variable.
     
     Describes a variable to be used by an Operation.
@@ -20,7 +16,7 @@ class Variable(cwt.Parameter):
     Attributes:
         uri: A String URI for the file containing the variable data.
         var_name: A String name of the variable.
-        domains: List of cwt.Domain objects to constrain the variable data.
+        domains: List of Domain objects to constrain the variable data.
         mime_type: A String name of the URI mime-type.
         name: Custom name of the Variable.
     """
@@ -30,48 +26,30 @@ class Variable(cwt.Parameter):
 
         self.uri = uri
         self.var_name = var_name
-
-        domains = kwargs.get('domains', None)
-
-        if domains and isinstance(domains, cwt.Domain):
-            domains = [domains]
-
-        self.domains = domains
+        self.domain = kwargs.get('domain', None)
         self.mime_type = kwargs.get('mime_type', None)
 
     @classmethod
     def from_dict(cls, data):
         """ Create variable from dict representation. """
-        uri = None
-
-        if 'uri' in data:
+        try:
             uri = data['uri']
-        else:
-            raise cwt.ParameterError('Variable must provide a uri.')
+        except KeyError as e:
+            raise MissingRequiredKeyError(e)
 
-        name = None
-        var_name = None
+        try:
+            var_name, name = data['id'].split('|')
+        except KeyError as e:
+            raise MissingRequiredKeyError(e)
+        except ValueError:
+            raise CWTError('Could not split variable name and identifier from {!r}', data['id'])
 
-        if 'id' in data:
-            if '|' in data['id']:
-                var_name, name = data['id'].split('|')
-            else:
-                raise cwt.ParameterError('Variable id must contain a variable name and id.')
-        else:
-            raise cwt.ParameterError('Variable must provide an id.')
+        domain = data.get('domain', None)
 
-        domains = None
-
-        if 'domain' in data:
-            domains = data['domain']
-
-            if not isinstance(domains, (list, tuple)):
-                domains = [domains]
-
-        mime_type = None
-
-        if 'mime_type' in data:
+        try:
             mime_type = data['mime_type']
+        except KeyError:
+            mime_type = None
 
         return cls(uri, var_name, domains=domains, name=name, mime_type=mime_type)
 
@@ -91,42 +69,31 @@ class Variable(cwt.Parameter):
 
         self.domains = new_domains
 
-    def localize(self, filename=None):
-        if filename is None:
-            filename = 'output.nc'
-
-        try:
-            response = requests.get(self.uri)
-        except requests.ConnectionError:
-            raise Exception('Failed to localize file.')
-
-        path = os.path.join(os.getcwd(), filename)
-
-        with open(path, 'w') as f:
-            for chunk in response.iter_content(512000):
-                f.write(chunk)
-
-        return path
-
-    def parameterize(self):
-        """ Parameterize variable for GET request. """
-        params = {
+    def to_dict(self):
+        data = {
             'uri': self.uri,
             'id': self.var_name,
         }
 
         if self.domains:
-            params['domain'] = '|'.join(dom.name for dom in self.domains)
+            data['domain'] = '|'.join(dom.name for dom in self.domains)
 
         if self.var_name:
-            params['id'] += '|' + str(self.name)
+            data['id'] += '|' + str(self.name)
 
         if self.mime_type:
-            params['mime_type'] = self.mime_type
+            data['mime_type'] = self.mime_type
 
-        return params
+        return data
+
+    def parameterize(self):
+        """ Parameterize variable for GET request. """
+        warnings.warn('parameterize is deprecated, use to_dict instead',
+                      DeprecationWarning)
+
+        return self.to_dict()
 
     def __repr__(self):
         return ('Variable(name=%r, uri=%r, var_name=%r, domains=%r, '
-                'mime_type=%r)' % (self.name, self.uri, self.var_name,
-                                   self.domains, self.mime_type))
+                'mime_type=%r)').format( self.name, self.uri, self.var_name, 
+                                        self.domains, self.mime_type)

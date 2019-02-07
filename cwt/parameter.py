@@ -4,13 +4,6 @@ Parameter module.
 
 from uuid import uuid4 as uuid
 
-import cwt
-
-__all__ = ['ParameterError', 'Parameter']
-
-class ParameterError(cwt.CWTError):
-    pass
-
 class Parameter(object):
     """ Parameter.
 
@@ -20,24 +13,15 @@ class Parameter(object):
     """
     def __init__(self, name):
         """ Parameter init. """
-        self._name = name
+        self.name = name
 
-        if not self._name:
-            self._name = str(uuid())
+        if self.name is None:
+            self.name = str(uuid())
 
     @classmethod
     def from_dict(cls, data):
         """ Loads a parameter from its parameter form. """
         raise NotImplementedError
-
-    @property
-    def name(self):
-        """ Read-only name attribute. """
-        return str(self._name)
-
-    @name.setter
-    def name(self, value):
-        self._name = value
 
     def parameterize(self):
         """ Return a representation of this parameter. """

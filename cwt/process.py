@@ -6,27 +6,55 @@ import json
 import logging 
 import time
 import datetime
+import warnings
 
-import requests
-
-import cwt
-from cwt.wps import wps
+from cwt.parameter import Parameter
 
 logger = logging.getLogger('cwt.process')
 
-__all__ = ['ProcessError', 'Process']
+def input_output_to_dict(value):
+    data = value.__dict__
 
-class ProcessError(cwt.CWTError):
-    pass
+    data['metadata'] = [x.__dict__ for x in data['metadata']]
 
-class ValidationError(cwt.CWTError):
-    def __init__(self, fmt, *args):
-        self.msg = fmt.format(*args)
+    # Included from ComplexData
+    try:
+        data['defaultValue'] = data['defaultValue'].__dict__
+    except KeyError:
+        pass
 
-    def __str__(self):
-        return self.msg
+    try:
+        data['supportedValues'] = [x.__dict__ for x in data['supportedValues']]
+    except KeyError:
+        pass
 
-class Process(cwt.Parameter):
+    return data
+
+class StatusTracker(object):
+    def __init__(self, stale_threshold):
+        self.history = {}
+        self.start = None
+        self.stale_threshold = stale_threshold
+
+    @property
+    def elapsed(self):
+        elapsed = datetime.datetime.now() - self.start
+
+        return elapsed.total_seconds()
+
+    def update(self, message):
+        now = datetime.datetime.now()
+
+        if self.start is None:
+            self.start = now
+
+        self.history[message] = now
+
+        print message
+
+        logger.info(message)
+
+class Process(Parameter):
     """ A WPS Process
 
     Wraps a WPS Process.
@@ -35,16 +63,12 @@ class Process(cwt.Parameter):
         process: A DescribeProcessResponse object.
         name: A string name for the process to be used as the input of another process.
     """
-    def __init__(self, identifier=None, binding=None, name=None):
+    def __init__(self, process, name=None):
         super(Process, self).__init__(name)
 
-        self.__identifier = identifier
+        self.process = process
 
-        self.binding = binding
-
-        self.description = None
-
-        self.response = None
+        self.context = None
 
         self.processed = False
 
@@ -54,30 +78,57 @@ class Process(cwt.Parameter):
 
         self.domain = None
 
-        self.__client = None
+        self.status_tracker = None
+
+        self._identifier = None
+        self._title = None
+        self._process_outputs = None
+        self._data_inputs = None
+        self._status_supported = None
+        self._store_supported = None
+        self._process_version = None
+        self._abstract = None
+        self._metadata = None
 
     def __repr__(self):
-        return 'Process(identifier=%r, name=%r, num_inputs=%r)' % (
-            self.identifier,
-            self.name,
-            len(self.inputs))
+        return ('Process(identifier={!r}, title={!r}, status_supported={!r}, '
+                'store_supported={!r}, process_version={!r}, abstract={!r}, '
+                'metadata={!r})').format(self.identifier, self.title, self.status_supported,
+                                        self.store_supported, self.process_version,
+                                        self.abstract, self.metadata)
 
     @classmethod
-    def from_identifier(cls, identifier):
-        obj = cls(identifier=identifier)
+    def from_owslib(cls, process):
+        obj = cls(process)
 
-        return obj
+        obj._identifier = process.identifier
 
-    @classmethod
-    def from_binding(cls, binding):
-        obj = cls(binding=binding)
+        obj._title = process.title
+
+        obj._process_outputs = [input_output_to_dict(x) 
+                                for x in process.processOutputs]
+
+        obj._data_inputs = [input_output_to_dict(x)
+                            for x in process.dataInputs]
+
+        obj._status_supported = process.statusSupported
+
+        obj._store_supported = process.storeSupported
+
+        obj._process_version = process.processVersion
+
+        obj._abstract = process.abstract
+
+        obj._metadata = [x.__dict__ for x in process.metadata]
 
         return obj
 
     @classmethod
     def from_dict(cls, data):
         """ Attempts to load a process from a dict. """
-        obj = cls(data.get('name'), None, data.get('result'))
+        obj = cls(name=data.get('result'))
+
+        obj._identifier = data.get('name')
 
         obj.inputs = data.get('input', [])
 
@@ -93,9 +144,9 @@ class Process(cwt.Parameter):
 
                 if isinstance(d, (dict)):
                     if key == 'gridder':
-                        proc_params[key] = cwt.Gridder.from_dict(d)
+                        proc_params[key] = Gridder.from_dict(d)
                 else:
-                    proc_params[key] = cwt.NamedParameter.from_string(key, d)
+                    proc_params[key] = NamedParameter.from_string(key, d)
 
         obj.parameters = proc_params
 
@@ -103,39 +154,39 @@ class Process(cwt.Parameter):
 
     @property
     def identifier(self):
-        if self.__identifier is not None:
-            return self.__identifier
-
-        if self.binding is not None:
-            return self.binding.Identifier.value()
+        return self._identifier
 
     @property
     def title(self):
-        try:
-            return self.binding.Title.value()
-        except AttributeError:
-            raise ProcessError('Binding has not been set')
+        return self._title
 
     @property
-    def version(self):
-        try:
-            return self.binding.processVersion
-        except AttributeError:
-            raise ProcessError('Binding has not been set')
+    def process_outputs(self):
+        return self._process_outputs
+
+    @property
+    def data_inputs(self):
+        return self._data_inputs
+
+    @property
+    def status_supported(self):
+        return self._status_supported
+
+    @property
+    def store_supported(self):
+        return self._store_supported
+
+    @property
+    def process_version(self):
+        self._process_version
 
     @property
     def abstract(self):
-        try:
-            return self.description.abstract
-        except AttributeError:
-            raise ProcessError('Abstract is not available')
+        return self._abstract
 
     @property
     def metadata(self):
-        try:
-            return self.description.metadata
-        except AttributeError:
-            raise ProcessError('Metadata is not available')
+        return self._metadata
 
     @property
     def processing(self):
@@ -147,63 +198,54 @@ class Process(cwt.Parameter):
         Returns:
             A boolean denoting whether the process is still working.
         """
-        self.update_status()
+        self.context.checkStatus(sleepSecs=0)
 
-        return (self.response is not None and
-                (self.response.Status.ProcessAccepted is not None or
-                 self.response.Status.ProcessStarted is not None))
+        return self.accepted or self.started
 
     @property
-    def exception_message(self):
-        exception = self.response.Status.ProcessFailed.ExceptionReport.Exception[0]
+    def exception_dict(self):
+        if self.errored:
+            return [x.__dict__ for x in self.context.errors]
 
-        return exception.ExceptionText[0]
-
-    @property
-    def has_status(self):
-        return (self.response is not None and
-                self.response.Status is not None)
+        return None
 
     @property
     def accepted(self):
-        return (self.has_status and
-                self.response.Status.ProcessAccepted is not None)
+        return self.check_context_status('ProcessAccepted')
 
     @property
     def started(self):
-        return (self.has_status and
-                self.response.Status.ProcessStarted is not None)
+        return self.check_context_status('ProcessStarted')
 
     @property
     def paused(self):
-        return (self.has_status and
-                self.response.Status.ProcessPaused is not None)
+        return self.check_context_status('ProcessPaused')
 
     @property
     def failed(self):
-        return (self.has_status and
-                self.response.Status.ProcessFailed is not None)
+        return self.check_context_status('ProcessFailed')
 
     @property
     def succeeded(self):
-        return (self.has_status and
-                self.response.Status.ProcessSucceeded is not None)
+        return self.check_context_status('ProcessSucceeded')
+
+    @property
+    def errored(self):
+        return self.check_context_status('Exception')
 
     @property
     def output(self):
         """ Return the output of the process if done. """
-        if (self.response is None or
-                self.response.ProcessOutputs is None or
-                len(self.response.ProcessOutputs.Output) == 0):
-            return None
+        if not self.succeeded:
+            raise CWTError('No output available process has not succeeded')
 
-        data = json.loads(
-            self.response.ProcessOutputs.Output[0].Data.ComplexData.orderedContent()[0].value)
+        # CWT only expects a single output in json format
+        data = json.loads(self.context.processOutputs[0].data[0])
 
         if 'uri' in data:
-            output_data = cwt.Variable.from_dict(data)
+            output_data = Variable.from_dict(data)
         elif 'outputs' in data:
-            output_data = [cwt.Variable.from_dict(x) for x in data['outputs']]
+            output_data = [Variable.from_dict(x) for x in data['outputs']]
         else:
             output_data = data
 
@@ -211,76 +253,57 @@ class Process(cwt.Parameter):
 
     @property
     def status(self):
-        if self.response is not None and self.response.Status is not None:
-            if self.response.Status.ProcessAccepted is not None:
-                return 'ProcessAccepted {}'.format(self.response.Status.ProcessAccepted)
-            elif self.response.Status.ProcessStarted is not None:
-                message = self.response.Status.ProcessStarted.value()
+        msg = None
 
-                percent = self.response.Status.ProcessStarted.percentCompleted
+        if self.accepted:
+            msg = 'ProcessAccepted {!s}'.format(self.context.statusMessage)
+        elif self.started:
+            msg = 'ProcessStarted {!s} {!s}'.format(self.context.statusMessage, 
+                                                    self.context.percentCompleted)
+        elif self.paused:
+            msg = 'ProcessPaused {!s} {!s}'.format(self.context.statusMessage,
+                                                   self.context.percentCompleted)
+        elif self.failed:
+            msg = 'ProcessFailed {!s}'.format(self.context.statusMessage)
+        elif self.succeeded:
+            msg = 'ProcessSucceeded {!s}'.format(self.context.statusMessage)
+        elif self.errored:
+            exception_msg = '->'.join([x['text'] for x in self.exception_dict.values()])
 
-                return 'ProcessStarted {} {}'.format(message, percent)
-            elif self.response.Status.ProcessPaused is not None:
-                message = self.response.Status.ProcessPaused.value()
+            msg = 'Exception {!s}'.format(exception_msg)
+        else:
+            msg = 'Status unavailable'
 
-                percent = self.response.Status.ProcessPaused.percentCompleted
+        return msg
 
-                return 'ProcessStarted {} {}'.format(message, percent)
-            elif self.response.Status.ProcessFailed is not None:
-                raise cwt.WPSError('ProcessFailed {}'.format(self.exception_message))
-            elif self.response.Status.ProcessSucceeded is not None:
-                return 'ProcessSucceeded {}'.format(self.response.Status.ProcessSucceeded)
-
-        return 'No Status'
+    def check_context_status(value):
+        try:
+            return self.context.status == value
+        except AttributeError:
+            raise CWTError('Process is missing a context')
 
     def wait(self, stale_threshold=None, timeout=None, sleep=None):
-        if sleep is None:
-            sleep = 1.0
-
         if stale_threshold is None:
             stale_threshold = 4
 
-        status_hist = {}
+        self.status_tracker = StatusTracker(stale_threshold)
 
-        stale_count = 0
+        if sleep is None:
+            sleep = 1.0
 
-        last_update = None
-
-        def update_history(status):
-            global stale_count
-            global last_update
-
-            if status not in status_hist:
-                status_hist[status] = True
-
-                print status
-
-                stale_count = 0
-
-                last_update = datetime.datetime.now()
-            else:
-                stale_count += 1
-
-        update_history(self.status)
-
-        start = datetime.datetime.now()
+        self.status_tracker.update(self.status)
 
         while self.processing:
-            update_history(self.status)
+            self.status_tracker.update(self.status)
 
             time.sleep(sleep)
 
-            elapsed = datetime.datetime.now() - start
+            if timeout is not None and self.status_tracker.elapsed > timeout:
+                raise WPSError('Job has timed out after "{!s}" seconds', elapsed.total_seconds())
 
-            if timeout is not None and elapsed.total_seconds() > timeout:
-                raise cwt.WPSError('Job has timed out after "{!s}" seconds', elapsed.total_seconds())
+        self.status_tracker.update(self.status)
 
-            if stale_count > stale_threshold and timeout is None:
-                raise cwt.WPSError('Job appears to be stale no update since "{!s}"', last_update)
-
-        update_history(self.status)
-
-        return True if self.succeeded else False
+        return self.succeeded
 
     def validate(self):
         input_limit = None
@@ -295,9 +318,6 @@ class Process(cwt.Parameter):
         if input_limit is not None and len(self.inputs) > input_limit:
             raise ValidationError('Invalid number of inputs, expected "{}", got "{}"', input_limit, len(self.inputs))
         
-    def set_client(self, client):
-        self.__client = client
-
     def set_domain(self, domain):
         self.domain = domain
 
@@ -331,8 +351,8 @@ class Process(cwt.Parameter):
             kwargs: A dict of NamedParameter objects or k=v where k is the name and v is string.
         """
         for a in args:
-            if not isinstance(a, cwt.NamedParameter):
-                raise ProcessError('Invalid parameter type "{}", should be a cwt.NamedParameter', type(a))
+            if not isinstance(a, NamedParameter):
+                raise ProcessError('Invalid parameter type "{}", should be a NamedParameter', type(a))
 
             self.parameters[a.name] = a
 
@@ -340,7 +360,7 @@ class Process(cwt.Parameter):
             if not isinstance(v, (tuple, list)):
                 v = [v]
 
-            self.parameters[k] = cwt.NamedParameter(k, *v)
+            self.parameters[k] = NamedParameter(k, *v)
 
     def add_inputs(self, *args):
         """ Set the inputs of the Process. 
@@ -403,7 +423,7 @@ class Process(cwt.Parameter):
         new_processes = [x for x in self.inputs if isinstance(x, Process)]
 
         inputs.update(dict((x.name, x) for x in self.inputs
-                           if isinstance(x, cwt.Variable)))
+                           if isinstance(x, Variable)))
 
         for p in new_processes:
             p.collect_input_processes(processes, inputs)
@@ -421,31 +441,38 @@ class Process(cwt.Parameter):
 
         self.response = wps.CreateFromDocument(response)
 
-    def parameterize(self):
-        """ Create a dictionary representation of the Process. """
-        params = {
+    def to_dict(self):
+        """ Returns a dictionary representation."""
+        data = {
             'name': self.identifier,
             'result': self.name
         }
 
         if self.domain is not None:
-            if isinstance(self.domain, (str, unicode)):
-                params['domain'] = self.domain
-            else:
+            try:
                 params['domain'] = self.domain.name
+            except AttributeError:
+                params['domain'] = self.domain
 
         inputs = []
 
         for i in self.inputs:
-            if isinstance(i, (str, unicode)):
-                inputs.append(i)
-            else:
+            try:
                 inputs.append(i.name)
+            except AttributeError:
+                inputs.append(i)
 
-        params['input'] = inputs
+        data['input'] = inputs
 
-        if self.parameters is not None:
-            for k, p in self.parameters.iteritems():
-                params[k] = p.parameterize()
+        if len(self.parameters) > 0:
+            for name, value in self.parameters.iteritems():
+                data[name] = value.to_dict()
 
-        return params
+        return data
+
+    def parameterize(self):
+        """ Create a dictionary representation of the Process. """
+        warnings.warn('parameterize is deprecated, use to_dict instead',
+                      DeprecationWarning)
+
+        return self.to_dict()

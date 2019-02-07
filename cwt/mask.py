@@ -2,9 +2,9 @@
 Mask Module.
 """
 
-from uuid import uuid4 as uuid
+import warnings
 
-__all__ = ['Mask']
+from uuid import uuid4 as uuid
 
 # pylint: disable=too-few-public-methods
 class Mask(object):
@@ -50,29 +50,26 @@ class Mask(object):
     @classmethod
     def from_dict(cls, data):
         """ Create mask from dict representation. """
-        uri = None
-
-        if 'uri' in data:
+        try:
             uri = data['uri']
+        except KeyError as e:
+            raise MissingRequiredKeyError(e)
 
-        name = None
-        var_name = None
+        try:
+            var_name, name = data['id'].split('|')
+        except KeyError as e:
+            raise MissingRequiredKeyError(e)
+        except ValueError:
+            var_name = data['id']
 
-        if 'id' in data:
-            if '|' in data['id']:
-                var_name, name = data['id'].split('|')
-            else:
-                var_name = data['id']
-
-        operation = None
-
-        if 'operation' in data:
+        try:
             operation = data['operation']
+        except KeyError as e:
+            raise MissingRequiredKeyError(e)
 
         return cls(uri, var_name, operation, name)
 
-    def parameterize(self):
-        """ Create a parameter from mask. """
+    def to_dict(self):
         param_id = self.var_name
 
         if self.name:
@@ -84,9 +81,12 @@ class Mask(object):
             'operation': self.operation,
         }
 
+    def parameterize(self):
+        """ Create a parameter from mask. """
+        warnings.warn('parameterize is deprecated, use to_dict instead',
+                      DeprecationWarning)
+        return self.to_dict()
+
     def __repr__(self):
-        return 'Mask(uri=%r, var_name=%r, operation=%r, name=%r)' % (
-            self._uri,
-            self._var_name,
-            self._operation,
-            self._name)
+        return 'Mask(uri=%r, var_name=%r, operation=%r, name=%r)'.format(
+            self._uri, self._var_name, self._operation, self._name)

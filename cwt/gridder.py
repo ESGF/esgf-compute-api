@@ -2,11 +2,11 @@
 Gridder Module.
 """
 
-import cwt
+import warnings
 
-__all__ = ['Gridder']
+from cwt.parameter import Parameter
 
-class Gridder(cwt.Parameter):
+class Gridder(Parameter):
     """ Gridder.
     
     Describes the regridder and target grid for an operation.
@@ -40,22 +40,22 @@ class Gridder(cwt.Parameter):
 
     @classmethod
     def from_dict(cls, data):
-        tool = data.get('tool')
+        try:
+            tool = data['tool']
 
-        method = data.get('method')
+            method = data['method']
 
-        grid = data.get('grid')
+            grid = data['grid']
+        except KeyError as e:
+            raise MissingRequiredKeyError(e)
 
         return cls(tool, method, grid)
 
-    def parameterize(self):
-        """ Parameterizes a gridder. """
-        # Handle different types of grids
-        # pylint: disable=no-member
-        if isinstance(self.grid, (str, unicode)):
-            grid = self.grid
-        else:
+    def to_dict(self):
+        try:
             grid = self.grid.name
+        except AttributeError:
+            grid = self.grid
 
         return {
             'tool': self.tool,
@@ -63,8 +63,13 @@ class Gridder(cwt.Parameter):
             'grid': grid,
         }
 
+    def parameterize(self):
+        """ Parameterizes a gridder. """
+        warnings.warn('parameterize is deprecated, use to_dict instead',
+                      DeprecationWarning)
+
+        return self.to_dict()
+
     def __repr__(self):
-        return 'Gridder(tool=%r, method=%r, grid=%r)' % (
-            self.tool,
-            self.method,
-            self.grid)
+        return 'Gridder(tool=%r, method=%r, grid=%r)'.foramt(
+            self.tool, self.method, self.grid)
