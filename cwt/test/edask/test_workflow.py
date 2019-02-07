@@ -72,7 +72,7 @@ def test_eofs(plot=False):
     op2 = cwt.Process.from_dict( op_data2 ) # """:type : Process """
     op2.set_inputs( op1 )
 
-    op_data3 = { 'name': "xarray.eofs", "modes": 4 }
+    op_data3 = { 'name': "xarray.eof", "modes": 4 }
     op3 = cwt.Process.from_dict( op_data3 ) # """:type : Process """
     op3.set_inputs( op2 )
 
@@ -600,4 +600,4 @@ def test_KE_ave_global_1y(plot=False):
 
 if __name__ == '__main__':
 #    test_binning()
-    test_ave_esgf()
+    test_ave_dap()
