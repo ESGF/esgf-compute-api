@@ -34,6 +34,7 @@ class StatusTracker(object):
     def __init__(self, stale_threshold):
         self.history = {}
         self.start = None
+        self.stale = 0
         self.stale_threshold = stale_threshold
 
     @property
@@ -48,7 +49,13 @@ class StatusTracker(object):
         if self.start is None:
             self.start = now
 
-        self.history[message] = now
+        if message in self.history:
+            self.stale += 1
+
+            if self.stale >= self.stale_threshold:
+                raise CWTError('Timing out due to staleness, no new message {!r} queries', self.stale)
+        else:
+            self.history[message] = now
 
         print message
 
