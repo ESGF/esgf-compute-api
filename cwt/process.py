@@ -10,8 +10,10 @@ import warnings
 
 from cwt.errors import CWTError
 from cwt.errors import MissingRequiredKeyError
+from cwt.errors import WPSTimeoutError
 from cwt.named_parameter import NamedParameter
 from cwt.parameter import Parameter
+from cwt.variable import Variable
 
 logger = logging.getLogger('cwt.process')
 
@@ -276,7 +278,7 @@ class Process(Parameter):
         elif self.succeeded:
             msg = 'ProcessSucceeded {!s}'.format(self.context.statusMessage)
         elif self.errored:
-            exception_msg = '->'.join([x['text'] for x in self.exception_dict.values()])
+            exception_msg = '->'.join([x['text'] for x in self.exception_dict])
 
             msg = 'Exception {!s}'.format(exception_msg)
         else:
@@ -284,7 +286,7 @@ class Process(Parameter):
 
         return msg
 
-    def check_context_status(value):
+    def check_context_status(self, value):
         try:
             return self.context.status == value
         except AttributeError:
@@ -307,24 +309,11 @@ class Process(Parameter):
             time.sleep(sleep)
 
             if timeout is not None and self.status_tracker.elapsed > timeout:
-                raise WPSError('Job has timed out after "{!s}" seconds', elapsed.total_seconds())
+                raise WPSTimeoutError(self.status_tracker.elapsed)
 
         self.status_tracker.update(self.status)
 
         return self.succeeded
-
-    def validate(self):
-        input_limit = None
-
-        if self.metadata is None:
-            return
-
-        if 'inputs' in self.metadata:
-            if self.metadata['inputs'] != '*':
-                input_limit = int(self.metadata['inputs'])
-
-        if input_limit is not None and len(self.inputs) > input_limit:
-            raise ValidationError('Invalid number of inputs, expected "{}", got "{}"', input_limit, len(self.inputs))
         
     def set_domain(self, domain):
         self.domain = domain
@@ -343,7 +332,7 @@ class Process(Parameter):
             Exception: The parameter is required and not present.
         """
         if name not in self.parameters and required:
-            raise ProcessError('Parameter {} is required but not present', name)
+            raise CWTError('Parameter {} is required but not present', name)
 
         return self.parameters.get(name, None)
 
@@ -365,10 +354,10 @@ class Process(Parameter):
             self.parameters[a.name] = a
 
         for name, value in kwargs.iteritems():
-            if isinstance(value, NamedParameter):
-                self.parameters[name] = value
-            else:
-                self.parameters[name] = NamedParameter(name, *value)
+            if not isinstance(value, (list, tuple)):
+                value = [value]
+
+            self.parameters[name] = NamedParameter(name, *value)
 
     def add_inputs(self, *args):
         """ Set the inputs of the Process. 
@@ -377,37 +366,6 @@ class Process(Parameter):
             args: A list of Process/Variable objects.
         """
         self.inputs.extend(args)
-
-    def resolve_inputs(self, inputs, operations):
-        """ Attempts to resolve the process inputs.
-
-        Resolves the processes inputs from strings to Process/Variable objects.
-
-        Args:
-            inputs: A dict of Variables where the key is name.
-            operations: A dict of Processes where the key is name.
-
-        """
-        logger.info('Proccess {} resolving inputs {}'.format(self.identifier, self.inputs))
-
-        temp = dict((x, None) for x in self.inputs)
-
-        for key in temp.keys():
-            if key in inputs:
-                temp[key] = inputs[key]
-            elif key in operations:
-                if operations[key].processed:
-                    raise ProcessError('Found circular loop in execution tree')
-
-                temp[key] = operations[key]
-
-                temp[key].processed = True
-
-                temp[key].resolve_inputs(inputs, operations)
-            else:
-                raise ProcessError('Input "{}" not found', key)
-
-        self.inputs = temp.values()
 
     def collect_input_processes(self, processes=None, inputs=None):
         """ Aggregates the process trees inputs.
@@ -449,9 +407,9 @@ class Process(Parameter):
 
         if self.domain is not None:
             try:
-                params['domain'] = self.domain.name
+                data['domain'] = self.domain.name
             except AttributeError:
-                params['domain'] = self.domain
+                data['domain'] = self.domain
 
         inputs = []
 
@@ -463,9 +421,8 @@ class Process(Parameter):
 
         data['input'] = inputs
 
-        if len(self.parameters) > 0:
-            for name, value in self.parameters.iteritems():
-                data[name] = value.to_dict()
+        for name, value in self.parameters.iteritems():
+            data.update(value.to_dict())
 
         return data
 

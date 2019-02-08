@@ -4,7 +4,6 @@ Process Unittest.
 
 import unittest
 import mock
-import requests
 
 import cwt
 
@@ -12,251 +11,167 @@ class TestProcess(unittest.TestCase):
     """ Process Test Case. """
 
     def setUp(self):
-        process = wps.process('CDAT.subset', 'CDAT.subset', '1.0.0')
-
-        started = wps.status_started('started', 10)
-
-        output = wps.output_data('output', 'Output', '{"id": "tas|tas", "uri": "file:///test.nc"}')
-
-        self.execute = wps.execute_response(process, started, '1.0.0', 'en-US', 'http://idontexist.com/wps', 'http://idontexist.com/status', [output])
-
-        failed = wps.status_failed('error', '10', '1.0.0')
-
-        self.execute_failed = wps.execute_response(process, failed, '1.0.0', 'en-US', 'http://idontexist.com/wps', 'http://idontexist.com/status', [output])
-
-        self.binding = wps.process('CDAT.subset', 'CDAT.subset', '1.0.0')
-
-    def tearDown(self):
-        bds.reset()
-
-    @mock.patch('cwt.process.logger')
-    def test_wait_duplicate_status(self, mock_logger):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        type(process).processing = mock.PropertyMock(side_effect=[True, True, False])
-
-        type(process).status = mock.PropertyMock(side_effect=['status 1',
-                                                              'status 2',
-                                                              'status 2',
-                                                              'status 4'])
-
-        type(process).succeeded = mock.PropertyMock(return_value=True)
-
-        result = process.wait()
-
-        self.assertTrue(result)
-
-    def test_wait_no_success(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        type(process).processing = mock.PropertyMock(side_effect=[True, True, False])
-
-        type(process).status = mock.PropertyMock(side_effect=['status 1',
-                                                              'status 2',
-                                                              'status 3',
-                                                              'status 4',
-                                                              'status 5'])
-
-        type(process).succeeded = mock.PropertyMock(return_value=False)
-
-        result = process.wait()
-
-        self.assertFalse(result)
-
-    def test_wait(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        type(process).processing = mock.PropertyMock(side_effect=[True, True, False])
-
-        type(process).status = mock.PropertyMock(side_effect=['status 1',
-                                                              'status 2',
-                                                              'status 3',
-                                                              'status 4',
-                                                              'status 5'])
-
-        type(process).succeeded = mock.PropertyMock(return_value=True)
-
-        result = process.wait()
-
-        self.assertTrue(result)
-
-    def test_parameterize(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.set_domain(cwt.Domain([
-            cwt.Dimension('time', 0, 365),
-        ]))
-
-        process.add_parameters(test=['value1'])
-
-        process.add_inputs(cwt.Variable('file:///test.nc', 'tas'))
-
-        data = process.parameterize()
-
-    def test_update_status(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        self.assertIsNone(process.update_status())
-
-    def test_collect_input_processes(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process1 = cwt.Process.from_identifier('CDAT.regrid')
-
-        process1.add_inputs(cwt.Variable('file:///test.nc', 'tas'))
-
-        process.add_inputs(process1, cwt.Variable('file:///test1.nc', 'tas'))
-
-        processes, variables = process.collect_input_processes()
-
-        self.assertEqual(len(processes), 1)
-
-        self.assertEqual(len(variables), 2)
-
-    def test_resolve_inputs_missing(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.inputs = ['subset']
-
-        with self.assertRaises(cwt.ProcessError):
-            process.resolve_inputs({}, {})
-
-    def test_resolve_inputs_circular(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.inputs = ['subset']
-
-        with self.assertRaises(cwt.ProcessError):
-            process.resolve_inputs({}, {'subset': process })
-
-    def test_resolve_inputs(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.inputs = ['v0', 'subset']
-
-        variables = {
-            'v0': cwt.Variable('file:///v0.nc', 'tas'),
+        self.process_dict = {
+            'name': 'CDAT.subset',
+            'input': [{
+                'uri': 'file:///test.nc',
+                'id': 'v0|tas',
+            }],
+            'domain': {
+                'time': {
+                    'start': 0,
+                    'end': 365,
+                    'step': 1,
+                    'crs': 'VALUES',
+                },
+                'id': 'd0',
+            },
+            'result': 'subset',
+            'weightoption': 'random',
         }
 
-        operations = {
-            'subset': cwt.Process.from_identifier('CDAT.subset'),
-        }
+        self.process = cwt.Process.from_dict(self.process_dict)
 
-        process.resolve_inputs(variables, operations)
+        self.process.context = mock.MagicMock()
 
-        self.assertIn(variables['v0'], process.inputs)
+        type(self.process.context).percentCompleted = mock.PropertyMock(return_value=20)
 
-        self.assertIn(operations['subset'], process.inputs)
+        type(self.process.context).statusMessage = mock.PropertyMock(return_value='Hello')
 
-    def test_add_inputs(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
+        self.process2 = cwt.Process.from_dict({
+            'name': 'CDAT.aggregate',
+            'input': [{
+                'uri': 'file:///test.nc',
+                'id': 'v0|tas',
+            }],
+            'domain': {
+                'time': {
+                    'start': 0,
+                    'end': 365,
+                    'step': 1,
+                    'crs': 'VALUES',
+                },
+                'id': 'd1',
+            },
+            'result': 'subset',
+        })
 
-        process.add_inputs(cwt.Variable('file:///test.nc', 'tas'))
+    def test_processing_accepted(self):
+        type(self.process.context).status = mock.PropertyMock(return_value='ProcessAccepted')
 
-        self.assertEqual(len(process.inputs), 1)
+        self.assertTrue(self.process.processing)
 
-    def test_add_parameter_key_value_single(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
+    def test_processing_started(self):
+        type(self.process.context).status = mock.PropertyMock(return_value='ProcessStarted')
 
-        process.add_parameters(test='value1')
-
-        self.assertEqual(len(process.parameters), 1)
-        self.assertEqual(process.parameters.values()[0].values, ['value1'])
-
-    def test_add_parameter_key_value(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.add_parameters(test=['value1'])
-
-        self.assertEqual(len(process.parameters), 1)
-        self.assertEqual(process.parameters.values()[0].values, ['value1'])
-        
-    def test_add_parameter_invalid_type(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        with self.assertRaises(cwt.ProcessError):
-            process.add_parameters('test')
-
-    def test_add_parameter(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.add_parameters(cwt.NamedParameter('test', 'value1'))
-
-        self.assertEqual(len(process.parameters), 1)
-
-    def test_get_parameter_missing_required(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.parameters['test'] = cwt.NamedParameter('test', 'value1')
-
-        with self.assertRaises(cwt.ProcessError):
-            process.get_parameter('test2', True)
-
-    def test_get_parameter_missing(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.parameters['test'] = cwt.NamedParameter('test', 'value1')
-
-        self.assertIsNone(process.get_parameter('test2'))
-
-    def test_get_parameter(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.parameters['test'] = cwt.NamedParameter('test', 'value1')
-
-        param = process.get_parameter('test')
-
-        self.assertEqual(param.name, 'test')
-
-    def test_output_not_available(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        self.assertIsNone(process.output)
-
-    def test_output(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
-
-        process.response = self.execute
-
-        self.assertIsInstance(process.output, cwt.Variable)
+        self.assertTrue(self.process.processing)
 
     def test_processing(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
+        self.assertFalse(self.process.processing)
 
-        mock_client = mock.MagicMock()
+    def test_output(self):
+        type(self.process.context).status = mock.PropertyMock(return_value='ProcessSucceeded')
 
-        mock_client.http_request.return_value = self.execute.toxml(bds=bds)
+        data = '{"id": "tas|v0", "uri": "file:///test.nc"}'
 
-        process.set_client(mock_client)
+        self.process.context.processOutputs.__getitem__.return_value.data.__getitem__.return_value = data
 
-        process.response = self.execute
+        output = self.process.output
 
-        self.assertTrue(process.processing)
+        self.assertIsInstance(output, cwt.Variable)
+        self.assertEqual(output.uri, 'file:///test.nc')
+        self.assertEqual(output.var_name, 'tas')
+        self.assertEqual(output.name, 'v0')
 
-    def test_from_dict(self):
-        data = {
-            'name': 'CDAT.subset',
-            'result': 'subset',
-            'input': ['v0'],
-            'domain': 'd0',
-            'gridder': {
-                'grid': 'T21',
-            }
-        }
+    def test_output_not_succeeded(self):
+        with self.assertRaises(cwt.CWTError):
+            self.process.output
 
-        process = cwt.Process.from_dict(data)
+    def test_status(self):
+        tests = [
+            ('ProcessAccepted', 'ProcessAccepted Hello'),
+            ('ProcessStarted', 'ProcessStarted Hello 20'),
+            ('ProcessPaused', 'ProcessPaused Hello 20'),
+            ('ProcessFailed', 'ProcessFailed Hello'),
+            ('ProcessSucceeded', 'ProcessSucceeded Hello'),
+            ('Exception', 'Exception '),
+        ]
 
-        self.assertEqual(process.identifier, 'CDAT.subset')
-        self.assertEqual(process.inputs, ['v0'])
-        self.assertEqual(process.domain, 'd0')
+        for status, message in tests:
+            type(self.process.context).status = mock.PropertyMock(return_value=status)
 
+            self.assertEqual(self.process.status, message)
 
-    def test_from_binding(self):
-        process = cwt.Process.from_binding(self.binding)
+    @mock.patch('cwt.process.StatusTracker')
+    def test_wait_timeout(self, mock_tracker):
+        processing = [True, True, False]
 
-        self.assertEqual(process.identifier, 'CDAT.subset')
+        type(self.process).processing = mock.PropertyMock(side_effect=processing)
 
-    def test_from_identifier(self):
-        process = cwt.Process.from_identifier('CDAT.subset')
+        type(mock_tracker.return_value).elapsed = mock.PropertyMock(return_value=20)
 
-        self.assertEqual(process.identifier, 'CDAT.subset')
+        with self.assertRaises(cwt.WPSTimeoutError):
+            self.process.wait(timeout=10)
+
+    @mock.patch('cwt.process.StatusTracker')
+    def test_wait(self, mock_tracker):
+        processing = [True, True, False]
+
+        type(self.process).processing = mock.PropertyMock(side_effect=processing)
+
+        self.process.wait(stale_threshold=10)
+
+        mock_tracker.called_with(10)
+
+        self.assertEqual(mock_tracker.return_value.update.call_count, 4)
+
+    def test_get_parameter_missing_required(self):
+        with self.assertRaises(cwt.CWTError):
+            self.process.get_parameter('axes', required=True)
+
+    def test_get_parameter(self):
+        param = self.process.get_parameter('weightoption')
+
+        self.assertIsNotNone(param)
+        self.assertEqual(param.values, ('random',))
+
+    def test_add_parameters_kwargs_list(self):
+        self.process.add_parameters(axes=['lat', 'lon'])
+
+        self.assertIn('axes', self.process.parameters)
+
+        self.assertEqual(self.process.parameters['axes'].values, ('lat', 'lon'))
+
+    def test_add_parameters_kwargs(self):
+        self.process.add_parameters(axes='lat')
+
+        self.assertIn('axes', self.process.parameters)
+
+        self.assertEqual(self.process.parameters['axes'].values, ('lat',))
+
+    def test_add_parameters_wrong_type_arg(self):
+        with self.assertRaises(cwt.CWTError):
+            self.process.add_parameters('axis')
+
+    def test_add_parameters(self):
+        param = cwt.NamedParameter('axes', 'time')
+
+        self.process.add_parameters(param)
+
+        self.assertIn('axes', self.process.parameters)
+
+        self.assertEqual(self.process.parameters['axes'], param)
+
+    def test_collect_input_processes(self):
+        self.process.add_inputs(self.process2)
+
+        processes, inputs = self.process.collect_input_processes()
+
+        self.assertEqual(processes, [self.process2])
+
+        self.assertEqual(inputs, [])
+
+    def test_to_dict(self):
+        data = self.process.to_dict()
+
+        self.assertDictContainsSubset(data, self.process_dict)

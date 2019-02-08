@@ -22,6 +22,7 @@ from cwt.domain import Domain
 from cwt.errors import CWTError
 from cwt.errors import MissingRequiredKeyError
 from cwt.errors import WPSClientError
+from cwt.errors import WPSTimeoutError
 from cwt.gridder import Gridder
 from cwt.mask import Mask
 from cwt.named_parameter import NamedParameter

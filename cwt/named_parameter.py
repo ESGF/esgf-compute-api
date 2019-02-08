@@ -32,7 +32,7 @@ class NamedParameter(Parameter):
     @classmethod
     def from_string(cls, name, data):
         """ Creates NamedParameter from string value. """
-        return cls(name, *values.split('|'))
+        return cls(name, *data.split('|'))
 
     def __eq__(self, other):
         return self.name == other.name and self.values == other.values
