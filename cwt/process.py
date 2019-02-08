@@ -440,15 +440,6 @@ class Process(Parameter):
 
         return processes, inputs.values()
 
-    def update_status(self):
-        """ Retrieves the latest process status. """
-        if self.response is None or self.response.statusLocation is None:
-            return None
-
-        response = self.__client.http_request('GET', self.response.statusLocation, {}, {}, {})
-
-        self.response = wps.CreateFromDocument(response)
-
     def to_dict(self):
         """ Returns a dictionary representation."""
         data = {
