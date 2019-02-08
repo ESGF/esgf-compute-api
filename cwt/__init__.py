@@ -25,6 +25,7 @@ from cwt.errors import WPSClientError
 from cwt.gridder import Gridder
 from cwt.mask import Mask
 from cwt.named_parameter import NamedParameter
+from cwt.parameter import Parameter
 from cwt.process import Process
 from cwt.variable import Variable
 from cwt.wps_client import WPSClient
