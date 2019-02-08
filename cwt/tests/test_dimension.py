@@ -2,55 +2,120 @@
 Unittest for Dimension class.
 """
 
+import mock
 import unittest
 
 import cwt
+from cwt.dimension import int_or_float
+from cwt.dimension import get_crs_value
 
 class TestDimension(unittest.TestCase):
 
-    def test_parameterize(self):
-        expected = {'start': 0, 'end': 90, 'crs': 'values', 'step': 1}
+    def setUp(self):
+        self.dimension_dict = {
+            'start': 0,
+            'end': 365,
+            'step': 4,
+            'crs': 'values',
+        }
 
-        dim = cwt.Dimension('lat', 0, 90)
+        self.dimension = cwt.Dimension.from_dict(self.dimension_dict, 'time')
 
-        self.assertEqual(dim.parameterize(), expected)
+    def test_from_dict_missing_step(self):
+        del self.dimension_dict['step']
 
-    def test_from_single_value(self):
-        dim = cwt.Dimension.from_single_value('lat', 1000)
+        data = self.dimension.from_dict(self.dimension_dict, 'time')
 
-        self.assertEqual(dim.start, 1000)
-        self.assertEqual(dim.end, 1000)
-        self.assertEqual(dim.crs, cwt.CRS('values'))
+        self.assertEqual(data.step, 1)
 
+    def test_get_crs_value_unknown(self):
+        with self.assertRaises(cwt.CWTError):
+            get_crs_value(cwt.CRS('new'), 'data')
+
+    @mock.patch('cwt.dimension.int_or_float')
+    def test_get_crs_value(self, mock_conv):
+        mock_conv.side_effect = [2, 4]
+
+        value = get_crs_value(cwt.TIMESTAMPS, '1980-01-01')
+
+        self.assertEqual(value, '1980-01-01')
+
+        value = get_crs_value(cwt.VALUES, 2)
+
+        self.assertEqual(value, 2)
+
+        value = get_crs_value(cwt.INDICES, 4)
+
+        self.assertEqual(value, 4)
+
+        self.assertEqual(mock_conv.call_count, 2)
+
+    def test_int_or_float_not_supported(self):
+        with self.assertRaises(cwt.CWTError):
+            int_or_float('hello')
+
+    def test_int_or_float_float(self):
+        data = int_or_float('3.0')
+
+        self.assertIsInstance(data, float)
+
+    def test_int_or_float_int(self):
+        data = int_or_float('3')
+
+        self.assertIsInstance(data, int)
 
     def test_from_single_index(self):
-        dim = cwt.Dimension.from_single_index('lat', 1000)
+        dimension = cwt.Dimension.from_single_index('time', 365, step=4)
 
-        self.assertEqual(dim.start, 1000)
-        self.assertEqual(dim.end, 1000)
-        self.assertEqual(dim.crs, cwt.CRS('indices'))
+        self.assertEqual(dimension.name, 'time')
+        self.assertEqual(dimension.start, 365)
+        self.assertEqual(dimension.end, 365)
+        self.assertEqual(dimension.step, 4)
+        self.assertEqual(dimension.crs, cwt.INDICES)
+
+    def test_from_single_value(self):
+        dimension = cwt.Dimension.from_single_value('time', 365, step=4)
+
+        self.assertEqual(dimension.name, 'time')
+        self.assertEqual(dimension.start, 365)
+        self.assertEqual(dimension.end, 365)
+        self.assertEqual(dimension.step, 4)
+        self.assertEqual(dimension.crs, cwt.VALUES)
+
+    def test_from_dict_invalid_step_format(self):
+        self.dimension_dict['step'] = 'hello world'
+
+        with self.assertRaises(cwt.CWTError):
+            cwt.Dimension.from_dict(self.dimension_dict, 'time')
+
+    def test_from_dict_missing_req(self):
+        del self.dimension_dict['start']
+
+        with self.assertRaises(cwt.MissingRequiredKeyError):
+            cwt.Dimension.from_dict(self.dimension_dict, 'time')
 
     def test_from_dict(self):
-        data = {
-                'start': 0,
-                'end': 90,
-                'crs': 'values',
-                'step': 2,
-               }
+        dimension = cwt.Dimension.from_dict(self.dimension_dict, 'time')
 
-        dim = cwt.Dimension.from_dict(data, 'lat')
+        self.assertDictContainsSubset(self.dimension_dict, dimension.to_dict())
 
-        self.assertEqual(dim.name, 'lat')
-        self.assertEqual(dim.start, 0)
-        self.assertEqual(dim.end, 90)
-        self.assertEqual(dim.crs, cwt.CRS('values'))
-        self.assertEqual(dim.step, 2)
+    def test_to_dict(self):
+        dimension = cwt.Dimension('time', 0, 365, step=4)
+
+        self.assertDictContainsSubset(self.dimension_dict, dimension.to_dict())
 
 class TestCRS(unittest.TestCase):
 
+    def test_not_equal(self):
+        crs1 = cwt.VALUES
+
+        crs2 = cwt.CRS('indices')
+
+        self.assertNotEqual(crs1, crs2)
+    
     def test_equal(self):
-        crs1 = cwt.CRS('test')
+        crs1 = cwt.VALUES
 
-        crs2 = cwt.CRS('test')
+        crs2 = cwt.CRS('values')
 
-        self.assertTrue(crs1 == crs2)
+        self.assertEqual(crs1, crs2)

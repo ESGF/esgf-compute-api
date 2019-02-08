@@ -33,6 +33,9 @@ class CRS(object):
     def __ne__(self, other):
         return self.name != other.name
 
+    def __str__(self):
+        return self.name
+
     def __repr__(self):
         return 'CRS(name={})'.format(self.name)
 
@@ -44,15 +47,21 @@ def int_or_float(data):
     try:
         return int(data)
     except ValueError:
+        pass
+
+    try:
         return float(data)
+    except ValueError:
+        raise CWTError('Could not convert {!r} to either int or float', data)
 
 def get_crs_value(crs, value):
     if crs == VALUES or crs == INDICES:
         return int_or_float(value)
     elif crs == TIMESTAMPS:
-        return crs
+        return value
     else:
-        raise CWTError('Could not handle CRS {!r}', crs)
+        raise CWTError('Unknown CRS value "{!s}", available: {!s}', 
+                       crs, ', '.join([str(x) for x in [VALUES, INDICES, TIMESTAMPS]]))
 
 class Dimension(Parameter):
     """ Dimension.
@@ -112,9 +121,7 @@ class Dimension(Parameter):
         try:
             step = int_or_float(data['step'])
         except KeyError:
-            step = 0
-        except ValueError:
-            raise CWTError('Dimension step value is an unsupported type {!r}', type(data['step']))
+            step = 1
         
         return cls(name, start, end, crs, step)
 
