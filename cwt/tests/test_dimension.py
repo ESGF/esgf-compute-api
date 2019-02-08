@@ -30,18 +30,6 @@ class TestDimension(unittest.TestCase):
         self.assertEqual(dim.end, 1000)
         self.assertEqual(dim.crs, cwt.CRS('indices'))
 
-    def test_from_dict_missing_crs(self):
-        data = { 'start': 0 }
-
-        with self.assertRaises(cwt.ParameterError):
-            cwt.Dimension.from_dict(data, 'lat')
-
-    def test_from_dict_missing_start(self):
-        data = { }
-
-        with self.assertRaises(cwt.ParameterError):
-            cwt.Dimension.from_dict(data, 'lat')
-
     def test_from_dict(self):
         data = {
                 'start': 0,
@@ -66,6 +54,3 @@ class TestCRS(unittest.TestCase):
         crs2 = cwt.CRS('test')
 
         self.assertTrue(crs1 == crs2)
-
-if __name__ == '__main__':
-    unittest.main()

@@ -14,12 +14,32 @@ class TestDomain(unittest.TestCase):
 
         self.assertDictContainsSubset(expected, dom.parameterize())
 
-    def test_add_dimension(self):
+    def test_add_dimension_timestamps(self):
         dom = cwt.Domain()
 
-        dom.add_dimension(cwt.Dimension('lat', 0, 90))
+        dom.add_dimension('lat', ('1980-01-01', '2000-01-01'))
 
         self.assertEqual(len(dom.dimensions), 1)
+
+        self.assertEqual(dom.dimensions['lat'].crs, cwt.TIMESTAMPS)
+
+    def test_add_dimension_indices(self):
+        dom = cwt.Domain()
+
+        dom.add_dimension('lat', slice(0, 20))
+
+        self.assertEqual(len(dom.dimensions), 1)
+
+        self.assertEqual(dom.dimensions['lat'].crs, cwt.INDICES)
+
+    def test_add_dimension_values(self):
+        dom = cwt.Domain()
+
+        dom.add_dimension('lat', (0, 20))
+
+        self.assertEqual(len(dom.dimensions), 1)
+
+        self.assertEqual(dom.dimensions['lat'].crs, cwt.VALUES)
 
     def test_get_dimension(self):
         dom = cwt.Domain([cwt.Dimension('lat', 0, 90)])
@@ -28,31 +48,28 @@ class TestDomain(unittest.TestCase):
 
         self.assertIsNotNone(dimension)
 
-    def test_from_dict_missing_id(self):
-        data = { }
-
-        with self.assertRaises(cwt.ParameterError):
-            cwt.Domain.from_dict(data)
-
     def test_from_dict(self):
         data = {
-                'id': 'd0',
-                'mask': 'var_data>0.5',
-                'lat': {
-                        'start': 0,
-                        'end': 90,
-                        'crs': 'values',
-                        'step': 2
-                       }
-               }
+            'id': 'd0',
+            'mask': {
+                'id': 'tas|v0',
+                'uri': 'file:///test.nc',
+                'operation': 'var_data>0.5',
+            },
+            'lat': {
+                'start': 0,
+                'end': 90,
+                'crs': 'values',
+                'step': 2
+            }
+        }
 
         dom = cwt.Domain.from_dict(data)
 
         self.assertEqual(dom.name, 'd0')
-        self.assertIsInstance(dom.dimensions, list)
+        self.assertIsInstance(dom.dimensions, dict)
         self.assertEqual(len(dom.dimensions), 1)
         self.assertIsInstance(dom.mask, cwt.Mask)
-        
 
     def test_empty_domain(self):
         expected = {}
@@ -60,6 +77,3 @@ class TestDomain(unittest.TestCase):
         dom = cwt.Domain()
 
         self.assertDictContainsSubset(expected, dom.parameterize())
-
-if __name__ == '__main__':
-    unittest.main()

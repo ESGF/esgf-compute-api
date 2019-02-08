@@ -4,8 +4,12 @@ Domain Module.
 
 import warnings
 
+from cwt.errors import MissingRequiredKeyError
 from cwt.dimension import Dimension
+from cwt.dimension import TIMESTAMPS
+from cwt.dimension import INDICES
 from cwt.dimension import VALUES
+from cwt.mask import Mask
 from cwt.parameter import Parameter
 
 class Domain(Parameter):
@@ -51,7 +55,6 @@ class Domain(Parameter):
         """ Creates domain from dict reperesentation. """
         blacklist = ['id', 'mask']
 
-
         try:
             name = data['id']
         except KeyError as e:
@@ -65,8 +68,6 @@ class Domain(Parameter):
 
         try:
             mask_data = Mask.from_dict(data['mask'])
-        except KeyError as e:
-            raise MissingRequiredKeyError(e)
         except:
             mask_data = None
 
@@ -100,13 +101,10 @@ class Domain(Parameter):
 
         self.dimensions[name] = Dimension(*args)
 
-    def get_dimension(self, names):
-        if not isinstance(names, (list, tuple)):
-            names = [names]
-
-        for dim in self.dimensions:
-            if dim.name in names:
-                return dim
+    def get_dimension(self, *names):
+        for name, value in self.dimensions.iteritems():
+            if name in names:
+                return value
 
         return None
 
