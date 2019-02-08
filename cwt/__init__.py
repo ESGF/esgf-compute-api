@@ -7,11 +7,7 @@ import warnings
 
 warnings.simplefilter('default')
 
-import urllib3
-
-urllib3.disable_warnings()
-
-__version__ = '2.1.0'
+__version__ = 'devel'
 
 from cwt.dimension import CRS
 from cwt.dimension import VALUES
