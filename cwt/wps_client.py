@@ -5,8 +5,14 @@ import logging
 import re
 import sys
 
-import cwt
 from owslib import wps
+
+from cwt.domain import Domain
+from cwt.errors import CWTError
+from cwt.errors import MissingRequiredKeyError
+from cwt.errors import WPSClientError
+from cwt.process import Process
+from cwt.variable import Variable
 
 logger = logging.getLogger('cwt.wps_client')
 
@@ -142,7 +148,11 @@ class WPSClient(object):
 
         items = []
 
+        logger.info('Matching against pattern %r', pattern)
+
         for x in self.client.processes:
+            logger.info('Checking %r', x)
+
             if pattern is not None:
                 try:
                     if re.match(pattern, x.identifier):
@@ -209,12 +219,13 @@ class WPSClient(object):
         if domain is not None:
             domains[domain.name] = domain.to_dict()
 
-        for name, value in kwargs.iteritems():
-            process.add_parameter(name, value)
+        process.add_parameters(**kwargs)
 
         processes, variables = process.collect_input_processes()
 
         processes.append(process)
+
+        variables.extend(inputs)
 
         variables = json.dumps([x.to_dict() for x in variables])
 

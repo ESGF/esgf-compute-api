@@ -3,23 +3,10 @@ Process Unittest.
 """
 
 import unittest
-
 import mock
 import requests
-from pyxb.utils import domutils
 
 import cwt
-from cwt.wps import ows
-from cwt.wps import wps
-from cwt.wps import xlink
-
-bds = domutils.BindingDOMSupport()
-
-bds.declareNamespace(ows.Namespace, prefix='ows')
-
-bds.declareNamespace(wps.Namespace, prefix='wps')
-
-bds.declareNamespace(xlink.Namespace, prefix='xlink')
 
 class TestProcess(unittest.TestCase):
     """ Process Test Case. """
@@ -273,6 +260,3 @@ class TestProcess(unittest.TestCase):
         process = cwt.Process.from_identifier('CDAT.subset')
 
         self.assertEqual(process.identifier, 'CDAT.subset')
-
-if __name__ == '__main__':
-    unittest.main()

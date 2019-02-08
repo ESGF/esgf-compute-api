@@ -8,6 +8,9 @@ import time
 import datetime
 import warnings
 
+from cwt.errors import CWTError
+from cwt.errors import MissingRequiredKeyError
+from cwt.named_parameter import NamedParameter
 from cwt.parameter import Parameter
 
 logger = logging.getLogger('cwt.process')
@@ -70,7 +73,7 @@ class Process(Parameter):
         process: A DescribeProcessResponse object.
         name: A string name for the process to be used as the input of another process.
     """
-    def __init__(self, process, name=None):
+    def __init__(self, process=None, name=None):
         super(Process, self).__init__(name)
 
         self.process = process
@@ -133,29 +136,27 @@ class Process(Parameter):
     @classmethod
     def from_dict(cls, data):
         """ Attempts to load a process from a dict. """
-        obj = cls(name=data.get('result'))
+        obj = cls()
 
-        obj._identifier = data.get('name')
+        try:
+            obj._identifier = data['name']
 
-        obj.inputs = data.get('input', [])
+            obj.name = data['result']
 
-        obj.domain = data.get('domain', None)
+            obj.inputs = data['input']
 
-        known_keys = ('name', 'input', 'result')
+            obj.domain = data['domain']
+        except KeyError as e:
+            raise MissingRequiredKeyError(e)
 
-        proc_params = {}
+        ignore = ('name', 'input', 'result', 'domain')
 
-        for key in data.keys():
-            if key not in known_keys:
-                d = data.get(key)
-
-                if isinstance(d, (dict)):
-                    if key == 'gridder':
-                        proc_params[key] = Gridder.from_dict(d)
+        for name, value in data.iteritems():
+            if name not in ignore:
+                if name == 'gridder':
+                    obj.parameters[name] = Gridder.from_dict(value)
                 else:
-                    proc_params[key] = NamedParameter.from_string(key, d)
-
-        obj.parameters = proc_params
+                    obj.parameters[name] = NamedParameter.from_string(name, value)
 
         return obj
 
@@ -185,7 +186,7 @@ class Process(Parameter):
 
     @property
     def process_version(self):
-        self._process_version
+        return self._process_version
 
     @property
     def abstract(self):
@@ -359,15 +360,15 @@ class Process(Parameter):
         """
         for a in args:
             if not isinstance(a, NamedParameter):
-                raise ProcessError('Invalid parameter type "{}", should be a NamedParameter', type(a))
+                raise CWTError('Invalid parameter type "{}", should be a NamedParameter', type(a))
 
             self.parameters[a.name] = a
 
-        for k, v in kwargs.iteritems():
-            if not isinstance(v, (tuple, list)):
-                v = [v]
-
-            self.parameters[k] = NamedParameter(k, *v)
+        for name, value in kwargs.iteritems():
+            if isinstance(value, NamedParameter):
+                self.parameters[name] = value
+            else:
+                self.parameters[name] = NamedParameter(name, *value)
 
     def add_inputs(self, *args):
         """ Set the inputs of the Process. 

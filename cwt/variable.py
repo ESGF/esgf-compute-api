@@ -51,7 +51,7 @@ class Variable(Parameter):
         except KeyError:
             mime_type = None
 
-        return cls(uri, var_name, domains=domains, name=name, mime_type=mime_type)
+        return cls(uri, var_name, domain=domain, name=name, mime_type=mime_type)
 
     def resolve_domains(self, domains):
         """ Resolves the domain identifiers to objects. """
@@ -75,8 +75,11 @@ class Variable(Parameter):
             'id': self.var_name,
         }
 
-        if self.domains:
-            data['domain'] = '|'.join(dom.name for dom in self.domains)
+        if self.domain:
+            try:
+                data['domain'] = self.domain.name
+            except AttributeError:
+                data['domain'] = self.domain
 
         if self.var_name:
             data['id'] += '|' + str(self.name)

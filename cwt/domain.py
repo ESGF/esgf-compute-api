@@ -4,8 +4,9 @@ Domain Module.
 
 import warnings
 
-from dimension import Dimension
-from parameter import Parameter
+from cwt.dimension import Dimension
+from cwt.dimension import VALUES
+from cwt.parameter import Parameter
 
 class Domain(Parameter):
     """ Domain.
