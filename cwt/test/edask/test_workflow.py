@@ -135,7 +135,7 @@ def test_spatial_ave(plot=False):
                    'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
                    'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
     d0 = cwt.Domain.from_dict(domain_data)
-    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
+    inputs = cwt.Variable("collection://cip_cfsr_mth", "tas", domain=d0)
     op_data = {'name': "xarray.ave", 'axes': "t"}
     op = cwt.Process.from_dict(op_data)
     op.set_inputs(inputs)
@@ -600,4 +600,4 @@ def test_KE_ave_global_1y(plot=False):
 
 if __name__ == '__main__':
 #    test_binning()
-    test_ave_dap()
+    test_spatial_ave()
