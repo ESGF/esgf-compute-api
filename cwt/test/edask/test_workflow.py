@@ -81,14 +81,12 @@ def test_eofs(plot=False):
     for dataPath in dataPaths:
         generate_output(dataPath, plot)
 
-def test_time_ave_clt(plot=False):
-    domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
-                   'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
-                   'time': {'start': '1980-01-01', 'end': '2016-12-3', 'crs': 'timestamps'}}
+def test_time_ave_6hr(plot=False):
+    domain_data = {'id': 'd0', 'time': {'start': '1980-01-01', 'end': '2016-12-3', 'crs': 'timestamps'}}
     d0 = cwt.Domain.from_dict(domain_data)
     #    inputs = cwt.Variable("collection://cip_cfsr_mth", "clt", domain=d0)
     #    inputs = cwt.Variable("collection://cip_merra2_mth", "clt", domain=d0)
-    inputs = cwt.Variable("collection://cip_merra2_6hr", "ts", domain=d0)
+    inputs = cwt.Variable("collection://cip_merra2_6hr", "tas", domain=d0)
     op_data = {'name': "xarray.ave", 'axes': "t"}
     op = cwt.Process.from_dict(op_data)
     op.set_inputs(inputs)
@@ -96,7 +94,6 @@ def test_time_ave_clt(plot=False):
     dataPaths = wps.download_result(op, temp_dir, True)
     for dataPath in dataPaths:
         generate_output(dataPath, plot)
-
 
 def test_ave_dap(plot=False):
     domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},
@@ -600,4 +597,4 @@ def test_KE_ave_global_1y(plot=False):
 
 if __name__ == '__main__':
 #    test_binning()
-    test_spatial_ave()
+    test_time_ave_6hr()
