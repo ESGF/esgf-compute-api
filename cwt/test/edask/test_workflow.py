@@ -562,7 +562,7 @@ def test_seasonal_cycle(plot=False):
     for dataPath in dataPaths:
         generate_output( dataPath, plot )
 
-def test_KE_ave_conus_1y(plot=False):
+def test_KE_ave_conus_35y(plot=False):
     domain_data = {'id': 'd0', 'lat': {'start':229, 'end':279, 'crs':'indices'}, 'lon': {'start':88, 'end':181, 'crs':'indices'}, 'time': {'start': '1980-01-01T00:00:00Z', 'end': '2015-12-31T23:59:00Z', 'crs': 'timestamps'}}
 
     d0 = cwt.Domain.from_dict(domain_data)
@@ -597,4 +597,4 @@ def test_KE_ave_global_1y(plot=False):
 
 if __name__ == '__main__':
 #    test_binning()
-    test_time_ave_6hr()
+    test_KE_ave_conus_35y()
