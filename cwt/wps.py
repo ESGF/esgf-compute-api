@@ -543,7 +543,6 @@ class WPS(object):
         if inputs is None:
             inputs = []
 
-        t0 = time.time()
         params = {
                 'service': 'WPS',
                 'request': 'Execute',
@@ -579,11 +578,6 @@ class WPS(object):
             process.hrefs[ ref.attrib.get('id') ] = ref.attrib.get('href')
 
         logger.info( "HREFS: " + str(process.hrefs) )
-        msg = "Completed Execution, elapsed: {} sec".format(time.time() - t0)
-        print("-"*50)
-        print(msg)
-        print("-" * 50)
-        logger.info( msg )
 
         #        if isinstance(process.response.status, metadata.ProcessFailed):
 #            raise Exception(process.response.status.exception_report)
