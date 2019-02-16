@@ -4,7 +4,7 @@ RUN apt-get update && \
 	apt-get install --no-install-recommends -y build-essential && \
 	rm -rf /var/lib/apt/lists/*
 
-COPY environment.yaml environment.yaml
+COPY environment.yml environment.yml
 
 RUN conda install -c conda-forge jupyterlab nb_conda_kernels nodejs && \
       conda create -n esgf-compute-api -c conda-forge -c cdat python=2 nomkl mesalib cdms2 vcs ipykernel && \
