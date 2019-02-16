@@ -5,7 +5,7 @@ from setuptools import setup
 setup(
     name='esgf-compute-api',
     description='Compute Working Team End-User API',
-    packages=['cwt', 'cwt.wps', 'cwt.wps.raw'],
+    packages=['cwt'],
     author='Jason Boutte',
     author_email='boutte3@llnl.gov',
     version='2.1.0',
