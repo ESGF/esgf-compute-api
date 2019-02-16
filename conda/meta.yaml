@@ -1,6 +1,6 @@
 package:
   name: esgf-compute-api
-  version: "2.1.0"
+  version: "devel"
 
 source:
   git_rev: devel
