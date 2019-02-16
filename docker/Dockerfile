@@ -8,9 +8,9 @@ COPY environment.yaml environment.yaml
 
 RUN conda install -c conda-forge jupyterlab nb_conda_kernels nodejs && \
       conda create -n esgf-compute-api -c conda-forge -c cdat python=2 nomkl mesalib cdms2 vcs ipykernel && \
-      conda env update -n esgf-compute-api -f environment.yaml && \
+      conda env update -n esgf-compute-api -f environment.yml && \
       conda clean -y --all && \
-      rm environment.yaml && \
+      rm environment.yml && \
       rm -rf /opt/conda/pkgs/*
 
 COPY docker/jupyter_notebook_config.json /root/.jupyter/jupyter_notebook_config.json
