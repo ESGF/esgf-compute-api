@@ -1,35 +1,96 @@
-pipeline {
-    agent any;
+node('build-pod') {
+  stage('Checkout') {
+    checkout scm
+  }
 
-    stages {
-        stage('Test API') {
-            steps {
-                git branch: 'devel', changelog: false, poll: false, url: 'https://github.com/ESGF/esgf-compute-api'
-                
-                sh 'conda create --name api-${NODE_NAME} --yes python=2.7'
+  stage('Unittest') {
+    container('conda') {
+      sh "conda env create -p ${HOME}/cwt -f environment.yml"
 
-                sh '''#! /bin/bash
-                    source activate api-${NODE_NAME}
+      sh "conda env update -p ${HOME}/cwt -f cwt/tests/environment.yml"
 
-                    pip install -r requirements.txt
+      sh ''' #!/bin/bash
+      . /opt/conda/etc/profile.d/conda.sh
 
-                    pip install -r cwt/tests/requirements.txt
+      conda activate ${HOME}/cwt
 
-                    nose2 --plugin nose2.plugins.junitxml --junit-xml --with-coverage --coverage-report xml cwt.tests; exit 0
-                '''
-            }
-        }
+      conda install -y -c conda-forge flake8
+
+      pytest cwt/tests \
+        --junit-xml=junit.xml \
+        --cov=cwt --cov-report=xml
+
+      flake8 --format=pylint --output-file=flake8.xml --exit-zero
+      '''
+
+      archiveArtifacts 'junit.xml'
+
+      archiveArtifacts 'coverage.xml'
+
+      archiveArtifacts 'flake8.xml'
+
+      xunit([JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'junit.xml', skipNoTestFiles: true, stopProcessingIfError: true)])
+
+      cobertura(coberturaReportFile: 'coverage.xml')
+
+      def flake8 = scanForIssues filters: [
+      ], tool: flake8(pattern: 'flake8.xml')
+
+      publishIssues issues: [flake8], filters: [includePackage('wps')]
     }
+  }
 
-    post {
-        always {
-            sh 'conda env remove -y -n api-${NODE_NAME}'
-        }
+  stage('Build conda package') {
+    def parts = env.BRANCH_NAME.split('/')
 
-        success {
-            xunit testTimeMargin: '3000', thresholdMode: 2, thresholds: [], tools: [JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'nose2-junit.xml', skipNoTestFiles: false, stopProcessingIfError: true)]
+    env.API_VERSION = parts[parts.length-1]
 
-            cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
-        } 
+    env.GIT_VERSION = env.BRANCH_NAME
+
+    withCredentials([usernamePassword(credentialsId: 'jasonb5-anaconda', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+      container('conda') {
+        sh 'conda install -y -c conda-forge conda-build anaconda-client'
+
+        sh 'conda build -c conda-forge -c cdat conda/'
+
+        sh 'anaconda login --username ${USERNAME} --password ${PASSWORD}'
+
+        sh 'anaconda upload -u cdat --skip-existing $(conda build --output conda/)'
+      }
     }
+  }
+
+  stage('Build docker image') {
+    container(name: 'kaniko', shell: '/busybox/sh') {
+      sh '''#!/busybox/sh
+        /kaniko/executor --cache --cache-dir=/cache --context=`pwd` \
+        --destination=${LOCAL_REGISTRY}/api:${GIT_VERSION} \
+        --dockerfile `pwd`/docker/Dockerfile --insecure-registry \
+        ${LOCAL_REGISTRY}
+      '''
+    }
+  }
+
+  stage('Docker image security scan') {
+    container('conda') {
+      sh '''#!/bin/bash
+      clairctl --config ${CLAIR_CONFIG} --log-level debug report ${LOCAL_REGISTRY}/api:${GIT_VERSION}
+      '''
+
+      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, 
+          reportDir: 'reports/html/', reportFiles: '*.html', reportName: 'HTML Report', reportTitles: ''])
+    }
+  }
+
+  stage('Docker push image') {
+    container('dind') {
+      sh ''' #!/bin/bash
+      docker pull ${LOCAL_REGISTRY}/api:${GIT_VERSION}
+
+      docker tag ${LOCAL_REGISTRY}/api:${GIT_VERSION} jasonb87/cwt_api:${GIT_VERSION}
+
+      docker push jasonb87/cwt_api:${GIT_VERSION}
+      '''
+    }
+  }
 }
