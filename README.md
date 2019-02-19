@@ -25,7 +25,7 @@ python setup.py install
 
 ### Quickstart
 
-> [Getting Started](blob/master/examples/getting_started.ipynb)
+> [Getting Started](examples/getting_started.ipynb)
 
 or
 
@@ -45,12 +45,12 @@ process.wait()
 
 ### Docker image
 
-Docker [image](blob/master/docs/source/cwt_docker.md) containing Jupyter lab and ESGF CWT end-user api.
+Docker [image](docs/source/cwt_docker.md) containing Jupyter lab and ESGF CWT end-user api.
 
 ### Examples
 
-Jupyter Notebook cotnaining examples can be found [here](tree/master/examples)
+Jupyter Notebook cotnaining examples can be found [here](examples/)
 
 ### Compatibility
 
-Compatibility document can be found on [here](blob/master/docs/source/cwt.compat.rst)
+Compatibility document can be found on [here](docs/source/cwt.compat.rst)
