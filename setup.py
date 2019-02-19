@@ -8,6 +8,6 @@ setup(
     packages=['cwt'],
     author='Jason Boutte',
     author_email='boutte3@llnl.gov',
-    version='2.1.0',
+    version='devel',
     url='https://github.com/ESGF/esgf-compute-api',
 )
