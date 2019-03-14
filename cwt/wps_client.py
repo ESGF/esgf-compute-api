@@ -25,16 +25,13 @@ class WPSClient(object):
         
         Attributes:
             url: A string url path for the WPS server.
-            api_key: A string API_KEY for the WPS server.
+            api_key: A string that will be passed as the value to COMPUTE_TOKEN HTTP header.
             version: A string version of the WPS server.
-            language: A string language code for the WPS server to communicate in.
             log: A boolean flag to enable logging
             log_file: A string path for a log file.
             verify: A bool to enable/disable verifying a server's TLS certificate.
-            ca: A str path to a CA bundle to use when verifiying a server's TLS certificate.
             cert: A str path to an SSL client cert or a tuple as ('cert', 'key').
-            timeout: A float or tuple. If tuple the timeout format is as follows
-                (connect timeout, read timeout).
+            headers: A dict that will be passed as HTTP headers.
         """
         self.log = kwargs.get('log', False)
         
@@ -70,7 +67,7 @@ class WPSClient(object):
 
                 logger.info('Added file handle %s', self.log_file)
 
-        headers = {}
+        headers = kwargs.get('headers', {})
 
         self.api_key = kwargs.get('api_key', None)
 
