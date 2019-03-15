@@ -224,16 +224,19 @@ class WPSClient(object):
 
         variables.extend(inputs)
 
-        variables = json.dumps([x.to_dict() for x in variables])
+        variables = wps.ComplexDataInput(json.dumps([x.to_dict() for x in variables]),
+                                         mimeType='application/json')
 
         # Collect all the domains from nested processes
         for item in processes:
             if item.domain is not None and item.domain.name not in domains:
                 domains[item.domain.name] = item.domain.to_dict()
 
-        domains = json.dumps(domains.values())
+        domains = wps.ComplexDataInput(json.dumps(domains.values()),
+                                       mimeType='application/json')
 
-        operation = json.dumps([item.to_dict() for item in processes])
+        operation = wps.ComplexDataInput(json.dumps([item.to_dict() for item in processes]),
+                                         mimeType='application/json')
 
         return [('variable', variables), ('domain', domains), ('operation', operation)]
 
