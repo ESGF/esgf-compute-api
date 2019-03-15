@@ -146,10 +146,10 @@ class Process(Parameter):
             obj.name = data['result']
 
             obj.inputs = data['input']
-
-            obj.domain = data['domain']
         except KeyError as e:
             raise MissingRequiredKeyError(e)
+
+        obj.domain = data.get('domain', None)
 
         ignore = ('name', 'input', 'result', 'domain')
 
