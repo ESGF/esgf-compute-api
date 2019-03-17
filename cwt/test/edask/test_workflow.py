@@ -597,4 +597,4 @@ def test_KE_ave_global_1y(plot=False):
 
 if __name__ == '__main__':
 #    test_binning()
-    test_time_ave_6hr()
+    test_spatial_ave()
