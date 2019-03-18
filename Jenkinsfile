@@ -3,6 +3,7 @@ node('build-pod') {
     checkout scm
   }
 
+
   stage('Unittest') {
     container('conda') {
       sh "conda env create -p ${HOME}/cwt -f environment.yml"
@@ -40,6 +41,38 @@ node('build-pod') {
     }
   }
 
+  stage('UnittestPy3') {
+    container('conda') {
+      sh "conda env update -p ${HOME}/cwt_py3 -f cwt/tests/environment_py3.yml"
+
+      sh ''' #!/bin/bash
+      . /opt/conda/etc/profile.d/conda.sh
+
+      conda activate ${HOME}/cwt_py3
+
+      pytest cwt/tests \
+        --junit-xml=junit.xml \
+        --cov=cwt --cov-report=xml
+
+      flake8 --format=pylint --output-file=flake8.xml --exit-zero
+      '''
+
+      archiveArtifacts 'junit.xml'
+
+      archiveArtifacts 'coverage.xml'
+
+      archiveArtifacts 'flake8.xml'
+
+      xunit([JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'junit.xml', skipNoTestFiles: true, stopProcessingIfError: true)])
+
+      cobertura(coberturaReportFile: 'coverage.xml')
+
+      def flake8 = scanForIssues filters: [
+      ], tool: flake8(pattern: 'flake8.xml')
+
+      publishIssues issues: [flake8], filters: [includePackage('wps')]
+    }
+  }
   stage('Build conda package') {
     def parts = env.BRANCH_NAME.split('/')
 
