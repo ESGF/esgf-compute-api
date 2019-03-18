@@ -54,3 +54,4 @@ Jupyter Notebook cotnaining examples can be found [here](examples/)
 ### Compatibility
 
 Compatibility document can be found on [here](docs/source/cwt.compat.rst)
+
