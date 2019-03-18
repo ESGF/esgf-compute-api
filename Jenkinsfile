@@ -1,8 +1,4 @@
 node('build-pod') {
-  triggers {
-    pollSCM('')
-  }
-
   stage('Checkout') {
     checkout scm
   }

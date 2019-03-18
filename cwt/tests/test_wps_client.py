@@ -100,13 +100,13 @@ class TestWPSClient(unittest.TestCase):
         self.assertEqual(len(data_inputs), 3)
 
         self.assertEqual(data_inputs[0][0], 'variable')
-        self.assertIn(self.variable.name, data_inputs[0][1])
+        self.assertIn(self.variable.name, data_inputs[0][1].value)
 
         self.assertEqual(data_inputs[1][0], 'domain')
-        self.assertIn(self.domain.name, data_inputs[1][1])
+        self.assertIn(self.domain.name, data_inputs[1][1].value)
 
         self.assertEqual(data_inputs[2][0], 'operation')
-        self.assertIn(self.process.name, data_inputs[2][1])
+        self.assertIn(self.process.name, data_inputs[2][1].value)
 
     def test_parse_data_inputs(self):
         variable = '{"id": "tas|tas", "uri": "file:///test.nc", "result": "v0"}'
