@@ -15,6 +15,7 @@ from .process import *
 from .variable import *
 from .wps import *
 import urllib3, logging
+from .plotters import PlotMgr
 
 NorthernHemisphere = Dimension('latitude', 0, 90)
 SouthernHemisphere = Dimension('latitude', -90, 0)
@@ -34,3 +35,4 @@ U2 = Gridder(grid='uniform~2x2')
 def initialize( ):
     logging.getLogger().setLevel(logging.INFO)
     urllib3.disable_warnings()
+    return PlotMgr()
