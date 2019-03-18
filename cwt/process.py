@@ -62,7 +62,7 @@ class StatusTracker(object):
         else:
             self.history[message] = now
 
-        print message
+        print(message)
 
         logger.info(message)
 
@@ -153,7 +153,7 @@ class Process(Parameter):
 
         ignore = ('name', 'input', 'result', 'domain')
 
-        for name, value in data.iteritems():
+        for name, value in data.items():
             if name not in ignore:
                 if name == 'gridder':
                     obj.parameters[name] = Gridder.from_dict(value)
@@ -353,7 +353,7 @@ class Process(Parameter):
 
             self.parameters[a.name] = a
 
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             if not isinstance(value, (list, tuple)):
                 value = [value]
 
@@ -396,7 +396,7 @@ class Process(Parameter):
 
         processes.extend(new_processes)
 
-        return processes, inputs.values()
+        return processes, list(inputs.values())
 
     def to_dict(self):
         """ Returns a dictionary representation."""
@@ -421,7 +421,7 @@ class Process(Parameter):
 
         data['input'] = inputs
 
-        for name, value in self.parameters.iteritems():
+        for name, value in self.parameters.items():
             data.update(value.to_dict())
 
         return data

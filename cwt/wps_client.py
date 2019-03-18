@@ -232,7 +232,7 @@ class WPSClient(object):
             if item.domain is not None and item.domain.name not in domains:
                 domains[item.domain.name] = item.domain.to_dict()
 
-        domains = wps.ComplexDataInput(json.dumps(domains.values()),
+        domains = wps.ComplexDataInput(json.dumps(list(domains.values())),
                                        mimeType='application/json')
 
         operation = wps.ComplexDataInput(json.dumps([item.to_dict() for item in processes]),
