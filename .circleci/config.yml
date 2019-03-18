@@ -152,7 +152,7 @@ workflows:
   version: 2
   cwt_api:
     jobs:
-      - macos_cwt_api_py3
+        #      - macos_cwt_api_py3
       - linux_cwt_api_py2
       - linux_cwt_api_py3:
            requires:
