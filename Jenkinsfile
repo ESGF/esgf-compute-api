@@ -20,19 +20,12 @@ node('build-pod') {
       pytest cwt/tests \
         --junit-xml=junit_py2.xml
 
-      flake8 --format=pylint --output-file=flake8_py2.xml --exit-zero
       '''
 
       archiveArtifacts 'junit_py2.xml'
 
-      archiveArtifacts 'flake8_py2.xml'
+      xunit([JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'junit_py2.xml', skipNoTestFiles: true, stopProcessingIfError: true)])
 
-      xunit([JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'junit.xml', skipNoTestFiles: true, stopProcessingIfError: true)])
-
-      def flake8 = scanForIssues filters: [
-      ], tool: flake8(pattern: 'flake8.xml')
-
-      publishIssues issues: [flake8], filters: [includePackage('wps')]
     }
   }
 
