@@ -18,21 +18,16 @@ node('build-pod') {
       conda install -y -c conda-forge flake8
 
       pytest cwt/tests \
-        --junit-xml=junit.xml \
-        --cov=cwt --cov-report=xml
+        --junit-xml=junit_py2.xml
 
-      flake8 --format=pylint --output-file=flake8.xml --exit-zero
+      flake8 --format=pylint --output-file=flake8_py2.xml --exit-zero
       '''
 
-      archiveArtifacts 'junit.xml'
+      archiveArtifacts 'junit_py2.xml'
 
-      archiveArtifacts 'coverage.xml'
-
-      archiveArtifacts 'flake8.xml'
+      archiveArtifacts 'flake8_py2.xml'
 
       xunit([JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'junit.xml', skipNoTestFiles: true, stopProcessingIfError: true)])
-
-      cobertura(coberturaReportFile: 'coverage.xml')
 
       def flake8 = scanForIssues filters: [
       ], tool: flake8(pattern: 'flake8.xml')
