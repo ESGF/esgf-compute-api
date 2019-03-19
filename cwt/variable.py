@@ -104,6 +104,5 @@ class Variable(Parameter):
 
     def __repr__(self):
         return ('Variable(name={!r}, uri={!r}, var_name={!r}, domain={!r}, '
-                'mime_type={!r})').format( self.name, self.uri, self.var_name, 
-                                        self.domain, self.mime_type)
-      
+                'mime_type={!r})').format(self.name, self.uri, self.var_name,
+                                          self.domain, self.mime_type)
