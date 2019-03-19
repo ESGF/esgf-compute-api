@@ -4,6 +4,7 @@ Parameter module.
 
 from uuid import uuid4 as uuid
 
+
 class Parameter(object):
     """ Parameter.
 
@@ -11,6 +12,7 @@ class Parameter(object):
     after being passed to a WPS server.
 
     """
+
     def __init__(self, name):
         """ Parameter init. """
         self.name = name

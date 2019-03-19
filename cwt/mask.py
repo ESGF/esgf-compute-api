@@ -4,12 +4,15 @@ Mask Module.
 
 import warnings
 
+from cwt.errors import MissingRequiredKeyError
 from uuid import uuid4 as uuid
 
 # pylint: disable=too-few-public-methods
+
+
 class Mask(object):
     """ Mask.
-    
+
     Describes a mask to be applied to a give domain.
 
     There are some resvered words.
@@ -36,6 +39,7 @@ class Mask(object):
         operation: Expression that defines where the mask is activate.
         name: Custom name for the mask.
     """
+
     def __init__(self, uri, var_name, operation, name=None):
         """ Mask Init. """
         self.uri = uri

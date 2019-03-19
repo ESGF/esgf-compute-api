@@ -1,3 +1,20 @@
+from cwt.wps_client import WPSClient  # noqa
+from cwt.variable import Variable  # noqa
+from cwt.process import Process  # noqa
+from cwt.parameter import Parameter  # noqa
+from cwt.named_parameter import NamedParameter  # noqa
+from cwt.mask import Mask  # noqa
+from cwt.gridder import Gridder  # noqa
+from cwt.errors import WPSTimeoutError  # noqa
+from cwt.errors import WPSClientError  # noqa
+from cwt.errors import MissingRequiredKeyError  # noqa
+from cwt.errors import CWTError  # noqa
+from cwt.domain import Domain  # noqa
+from cwt.dimension import Dimension  # noqa
+from cwt.dimension import TIMESTAMPS  # noqa
+from cwt.dimension import INDICES  # noqa
+from cwt.dimension import VALUES  # noqa
+from cwt.dimension import CRS  # noqa
 """
 WPS Client library imports.
 """
@@ -9,23 +26,6 @@ warnings.simplefilter('default')
 
 __version__ = 'devel'
 
-from cwt.dimension import CRS
-from cwt.dimension import VALUES
-from cwt.dimension import INDICES
-from cwt.dimension import TIMESTAMPS
-from cwt.dimension import Dimension
-from cwt.domain import Domain
-from cwt.errors import CWTError
-from cwt.errors import MissingRequiredKeyError
-from cwt.errors import WPSClientError
-from cwt.errors import WPSTimeoutError
-from cwt.gridder import Gridder
-from cwt.mask import Mask
-from cwt.named_parameter import NamedParameter
-from cwt.parameter import Parameter
-from cwt.process import Process
-from cwt.variable import Variable
-from cwt.wps_client import WPSClient
 
 NorthernHemisphere = Dimension('latitude', 0, 90)
 SouthernHemisphere = Dimension('latitude', -90, 0)

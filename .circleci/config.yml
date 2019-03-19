@@ -49,7 +49,7 @@ aliases:
        export CDAT_ANONYMOUS_LOG=False
        source activate $PY_VER
        pytest cwt/tests --junit-xml=junit.xml --cov=cwt --cov-report=xml
-       flake8 --format=pylint --output-file=flake8.xml --tee --show-source --statistics --ignore=F999,F405,E121,E123,E126,E226,E24,E704,W504 --max-line-length=120 cwt/*.py
+       flake8 --format=pylint --output-file=flake8.xml --tee --show-source --statistics  --max-line-length=120 cwt/*.py
        RESULT=$?
        echo "*** $PY_VER test result: "$RESULT
        exit $RESULT

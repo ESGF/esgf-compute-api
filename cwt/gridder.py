@@ -5,10 +5,12 @@ Gridder Module.
 import warnings
 
 from cwt.parameter import Parameter
+from cwt.errors import MissingRequiredKeyError
+
 
 class Gridder(Parameter):
     """ Gridder.
-    
+
     Describes the regridder and target grid for an operation.
 
     Gridder from a known target grid.
@@ -30,6 +32,7 @@ class Gridder(Parameter):
         method: A String method that the regridding tool will use.
         grid: A String, Domain or Variable of the target grid.
     """
+
     def __init__(self, tool='regrid2', method='linear', grid='T85'):
         """ Gridder Init. """
         super(Gridder, self).__init__('gridder')

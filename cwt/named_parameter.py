@@ -6,6 +6,7 @@ import warnings
 
 from cwt.parameter import Parameter
 
+
 class NamedParameter(Parameter):
     """ Named Parameter.
 
@@ -23,6 +24,7 @@ class NamedParameter(Parameter):
         name: Name of the parameter.
         *args: Values of the parameter.
     """
+
     def __init__(self, name, *values):
         """ NamedParameter init. """
         super(NamedParameter, self).__init__(name)
@@ -38,11 +40,12 @@ class NamedParameter(Parameter):
         return self.name == other.name and self.values == other.values
 
     def __repr__(self):
-        return 'NamedParameter(name={!r}, values={!r})'.format(self.name, self.values)
+        return 'NamedParameter(name={!r}, values={!r})'.format(
+            self.name, self.values)
 
     def to_dict(self):
         """ Returns dict representation."""
-        return { self.name: '|'.join(self.values) }
+        return {self.name: '|'.join(self.values)}
 
     def parameterize(self):
         """ Parameterizes NamedParameter for GET request. """

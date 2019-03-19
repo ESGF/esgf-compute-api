@@ -5,12 +5,15 @@ Domain Module.
 import warnings
 
 from cwt.errors import MissingRequiredKeyError
+from cwt.errors import CWTError
+from cwt.errors import WPSError
 from cwt.dimension import Dimension
 from cwt.dimension import TIMESTAMPS
 from cwt.dimension import INDICES
 from cwt.dimension import VALUES
 from cwt.mask import Mask
 from cwt.parameter import Parameter
+
 
 class Domain(Parameter):
     """ Domain.
@@ -35,6 +38,7 @@ class Domain(Parameter):
         mask: Mask to be applied to the domain.
         name: Name of the domain.
     """
+
     def __init__(self, dimensions=None, mask=None, name=None, **kwargs):
         """ Domain init. """
         super(Domain, self).__init__(name)
@@ -68,7 +72,7 @@ class Domain(Parameter):
 
         try:
             mask_data = Mask.from_dict(data['mask'])
-        except:
+        except BaseException:
             mask_data = None
 
         return cls(dimensions=dimensions, mask=mask_data, name=name)
@@ -81,7 +85,9 @@ class Domain(Parameter):
             args = [name, value.start, value.stop, INDICES, value.step]
         elif isinstance(value, (list, tuple)):
             if len(value) < 2:
-                raise WPSError('Must provide a minimum of two values (start, stop) for dimension "{dim}"', dim=name)
+                raise WPSError(
+                    'Must provide a minimum of two values (start, stop) for dimension "{dim}"',
+                    dim=name)
 
             if len(value) > 2:
                 step = value[3]
@@ -97,7 +103,9 @@ class Domain(Parameter):
 
             args = [name, value[0], value[1], crs, step]
         else:
-            raise WPSError('Dimension\'s value cannot be of type "{type}"', type=type(value))
+            raise WPSError(
+                'Dimension\'s value cannot be of type "{type}"',
+                type=type(value))
 
         self.dimensions[name] = Dimension(*args)
 

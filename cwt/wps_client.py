@@ -9,12 +9,12 @@ from owslib import wps
 
 from cwt.domain import Domain
 from cwt.errors import CWTError
-from cwt.errors import MissingRequiredKeyError
 from cwt.errors import WPSClientError
 from cwt.process import Process
 from cwt.variable import Variable
 
 logger = logging.getLogger('cwt.wps_client')
+
 
 class WPSClient(object):
     def __init__(self, url, **kwargs):
@@ -22,7 +22,7 @@ class WPSClient(object):
 
         An class to connect and communicate with a WPS server implementing
         the ESGF-CWT API.
-        
+
         Attributes:
             url: A string url path for the WPS server.
             api_key: A string that will be passed as the value to COMPUTE_TOKEN HTTP header.
@@ -34,7 +34,7 @@ class WPSClient(object):
             headers: A dict that will be passed as HTTP headers.
         """
         self.log = kwargs.get('log', False)
-        
+
         self.log_file = None
 
         if self.log:
@@ -42,7 +42,8 @@ class WPSClient(object):
 
             root_logger.setLevel(logging.DEBUG)
 
-            formatter = logging.Formatter('[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
+            formatter = logging.Formatter(
+                '[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
 
             stream_handler = logging.StreamHandler(sys.stdout)
 
@@ -104,9 +105,9 @@ class WPSClient(object):
     def __repr__(self):
         return ('WPSClient(url={!r}, log={!r}, log_file={!r}, '
                 'verify={!r}, version={!r}, cert={!r})').format(
-                    self.url, self.log, self.log_file, self.verify, 
+                    self.url, self.log, self.log_file, self.verify,
                     self.cert, self.version)
-    
+
     def get_capabilities(self):
         """ Executes a GetCapabilities request."""
         self.client.getcapabilities()
@@ -132,10 +133,12 @@ class WPSClient(object):
         if inputs is None:
             inputs = []
 
-        data_inputs = self.prepare_data_inputs(process, inputs, domain, **kwargs)
+        data_inputs = self.prepare_data_inputs(
+            process, inputs, domain, **kwargs)
 
         try:
-            process.context = self.client.execute(process.identifier, data_inputs)
+            process.context = self.client.execute(
+                process.identifier, data_inputs)
         except Exception as e:
             raise WPSClientError('Client error {!r}', str(e))
 
@@ -155,7 +158,8 @@ class WPSClient(object):
                     if re.match(pattern, x.identifier):
                         items.append(Process.from_owslib(x))
                 except re.error:
-                    raise CWTError('Invalid pattern, see python\'s "re" module for documentation')
+                    raise CWTError(
+                        'Invalid pattern, see python\'s "re" module for documentation')
             else:
                 items.append(Process.from_owslib(x))
 
@@ -186,9 +190,10 @@ class WPSClient(object):
             A tuple containing the a list of operations, domains and variables
             object contained in the data_inputs string.
         """
-        match = re.search('\[(.*)\]', data_inputs)
+        match = re.search(r'\[(.*)\]', data_inputs)
 
-        kwargs = dict((x.split('=')[0], json.loads(x.split('=')[1])) for x in match.group(1).split(';'))
+        kwargs = dict((x.split('=')[0], json.loads(x.split('=')[1]))
+                      for x in match.group(1).split(';'))
 
         variables = [Variable.from_dict(x) for x in kwargs.get('variable', [])]
 
@@ -238,10 +243,12 @@ class WPSClient(object):
         operation = wps.ComplexDataInput(json.dumps([item.to_dict() for item in processes]),
                                          mimeType='application/json')
 
-        return [('variable', variables), ('domain', domains), ('operation', operation)]
+        return [('variable', variables), ('domain', domains),
+                ('operation', operation)]
 
     def prepare_data_inputs_str(self, process, inputs, domains, **kwargs):
-        data_inputs = self.prepare_data_inputs(process, inputs, domains, **kwargs)
+        data_inputs = self.prepare_data_inputs(
+            process, inputs, domains, **kwargs)
 
         items = []
 

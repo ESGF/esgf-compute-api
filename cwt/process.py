@@ -3,7 +3,7 @@ Process Module.
 """
 
 import json
-import logging 
+import logging
 import time
 import datetime
 import warnings
@@ -14,8 +14,10 @@ from cwt.errors import WPSTimeoutError
 from cwt.named_parameter import NamedParameter
 from cwt.parameter import Parameter
 from cwt.variable import Variable
+from cwt.gridder import Gridder
 
 logger = logging.getLogger('cwt.process')
+
 
 def input_output_to_dict(value):
     data = value.__dict__
@@ -34,6 +36,7 @@ def input_output_to_dict(value):
         pass
 
     return data
+
 
 class StatusTracker(object):
     def __init__(self, stale_threshold):
@@ -58,13 +61,16 @@ class StatusTracker(object):
             self.stale += 1
 
             if self.stale >= self.stale_threshold:
-                raise CWTError('Timing out due to staleness, no new message {!r} queries', self.stale)
+                raise CWTError(
+                    'Timing out due to staleness, no new message {!r} queries',
+                    self.stale)
         else:
             self.history[message] = now
 
         print(message)
 
         logger.info(message)
+
 
 class Process(Parameter):
     """ A WPS Process
@@ -75,6 +81,7 @@ class Process(Parameter):
         process: A DescribeProcessResponse object.
         name: A string name for the process to be used as the input of another process.
     """
+
     def __init__(self, process=None, name=None):
         super(Process, self).__init__(name)
 
@@ -106,8 +113,8 @@ class Process(Parameter):
         return ('Process(identifier={!r}, title={!r}, status_supported={!r}, '
                 'store_supported={!r}, process_version={!r}, abstract={!r}, '
                 'metadata={!r})').format(self.identifier, self.title, self.status_supported,
-                                        self.store_supported, self.process_version,
-                                        self.abstract, self.metadata)
+                                         self.store_supported, self.process_version,
+                                         self.abstract, self.metadata)
 
     @classmethod
     def from_owslib(cls, process):
@@ -117,7 +124,7 @@ class Process(Parameter):
 
         obj._title = process.title
 
-        obj._process_outputs = [input_output_to_dict(x) 
+        obj._process_outputs = [input_output_to_dict(x)
                                 for x in process.processOutputs]
 
         obj._data_inputs = [input_output_to_dict(x)
@@ -158,7 +165,8 @@ class Process(Parameter):
                 if name == 'gridder':
                     obj.parameters[name] = Gridder.from_dict(value)
                 else:
-                    obj.parameters[name] = NamedParameter.from_string(name, value)
+                    obj.parameters[name] = NamedParameter.from_string(
+                        name, value)
 
         return obj
 
@@ -268,7 +276,7 @@ class Process(Parameter):
         if self.accepted:
             msg = 'ProcessAccepted {!s}'.format(self.context.statusMessage)
         elif self.started:
-            msg = 'ProcessStarted {!s} {!s}'.format(self.context.statusMessage, 
+            msg = 'ProcessStarted {!s} {!s}'.format(self.context.statusMessage,
                                                     self.context.percentCompleted)
         elif self.paused:
             msg = 'ProcessPaused {!s} {!s}'.format(self.context.statusMessage,
@@ -314,7 +322,7 @@ class Process(Parameter):
         self.status_tracker.update(self.status)
 
         return self.succeeded
-        
+
     def set_domain(self, domain):
         self.domain = domain
 
@@ -342,14 +350,15 @@ class Process(Parameter):
         kwargs can contain two formats.
 
         k=v where v is a NamedParameter
-        
+
         Args:
             args: A list of NamedParameter objects.
             kwargs: A dict of NamedParameter objects or k=v where k is the name and v is string.
         """
         for a in args:
             if not isinstance(a, NamedParameter):
-                raise CWTError('Invalid parameter type "{}", should be a NamedParameter', type(a))
+                raise CWTError(
+                    'Invalid parameter type "{}", should be a NamedParameter', type(a))
 
             self.parameters[a.name] = a
 
@@ -360,8 +369,8 @@ class Process(Parameter):
             self.parameters[name] = NamedParameter(name, *value)
 
     def add_inputs(self, *args):
-        """ Set the inputs of the Process. 
-        
+        """ Set the inputs of the Process.
+
         Args:
             args: A list of Process/Variable objects.
         """
