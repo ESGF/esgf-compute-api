@@ -6,7 +6,7 @@ import warnings
 
 from cwt.errors import MissingRequiredKeyError
 from cwt.errors import CWTError
-from cwt.errors import WPSError
+from cwt.wps import WPSError
 from cwt.dimension import Dimension
 from cwt.dimension import TIMESTAMPS
 from cwt.dimension import INDICES
