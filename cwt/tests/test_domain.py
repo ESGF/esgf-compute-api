@@ -4,11 +4,18 @@ import unittest
 
 import cwt
 
+
 class TestDomain(unittest.TestCase):
     """ Domain Test Case """
 
     def test_parameterize(self):
-        expected = { 'id': 'd0', 'lat': { 'start': 0, 'end': 90, 'step': 1, 'crs': 'values' } }
+        expected = {
+            'id': 'd0',
+            'lat': {
+                'start': 0,
+                'end': 90,
+                'step': 1,
+                'crs': 'values'}}
 
         dom = cwt.Domain([cwt.Dimension('lat', 0, 90)], name='d0')
 

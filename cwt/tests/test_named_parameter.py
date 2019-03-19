@@ -4,6 +4,7 @@ import unittest
 
 import cwt
 
+
 class TestNamedParameter(unittest.TestCase):
     """ NamedParameter Test Case. """
 

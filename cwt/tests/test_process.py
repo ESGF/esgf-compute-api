@@ -7,6 +7,7 @@ import mock
 
 import cwt
 
+
 class TestProcess(unittest.TestCase):
     """ Process Test Case. """
 
@@ -34,9 +35,13 @@ class TestProcess(unittest.TestCase):
 
         self.process.context = mock.MagicMock()
 
-        type(self.process.context).percentCompleted = mock.PropertyMock(return_value=20)
+        type(
+            self.process.context).percentCompleted = mock.PropertyMock(
+            return_value=20)
 
-        type(self.process.context).statusMessage = mock.PropertyMock(return_value='Hello')
+        type(
+            self.process.context).statusMessage = mock.PropertyMock(
+            return_value='Hello')
 
         self.process2 = cwt.Process.from_dict({
             'name': 'CDAT.aggregate',
@@ -57,12 +62,16 @@ class TestProcess(unittest.TestCase):
         })
 
     def test_processing_accepted(self):
-        type(self.process.context).status = mock.PropertyMock(return_value='ProcessAccepted')
+        type(
+            self.process.context).status = mock.PropertyMock(
+            return_value='ProcessAccepted')
 
         self.assertTrue(self.process.processing)
 
     def test_processing_started(self):
-        type(self.process.context).status = mock.PropertyMock(return_value='ProcessStarted')
+        type(
+            self.process.context).status = mock.PropertyMock(
+            return_value='ProcessStarted')
 
         self.assertTrue(self.process.processing)
 
@@ -70,7 +79,9 @@ class TestProcess(unittest.TestCase):
         self.assertFalse(self.process.processing)
 
     def test_output(self):
-        type(self.process.context).status = mock.PropertyMock(return_value='ProcessSucceeded')
+        type(
+            self.process.context).status = mock.PropertyMock(
+            return_value='ProcessSucceeded')
 
         data = '{"id": "tas|v0", "uri": "file:///test.nc"}'
 
@@ -98,7 +109,9 @@ class TestProcess(unittest.TestCase):
         ]
 
         for status, message in tests:
-            type(self.process.context).status = mock.PropertyMock(return_value=status)
+            type(
+                self.process.context).status = mock.PropertyMock(
+                return_value=status)
 
             self.assertEqual(self.process.status, message)
 
@@ -106,9 +119,13 @@ class TestProcess(unittest.TestCase):
     def test_wait_timeout(self, mock_tracker):
         processing = [True, True, False]
 
-        type(self.process).processing = mock.PropertyMock(side_effect=processing)
+        type(
+            self.process).processing = mock.PropertyMock(
+            side_effect=processing)
 
-        type(mock_tracker.return_value).elapsed = mock.PropertyMock(return_value=20)
+        type(
+            mock_tracker.return_value).elapsed = mock.PropertyMock(
+            return_value=20)
 
         with self.assertRaises(cwt.WPSTimeoutError):
             self.process.wait(timeout=10)
@@ -117,7 +134,9 @@ class TestProcess(unittest.TestCase):
     def test_wait(self, mock_tracker):
         processing = [True, True, False]
 
-        type(self.process).processing = mock.PropertyMock(side_effect=processing)
+        type(
+            self.process).processing = mock.PropertyMock(
+            side_effect=processing)
 
         self.process.wait(stale_threshold=10)
 
@@ -140,7 +159,8 @@ class TestProcess(unittest.TestCase):
 
         self.assertIn('axes', self.process.parameters)
 
-        self.assertEqual(self.process.parameters['axes'].values, ('lat', 'lon'))
+        self.assertEqual(
+            self.process.parameters['axes'].values, ('lat', 'lon'))
 
     def test_add_parameters_kwargs(self):
         self.process.add_parameters(axes='lat')
