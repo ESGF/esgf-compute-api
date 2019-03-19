@@ -6,7 +6,6 @@ import warnings
 
 from cwt.errors import MissingRequiredKeyError
 from cwt.errors import CWTError
-from cwt.wps import WPSError
 from cwt.dimension import Dimension
 from cwt.dimension import TIMESTAMPS
 from cwt.dimension import INDICES
@@ -85,7 +84,7 @@ class Domain(Parameter):
             args = [name, value.start, value.stop, INDICES, value.step]
         elif isinstance(value, (list, tuple)):
             if len(value) < 2:
-                raise WPSError(
+                raise CWTError(
                     'Must provide a minimum of two values (start, stop) for dimension "{dim}"',
                     dim=name)
 
@@ -99,11 +98,11 @@ class Domain(Parameter):
             elif all(isinstance(x, str) for x in value[:2]):
                 crs = TIMESTAMPS
             else:
-                raise WPSError('Could not determin dimension crs')
+                raise CWTError('Could not determin dimension crs')
 
             args = [name, value[0], value[1], crs, step]
         else:
-            raise WPSError(
+            raise CWTError(
                 'Dimension\'s value cannot be of type "{type}"',
                 type=type(value))
 
