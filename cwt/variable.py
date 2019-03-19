@@ -97,6 +97,6 @@ class Variable(Parameter):
         return self.to_dict()
 
     def __repr__(self):
-        return ('Variable(name=%r, uri=%r, var_name=%r, domains=%r, '
-                'mime_type=%r)').format( self.name, self.uri, self.var_name, 
-                                        self.domains, self.mime_type)
+        return ('Variable(name={!r}, uri={!r}, var_name={!r}, domain={!r}, '
+                'mime_type={!r})').format( self.name, self.uri, self.var_name, 
+                                        self.domain, self.mime_type)
