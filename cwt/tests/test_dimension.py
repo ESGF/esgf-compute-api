@@ -9,6 +9,7 @@ import cwt
 from cwt.dimension import int_or_float
 from cwt.dimension import get_crs_value
 
+
 class TestDimension(unittest.TestCase):
 
     def setUp(self):
@@ -104,6 +105,7 @@ class TestDimension(unittest.TestCase):
 
         self.assertDictContainsSubset(self.dimension_dict, dimension.to_dict())
 
+
 class TestCRS(unittest.TestCase):
 
     def test_not_equal(self):
@@ -112,7 +114,7 @@ class TestCRS(unittest.TestCase):
         crs2 = cwt.CRS('indices')
 
         self.assertNotEqual(crs1, crs2)
-    
+
     def test_equal(self):
         crs1 = cwt.VALUES
 

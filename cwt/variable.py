@@ -5,10 +5,12 @@ Variable module.
 import warnings
 
 from cwt.parameter import Parameter
+from cwt.errors import MissingRequiredKeyError, CWTError
+
 
 class Variable(Parameter):
     """ Variable.
-    
+
     Describes a variable to be used by an Operation.
 
     >>> tas = Variable('http://thredds/tas.nc', 'tas', name='tas')
@@ -20,6 +22,7 @@ class Variable(Parameter):
         mime_type: A String name of the URI mime-type.
         name: Custom name of the Variable.
     """
+
     def __init__(self, uri, var_name, **kwargs):
         """ Variable init. """
         super(Variable, self).__init__(kwargs.get('name', None))
@@ -42,7 +45,9 @@ class Variable(Parameter):
         except KeyError as e:
             raise MissingRequiredKeyError(e)
         except ValueError:
-            raise CWTError('Could not split variable name and identifier from {!r}', data['id'])
+            raise CWTError(
+                'Could not split variable name and identifier from {!r}',
+                data['id'])
 
         domain = data.get('domain', None)
 
@@ -51,14 +56,15 @@ class Variable(Parameter):
         except KeyError:
             mime_type = None
 
-        return cls(uri, var_name, domain=domain, name=name, mime_type=mime_type)
+        return cls(uri, var_name, domain=domain,
+                   name=name, mime_type=mime_type)
 
     def resolve_domains(self, domains):
         """ Resolves the domain identifiers to objects. """
 
         if self.domains is None:
             return
-    
+
         new_domains = []
 
         for d in self.domains:
@@ -98,5 +104,5 @@ class Variable(Parameter):
 
     def __repr__(self):
         return ('Variable(name={!r}, uri={!r}, var_name={!r}, domain={!r}, '
-                'mime_type={!r})').format( self.name, self.uri, self.var_name, 
-                                        self.domain, self.mime_type)
+                'mime_type={!r})').format(self.name, self.uri, self.var_name,
+                                          self.domain, self.mime_type)

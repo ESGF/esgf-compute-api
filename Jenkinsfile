@@ -3,6 +3,7 @@ node('build-pod') {
     checkout scm
   }
 
+
   stage('Unittest') {
     container('conda') {
       sh "conda env create -p ${HOME}/cwt -f environment.yml"
@@ -15,6 +16,27 @@ node('build-pod') {
       conda activate ${HOME}/cwt
 
       conda install -y -c conda-forge flake8
+
+      pytest cwt/tests \
+        --junit-xml=junit_py2.xml
+
+      '''
+
+      archiveArtifacts 'junit_py2.xml'
+
+      xunit([JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'junit_py2.xml', skipNoTestFiles: true, stopProcessingIfError: true)])
+
+    }
+  }
+
+  stage('UnittestPy3') {
+    container('conda') {
+      sh "conda env update -p ${HOME}/cwt_py3 -f cwt/tests/environment_py3.yml"
+
+      sh ''' #!/bin/bash
+      . /opt/conda/etc/profile.d/conda.sh
+
+      conda activate ${HOME}/cwt_py3
 
       pytest cwt/tests \
         --junit-xml=junit.xml \
@@ -39,7 +61,6 @@ node('build-pod') {
       publishIssues issues: [flake8], filters: [includePackage('wps')]
     }
   }
-
   stage('Build conda package') {
     def parts = env.BRANCH_NAME.split('/')
 

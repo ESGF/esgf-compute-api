@@ -4,6 +4,7 @@ import unittest
 
 import cwt
 
+
 class TestNamedParameter(unittest.TestCase):
     """ NamedParameter Test Case. """
 
@@ -12,4 +13,4 @@ class TestNamedParameter(unittest.TestCase):
 
         self.assertIsInstance(p.values, tuple)
         self.assertEqual(len(p.values), 2)
-        self.assertItemsEqual(p.values, ['x', 'y'])
+        self.assertEqual(p.values, ('x', 'y'))

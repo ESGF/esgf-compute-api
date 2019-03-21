@@ -4,6 +4,7 @@ import unittest
 
 import cwt
 
+
 class TestVariable(unittest.TestCase):
     """ Variable Test Case. """
 
@@ -18,7 +19,12 @@ class TestVariable(unittest.TestCase):
         self.d0 = cwt.Domain(time=(1980, 2000), name='d0')
 
     def test_to_dict(self):
-        var = cwt.Variable('file:///tas.nc', 'tas', domain=self.d0, mime_type='application/netcdf', name='tas1')
+        var = cwt.Variable(
+            'file:///tas.nc',
+            'tas',
+            domain=self.d0,
+            mime_type='application/netcdf',
+            name='tas1')
 
         self.assertDictContainsSubset(self.data, var.to_dict())
 

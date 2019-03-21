@@ -8,6 +8,7 @@ import mock
 
 import cwt
 
+
 class TestWPSClient(unittest.TestCase):
 
     def setUp(self):
@@ -22,7 +23,8 @@ class TestWPSClient(unittest.TestCase):
         type(subset).processVersion = mock.PropertyMock(return_value='1.0.0')
 
         metrics = mock.MagicMock()
-        type(metrics).identifier = mock.PropertyMock(return_value='CDAT.metrics')
+        type(metrics).identifier = mock.PropertyMock(
+            return_value='CDAT.metrics')
         type(metrics).title = mock.PropertyMock(return_value='CDAT.metrics')
         type(metrics).processVersion = mock.PropertyMock(return_value='1.0.0')
 
@@ -44,10 +46,10 @@ class TestWPSClient(unittest.TestCase):
 
     def test_processes_filter_error(self):
         with self.assertRaises(cwt.CWTError):
-            self.client.processes('*.\.aggregate')
+            self.client.processes(r'*.\.aggregate')
 
     def test_processes_filter(self):
-        processes = self.client.processes('.*\.subset')
+        processes = self.client.processes(r'.*\.subset')
 
         self.assertEqual(len(processes), 1)
 
@@ -67,8 +69,8 @@ class TestWPSClient(unittest.TestCase):
     def test_execute_no_domain(self):
         with mock.patch.object(self.client, 'prepare_data_inputs') as mock_prepare:
             self.client.execute(self.process, [self.variable])
-
-            mock_prepare.assert_called_with(self.process, [self.variable], None)
+            mock_prepare.assert_called_with(
+                self.process, [self.variable], None)
 
         self.assertIsNone(self.process.domain)
 
@@ -87,15 +89,19 @@ class TestWPSClient(unittest.TestCase):
             self.client.execute(self.process)
 
     def test_execute(self):
-        with mock.patch.object(self.client, 'prepare_data_inputs', return_value='data_inputs') as mock_prepare:
+        with mock.patch.object(self.client, 'prepare_data_inputs', return_value='data_inputs'):
             self.client.execute(self.process, [self.variable], self.domain)
 
-        self.client.client.execute.assert_called_with(self.process.identifier, 'data_inputs')
+        self.client.client.execute.assert_called_with(
+            self.process.identifier, 'data_inputs')
 
-        self.assertEqual(self.client.client.execute.return_value, self.process.context)
+        self.assertEqual(
+            self.client.client.execute.return_value,
+            self.process.context)
 
     def test_prepare_data_inputs(self):
-        data_inputs = self.client.prepare_data_inputs(self.process, [self.variable], self.domain, axes='lats')
+        data_inputs = self.client.prepare_data_inputs(
+            self.process, [self.variable], self.domain, axes='lats')
 
         self.assertEqual(len(data_inputs), 3)
 
@@ -115,9 +121,11 @@ class TestWPSClient(unittest.TestCase):
 
         operation = '{"name": "CDAT.subset", "input": ["tas"], "domain": "test", "result": "subset"}'
 
-        data_inputs = '[variable=[{}];domain=[{}];operation=[{}]]'.format(variable, domain, operation)
+        data_inputs = '[variable=[{}];domain=[{}];operation=[{}]]'.format(
+            variable, domain, operation)
 
-        operation, domain, variable = cwt.WPSClient.parse_data_inputs(data_inputs)
+        operation, domain, variable = cwt.WPSClient.parse_data_inputs(
+            data_inputs)
 
         self.assertEqual(len(operation), 1)
         self.assertEqual(len(domain), 1)

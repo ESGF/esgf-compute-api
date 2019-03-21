@@ -9,6 +9,8 @@ from cwt.errors import MissingRequiredKeyError
 from cwt.parameter import Parameter
 
 # pylint: disable=too-few-public-methods
+
+
 class CRS(object):
     """ Coordinate Reference System (CRS).
 
@@ -17,6 +19,7 @@ class CRS(object):
     Attributes:
         name: A String name of the CRS.
     """
+
     def __init__(self, name):
         """ CRS init. """
         self.name = name
@@ -39,9 +42,11 @@ class CRS(object):
     def __repr__(self):
         return 'CRS(name={})'.format(self.name)
 
+
 VALUES = CRS('values')
 INDICES = CRS('indices')
 TIMESTAMPS = CRS('timestamps')
+
 
 def int_or_float(data):
     try:
@@ -54,19 +59,21 @@ def int_or_float(data):
     except ValueError:
         raise CWTError('Could not convert {!r} to either int or float', data)
 
+
 def get_crs_value(crs, value):
     if crs == VALUES or crs == INDICES:
         return int_or_float(value)
     elif crs == TIMESTAMPS:
         return value
     else:
-        raise CWTError('Unknown CRS value "{!s}", available: {!s}', 
+        raise CWTError('Unknown CRS value "{!s}", available: {!s}',
                        crs, ', '.join([str(x) for x in [VALUES, INDICES, TIMESTAMPS]]))
+
 
 class Dimension(Parameter):
     """ Dimension.
 
-    Describes a dimension of a plane. This dimension can be constrained 
+    Describes a dimension of a plane. This dimension can be constrained
     between two points and the length between each step can be specified or
     it will default to 1.
 
@@ -122,7 +129,7 @@ class Dimension(Parameter):
             step = int_or_float(data['step'])
         except KeyError:
             step = 1
-        
+
         return cls(name, start, end, crs, step)
 
     @classmethod
