@@ -20,8 +20,7 @@ requirements:
 
   run:
     - python
-    - requests
-    - pyxb
+    - owslib
 
 about:
   home: https://github.com/ESGF/esgf-compute-api
