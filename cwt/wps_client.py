@@ -25,7 +25,7 @@ class WPSClient(object):
 
         Attributes:
             url: A string url path for the WPS server.
-            api_key: A string that will be passed as the value to COMPUTE_TOKEN HTTP header.
+            api_key: A string that will be passed as the value to COMPUTE-TOKEN HTTP header.
             version: A string version of the WPS server.
             log: A boolean flag to enable logging
             log_file: A string path for a log file.
@@ -73,7 +73,7 @@ class WPSClient(object):
         self.api_key = kwargs.get('api_key', None)
 
         if self.api_key is not None:
-            headers['COMPUTE_TOKEN'] = self.api_key
+            headers['COMPUTE-TOKEN'] = self.api_key
 
         self.verify = kwargs.get('verify', True)
 
