@@ -1,4 +1,4 @@
-import cwt, os, time, cdms2, xml
+import cwt, os, time, cdms2, xml, urllib
 
 def create_tempdir():
     temp_dir = os.path.expanduser( "~/.edas" )
@@ -65,6 +65,28 @@ def status( process ):
         status = "ERROR"
         message = extractErrorReport( response )
     return status, message
+
+def downloadFile( file_href, file_path, fileIndex, nAttempts = 1000 ):
+    """
+        @type href: str
+    """
+    href = self.getDownloadHref( file_href, fileIndex )
+    fpath = self.getDownloadFile( file_path, fileIndex )
+    print("#NF# download File: " + href + ", index = " + str(fileIndex) + ", file path = " + file_path )
+    for attempt in range(nAttempts):
+        if (href.startswith("/")):
+            if os.path.isfile(href):
+                return href
+        else:
+            print "#NF# Downloading file: " + href + " -> " + fpath + ", attempt " + str(attempt + 1)
+            try:
+                urllib.urlretrieve(href, fpath)
+                return fpath
+            except Exception: pass
+
+        time.sleep(5)
+    print( "#NF# Timeout" )
+    return None
 
 def download_result( op, temp_dir=os.getenv( "ESGF_CWT_CACHE_DIR", "/tmp" ), raiseErrors=False ):
     status, message = status( op )
