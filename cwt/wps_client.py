@@ -221,6 +221,8 @@ class WPSClient(object):
         if domain is not None:
             domains[domain.name] = domain.to_dict()
 
+        process.inputs.extend(inputs)
+
         process.add_parameters(**kwargs)
 
         processes, variables = process.collect_input_processes()
