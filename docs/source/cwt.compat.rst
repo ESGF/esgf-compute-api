@@ -180,7 +180,8 @@ Output
 
 .. _Output:
 
-The WPS process should only have a single output_ whose identifier is **output**.
+The WPS process should only have a single output_ whose identifier is **output**. It
+should have an application/json mimetype and contain an list of Variable like objects.
 
 - uri *[Required]*
 - id *[Optional]*
@@ -189,12 +190,12 @@ The WPS process should only have a single output_ whose identifier is **output**
 
 Example::
 
-  {
+  [{
     "uri": "http://..../output.nc",
     "id": "tas_avg_mon",
     "domain": {"id":"d0", ...},
     "mime-type": "x-application/netcdf",
-  }
+  }]
 
 Full Examples
 -------------
@@ -224,8 +225,8 @@ Full Examples
 
 Formed Url::
 
-  http://.../wps?service=WPS&version=1.0.0&request=execute&identifier=averager.mv&datainputs=[
+  http://.../wps?service=WPS&version=1.0.0&request=execute&identifier=averager.mv&datainputs=
     domain=[{"id":"d0","latitude":{"start":0.0,"end":90.0,"step":1.0,"crs":"values"}}];
     variable=[{"id":"tas|tas","uri":"http://.../tas.nc",domain="d0"}];
-    operation=[{"name":"averager.mv","input":["v0"],"axes":"latitude"}];
-  ]&storeexecuteresponse=false&status=&false
+    operation=[{"name":"averager.mv","input":["v0"],"axes":"latitude"}]
+    &storeexecuteresponse=false&status=&false
