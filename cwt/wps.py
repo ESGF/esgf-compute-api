@@ -9,9 +9,6 @@ import time
 from os.path import dirname
 from sets import Set
 import requests
-from lxml import etree
-import variable
-import cwt
 from cwt.wps_lib import metadata
 from cwt.wps_lib import operations
 
