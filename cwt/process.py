@@ -39,11 +39,9 @@ def input_output_to_dict(value):
 
 
 class StatusTracker(object):
-    def __init__(self, stale_threshold):
+    def __init__(self):
         self.history = {}
         self.start = None
-        self.stale = 0
-        self.stale_threshold = stale_threshold
 
     @property
     def elapsed(self):
@@ -57,14 +55,7 @@ class StatusTracker(object):
         if self.start is None:
             self.start = now
 
-        if message in self.history:
-            self.stale += 1
-
-            if self.stale >= self.stale_threshold:
-                raise CWTError(
-                    'Timing out due to staleness, no new message {!r} queries',
-                    self.stale)
-        else:
+        if message not in self.history:
             self.history[message] = now
 
         print(message)
@@ -300,11 +291,8 @@ class Process(Parameter):
         except AttributeError:
             raise CWTError('Process is missing a context')
 
-    def wait(self, stale_threshold=None, timeout=None, sleep=None):
-        if stale_threshold is None:
-            stale_threshold = 4
-
-        self.status_tracker = StatusTracker(stale_threshold)
+    def wait(self, timeout=None, sleep=None):
+        self.status_tracker = StatusTracker()
 
         if sleep is None:
             sleep = 1.0
