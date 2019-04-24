@@ -5,6 +5,7 @@ import logging
 import re
 import sys
 
+import requests
 from owslib import wps
 
 from cwt.domain import Domain
@@ -68,18 +69,18 @@ class WPSClient(object):
 
                 logger.info('Added file handle %s', self.log_file)
 
-        headers = kwargs.get('headers', {})
+        self.headers = kwargs.get('headers', {})
 
         self.api_key = kwargs.get('api_key', None)
 
         if self.api_key is not None:
-            headers['COMPUTE-TOKEN'] = self.api_key
+            self.headers['COMPUTE-TOKEN'] = self.api_key
 
         self.verify = kwargs.get('verify', True)
 
         client_kwargs = {
             'skip_caps': True,
-            'headers': headers,
+            'headers': self.headers,
             'verify': self.verify,
             'verbose': True if self.log else False,
         }
@@ -108,7 +109,7 @@ class WPSClient(object):
                     self.url, self.log, self.log_file, self.verify,
                     self.cert, self.version)
 
-    def get_capabilities(self):
+    def get_capabilities(self, method='get'):
         """ Executes a GetCapabilities request."""
         self.client.getcapabilities()
 
@@ -128,19 +129,74 @@ class WPSClient(object):
 
         return new_process
 
+    def parse_wps_execute_get_params(self, kwargs):
+        params = {}
+
+        param_names = ('ResponseDocument', 'RawDataOutput', 'storeExecuteResponse',
+                       'lineage', 'status')
+
+        for name in param_names:
+            if name in kwargs:
+                params[name] = kwargs.pop(name)
+
+        return params
+
     def execute(self, process, inputs=None, domain=None, **kwargs):
         """ Executes an Execute request."""
         if inputs is None:
             inputs = []
 
-        data_inputs = self.prepare_data_inputs(
-            process, inputs, domain, **kwargs)
+        method = kwargs.pop('method', 'post').lower()
 
-        try:
-            process.context = self.client.execute(
-                process.identifier, data_inputs)
-        except Exception as e:
-            raise WPSClientError('Client error {!r}', str(e))
+        if method == 'post':
+            variable, domain, operation = self.prepare_data_inputs(process, inputs, domain, **kwargs)
+
+            variable = wps.ComplexDataInput(variable, mimeType='application/json')
+
+            domain = wps.ComplexDataInput(domain, mimeType='application/json')
+
+            operation = wps.ComplexDataInput(operation, mimeType='application/json')
+
+            data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
+
+            try:
+                process.context = self.client.execute(process.identifier, data_inputs)
+            except Exception as e:
+                raise WPSClientError('Client error {!r}', str(e))
+        elif method == 'get':
+            params = self.parse_wps_get_params(kwargs)
+
+            variable, domain, operation = self.prepare_data_inputs(process, inputs, domain, **kwargs)
+
+            variable = 'variable={!s}'.format(variable)
+
+            domain = 'domain={!s}'.format(domain)
+
+            operation = 'operation={!s}'.format(operation)
+
+            data_inputs = ';'.join([variable, domain, operation])
+
+            try:
+                params.update({
+                    'service': 'WPS',
+                    'request': 'Execute',
+                    'version': '1.0.0',
+                    'Identifier': process.identifier,
+                    'DataInputs': data_inputs,
+                })
+
+                extras = {}
+
+                if self.cert is not None:
+                    extras['cert'] = self.cert
+
+                response = requests.get(self.url, params=params, headers=self.headers, **extras)
+
+                process.context = self.client.execute(process.identifier, None, response=response.text)
+            except Exception as e:
+                raise WPSClientError('Client error {!r}', str(e))
+        else:
+            raise WPSClientError('Unsupported method {!r}', method)
 
     def processes(self, pattern=None):
         if not self._has_capabilities:
@@ -219,7 +275,7 @@ class WPSClient(object):
         domains = {}
 
         if domain is not None:
-            domains[domain.name] = domain.to_dict()
+            domains[domain.name] = domain
 
             process.domain = domain
 
@@ -233,32 +289,15 @@ class WPSClient(object):
 
         variables.extend(inputs)
 
-        variables = wps.ComplexDataInput(json.dumps([x.to_dict() for x in variables]),
-                                         mimeType='application/json')
-
         # Collect all the domains from nested processes
         for item in processes:
             if item.domain is not None and item.domain.name not in domains:
-                domains[item.domain.name] = item.domain.to_dict()
+                domains[item.domain.name] = item.domain
 
-        domains = wps.ComplexDataInput(json.dumps(list(domains.values())),
-                                       mimeType='application/json')
+        variable = json.dumps([x.to_dict() for x in variables])
 
-        operation = wps.ComplexDataInput(json.dumps([item.to_dict() for item in processes]),
-                                         mimeType='application/json')
+        domain = json.dumps([x.to_dict() for x in domain.values()])
 
-        return [('variable', variables), ('domain', domains),
-                ('operation', operation)]
+        operation = json.dumps([x.to_dict() for x in processes])
 
-    def prepare_data_inputs_str(self, process, inputs, domains, **kwargs):
-        data_inputs = self.prepare_data_inputs(
-            process, inputs, domains, **kwargs)
-
-        items = []
-
-        for name, value in data_inputs:
-            items.append('{!s}={!s}'.format(name, value))
-
-        items_joined = ';'.join(items)
-
-        return '[{!s}]'.format(items_joined)
+        return variable, domain, operation
