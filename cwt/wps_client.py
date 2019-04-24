@@ -105,9 +105,9 @@ class WPSClient(object):
 
     def __repr__(self):
         return ('WPSClient(url={!r}, log={!r}, log_file={!r}, '
-                'verify={!r}, version={!r}, cert={!r})').format(
+                'verify={!r}, version={!r}, cert={!r}, headers={!r})').format(
                     self.url, self.log, self.log_file, self.verify,
-                    self.cert, self.version)
+                    self.cert, self.version, self.headers)
 
     def get_capabilities(self, method='get'):
         """ Executes a GetCapabilities request."""
@@ -145,6 +145,8 @@ class WPSClient(object):
         """ Executes an Execute request."""
         if inputs is None:
             inputs = []
+        elif not isinstance(inputs, (list, tuple)):
+            inputs = [inputs, ]
 
         method = kwargs.pop('method', 'post').lower()
 
@@ -164,7 +166,7 @@ class WPSClient(object):
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e))
         elif method == 'get':
-            params = self.parse_wps_get_params(kwargs)
+            params = self.parse_wps_execute_get_params(kwargs)
 
             variable, domain, operation = self.prepare_data_inputs(process, inputs, domain, **kwargs)
 
@@ -182,7 +184,7 @@ class WPSClient(object):
                     'request': 'Execute',
                     'version': '1.0.0',
                     'Identifier': process.identifier,
-                    'DataInputs': data_inputs,
+                    'DataInputs': data_inputs.replace(' ', ''),
                 })
 
                 extras = {}
@@ -190,9 +192,15 @@ class WPSClient(object):
                 if self.cert is not None:
                     extras['cert'] = self.cert
 
+                logger.debug('params %r', params)
+
                 response = requests.get(self.url, params=params, headers=self.headers, **extras)
 
-                process.context = self.client.execute(process.identifier, None, response=response.text)
+                response_text = response.text.encode('utf-8')
+
+                logger.debug('Response %r', response_text)
+
+                process.context = self.client.execute(process.identifier, None, request=response.url, response=response_text)
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e))
         else:
@@ -296,7 +304,7 @@ class WPSClient(object):
 
         variable = json.dumps([x.to_dict() for x in variables])
 
-        domain = json.dumps([x.to_dict() for x in domain.values()])
+        domain = json.dumps([x.to_dict() for x in domains.values()])
 
         operation = json.dumps([x.to_dict() for x in processes])
 

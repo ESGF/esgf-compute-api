@@ -73,7 +73,7 @@ class Process(Parameter):
         name: A string name for the process to be used as the input of another process.
     """
 
-    def __init__(self, process=None, name=None):
+    def __init__(self, identifier=None, process=None, name=None):
         super(Process, self).__init__(name)
 
         self.process = process
@@ -90,7 +90,7 @@ class Process(Parameter):
 
         self.status_tracker = None
 
-        self._identifier = None
+        self._identifier = identifier
         self._title = None
         self._process_outputs = None
         self._data_inputs = None
@@ -311,6 +311,17 @@ class Process(Parameter):
 
         return self.succeeded
 
+    @property
+    def gridder(self):
+        return self.get_parameter('gridder')
+
+    @gridder.setter
+    def gridder(self, value):
+        if not isinstance(value, Gridder):
+            raise CWTError('Value must be a cwt.Gridder instance')
+
+        self.parameters['gridder'] = value
+
     def set_domain(self, domain):
         self.domain = domain
 
@@ -417,6 +428,13 @@ class Process(Parameter):
                 inputs.append(i)
 
         data['input'] = inputs
+
+        gridder = self.parameters.pop('gridder', None)
+
+        if gridder is not None:
+            data.update({
+                'gridder': gridder.to_dict(),
+            })
 
         for name, value in self.parameters.items():
             data.update(value.to_dict())

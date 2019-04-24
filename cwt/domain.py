@@ -137,5 +137,4 @@ class Domain(Parameter):
         return self.to_dict()
 
     def __repr__(self):
-        return 'Domain(dimensions=%r, mask=%r, name=%r)'.format(
-            self.dimensions, self.mask, self.name)
+        return 'Domain(dimensions={!r}, mask={!r}, name={!r})'.format(self.dimensions, self.mask, self.name)

@@ -40,7 +40,7 @@ class CRS(object):
         return self.name
 
     def __repr__(self):
-        return 'CRS(name={})'.format(self.name)
+        return 'CRS(name={!r})'.format(self.name)
 
 
 VALUES = CRS('values')
@@ -161,5 +161,5 @@ class Dimension(Parameter):
         return self.to_dict()
 
     def __repr__(self):
-        return 'Dimension(name=%r, start=%r, end=%r, step=%r, crs=%r)'.format(
+        return 'Dimension(name={!r}, start={!r}, end={!r}, step={!r}, crs={!r})'.format(
             self.name, self.start, self.end, self.step, self.crs)

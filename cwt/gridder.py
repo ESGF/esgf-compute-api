@@ -74,5 +74,5 @@ class Gridder(Parameter):
         return self.to_dict()
 
     def __repr__(self):
-        return 'Gridder(tool=%r, method=%r, grid=%r)'.foramt(
+        return 'Gridder(tool={!r}, method={!r}, grid={!r})'.foramt(
             self.tool, self.method, self.grid)
