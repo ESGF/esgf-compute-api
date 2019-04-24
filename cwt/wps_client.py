@@ -142,7 +142,35 @@ class WPSClient(object):
         return params
 
     def execute(self, process, inputs=None, domain=None, **kwargs):
-        """ Executes an Execute request."""
+        """ Executes an Execute request.
+
+        kwargs will be passed to cwt.Process.add_parameters, see this method for additional
+        documentation.
+
+        If method is set to GET then you may pass any of the following WPS Execute parameters:
+        (ResponseDocument, RawDataOutput, storeExecuteResponse, lineage, status). See the 
+        WPS document at (http://portal.opengeospatial.org/files/?artifact_id=24151).
+
+        Examples:
+            client = cwt.WPSClient(...)
+
+            client.execute(proc, inputs=v0)
+
+            client.execute(proc, inputs=[v0, v1], domain=d0)
+
+            client.execute(proc, inputs=[v0, v1], domain=d0, method='GET')
+
+            client.execute(proc, inputs=v0, axes='time')
+
+            client.execute(proc, inputs=v0, axes=['lat', 'lon])
+
+        Args:
+            process: An instance of cwt.Process.
+            inputs: An instance of cwt.Variable or a list of cwt.Variable.
+            domain: An instance of cwt.Domain.
+            method: A str HTTP method (GET or POST).
+            **kwargs: See above description.
+        """
         if inputs is None:
             inputs = []
         elif not isinstance(inputs, (list, tuple)):
