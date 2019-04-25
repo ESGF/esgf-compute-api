@@ -18,6 +18,11 @@ class WPSClientError(CWTError):
         super(WPSClientError, self).__init__(fmt, *args, **kwargs)
 
 
+class WPSServerError(CWTError):
+    def __init__(self, fmt, *args, **kwargs):
+        super(WPSServerError, self).__init__(fmt, *args, **kwargs)
+
+
 class WPSTimeoutError(CWTError):
     def __init__(self, elapsed):
         fmt = 'Timed out after {!r} seconds'

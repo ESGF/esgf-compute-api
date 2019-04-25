@@ -11,6 +11,7 @@ import warnings
 from cwt.errors import CWTError
 from cwt.errors import MissingRequiredKeyError
 from cwt.errors import WPSTimeoutError
+from cwt.errors import WPSServerError
 from cwt.named_parameter import NamedParameter
 from cwt.parameter import Parameter
 from cwt.variable import Variable
@@ -248,13 +249,18 @@ class Process(Parameter):
         if not self.succeeded:
             raise CWTError('No output available process has not succeeded')
 
-        # CWT only expects a single output in json format
-        data = json.loads(self.context.processOutputs[0].data[0])
+        logger.debug('Process output %r', self.context.processOutputs[0].data[0])
 
-        if 'uri' in data:
+        try:
+            # CWT only expects a single output in json format
+            data = json.loads(self.context.processOutputs[0].data[0])
+        except json.JSONDecoderError:
+            raise WPSServerError('Failed to decode process output as JSON')
+
+        if isinstance(data, dict) and 'uri' in data:
             output_data = Variable.from_dict(data)
-        elif 'outputs' in data:
-            output_data = [Variable.from_dict(x) for x in data['outputs']]
+        elif isinstance(data, (tuple, list)) and 'uri' in data[0]:
+            output_data = [Variable.from_dict(x) for x in data]
         else:
             output_data = data
 
