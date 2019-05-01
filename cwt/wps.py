@@ -141,7 +141,7 @@ class WPS(object):
         process.response = xml.etree.ElementTree.fromstring( response )
         status = "UNKNOWN"
         if   self.hasNode( process.response, "ProcessAccepted" ): status = "QUEUED"
-        elif self.hasNode( process.response, "ProcessStarted" ): status = "EXECUTING"
+        elif self.hasNode( process.response, "ProcessStarted"  ): status = "EXECUTING"
         elif self.hasNode( process.response, "ProcessFinished" ):
             status = "COMPLETED"
             logger.error( "RECEIVED COMPLETION REPORT: " + response )
@@ -466,7 +466,7 @@ class WPS(object):
         logger.info( "#STATUS: " +  status )
         while status == "QUEUED" or status == "EXECUTING":
             time.sleep(1)
-            statu, messages = self.status( op )
+            status, messages = self.status( op )
             logger.info( "#STATUS: " +  status )
         if status == "ERROR":
             msg_toks = message.split(">~>")
