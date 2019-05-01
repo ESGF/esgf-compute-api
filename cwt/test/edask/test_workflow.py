@@ -1,7 +1,7 @@
 import os, time
 import numpy as np
 from cwt.wps import WPS
-import cwt
+import cwt, cdms2
 # import logging, cdms2, vcs
 # from cwt.test.plotters import PlotMgr
 # import cdms2, datetime, matplotlib, urllib3
@@ -21,7 +21,22 @@ TAS_ESGF= [
     'esgf@https://dataserver.nccs.nasa.gov/thredds/dodsC/CMIP5/NASA/GISS/historical/E2-H_historical_r2i1p3/clwvi_Amon_GISS-E2-H_historical_r2i1p3_195101-200512.nc',
 ]
 
-plotter = cwt.initialize()
+cwt.initialize()
+
+
+def print_Mdata(dataPath):
+    for k in range(0, 30):
+        if (os.path.isfile(dataPath)):
+            f = cdms2.openDataset(dataPath)
+            for variable in f.variables.values():
+                try:
+                    print( "Produced result " + variable.id + ", shape: " + str(variable.shape) + ", dims: " + variable.getOrder() + " from file: " + dataPath)
+                    print("Data: " + str(variable.getValue()))
+                except Exception as err:
+                    print(" Error printing data: " + getattr(err, "message", repr(err)))
+                return
+        else:
+            time.sleep(1)
 
 def create_tempdir():
     temp_dir = os.path.expanduser( "~/.edas" )
@@ -30,8 +45,7 @@ def create_tempdir():
     return temp_dir
 
 def generate_output( dataPath, plot ):
-    if plot: plotter.mpl_plot( dataPath )
-    else: plotter.print_Mdata( dataPath )
+    print_Mdata( dataPath )
 
 host = os.environ.get( "EDAS_HOST_ADDRESS", "https://edas.nccs.nasa.gov/wps/cwt" )
 assert host != None, "Must set EDAS_HOST_ADDRESS environment variable"
