@@ -59,9 +59,9 @@ class StatusTracker(object):
         if message not in self.history:
             self.history[message] = now
 
-        print(message)
+            print(message)
 
-        logger.info(message)
+            logger.info(message)
 
 
 class Process(Parameter):
@@ -396,12 +396,12 @@ class Process(Parameter):
         while stack:
             item = stack.pop()
 
+            logger.info('Processing %r', item)
+
             for x in item.inputs:
                 if isinstance(x, Process):
-                    if x.name in processes:
-                        raise CWTError('Found a loop {!s} has already been seen', x.name)
-
-                    stack.append(x)
+                    if x.name not in processes:
+                        stack.append(x)
                 elif isinstance(x, Variable):
                     inputs[x.name] = x
 
