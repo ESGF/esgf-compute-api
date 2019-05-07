@@ -315,25 +315,28 @@ class WPSClient(object):
 
             process.domain = domain
 
+        if not isinstance(inputs, (list, tuple)):
+            inputs = [inputs, ]
+
         process.inputs.extend(inputs)
 
         process.add_parameters(**kwargs)
 
         processes, variables = process.collect_input_processes()
 
-        processes.append(process)
-
-        variables.extend(inputs)
-
         # Collect all the domains from nested processes
-        for item in processes:
+        for item in processes.values():
             if item.domain is not None and item.domain.name not in domains:
                 domains[item.domain.name] = item.domain
 
-        variable = json.dumps([x.to_dict() for x in variables])
+        for name in list(processes.keys()):
+            if processes[name].identifier == 'CDAT.workflow':
+                processes.pop(name)
+
+        variable = json.dumps([x.to_dict() for x in variables.values()])
 
         domain = json.dumps([x.to_dict() for x in domains.values()])
 
-        operation = json.dumps([x.to_dict() for x in processes])
+        operation = json.dumps([x.to_dict() for x in processes.values()])
 
         return variable, domain, operation

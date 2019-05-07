@@ -381,36 +381,33 @@ class Process(Parameter):
         """
         self.inputs.extend(args)
 
-    def collect_input_processes(self, processes=None, inputs=None):
+    def collect_input_processes(self):
         """ Aggregates the process trees inputs.
 
         A DFS to collect the trees inputs into two lists, Operations and Variables.
 
-        Args:
-            processes: A list of current processes discovered.
-            inputs: A list of Process/Variables to processes.
-
         Returns:
             A two lists, one of Processes and the other of Variables.
         """
+        processes = {}
+        inputs = {}
+        stack = [self, ]
 
-        if processes is None:
-            processes = []
+        while stack:
+            item = stack.pop()
 
-        if inputs is None:
-            inputs = {}
+            for x in item.inputs:
+                if isinstance(x, Process):
+                    if x.name in processes:
+                        raise CWTError('Found a loop {!s} has already been seen', x.name)
 
-        new_processes = [x for x in self.inputs if isinstance(x, Process)]
+                    stack.append(x)
+                elif isinstance(x, Variable):
+                    inputs[x.name] = x
 
-        inputs.update(dict((x.name, x) for x in self.inputs
-                           if isinstance(x, Variable)))
+            processes[item.name] = item
 
-        for p in new_processes:
-            p.collect_input_processes(processes, inputs)
-
-        processes.extend(new_processes)
-
-        return processes, list(inputs.values())
+        return processes, inputs
 
     def to_dict(self):
         """ Returns a dictionary representation."""
