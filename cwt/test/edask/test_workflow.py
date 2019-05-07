@@ -40,7 +40,7 @@ def print_Mdata(dataPath):
 
 def create_tempdir():
     temp_dir = os.path.expanduser( "~/.edas" )
-    try: os.makedirs( temp_dir, 0755 )
+    try: os.makedirs( temp_dir )
     except Exception: pass
     return temp_dir
 
