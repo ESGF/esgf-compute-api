@@ -320,6 +320,9 @@ class WPSClient(object):
 
         process.inputs.extend(inputs)
 
+        if 'gridder' in kwargs:
+            process.gridder = kwargs.pop('gridder')
+
         process.add_parameters(**kwargs)
 
         processes, variables = process.collect_input_processes()
