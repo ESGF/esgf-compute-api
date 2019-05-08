@@ -2,9 +2,8 @@
 
 import json, traceback
 import logging
-import re
+import re, os, time, socket
 import sys
-
 import requests
 from owslib import wps
 
@@ -13,6 +12,8 @@ from cwt.errors import CWTError
 from cwt.errors import WPSClientError
 from cwt.process import Process
 from cwt.variable import Variable
+
+from owslib.util import log as owslog
 
 logger = logging.getLogger('cwt.wps_client')
 
@@ -70,6 +71,19 @@ class WPSClient(object):
                 logger.info('Added file handle %s', self.log_file)
 
         self.headers = kwargs.get('headers', {})
+
+        LOG_DIR = os.path.expanduser("~/.edas/logs")
+        if not os.path.exists(LOG_DIR):  os.makedirs(LOG_DIR)
+        timestamp = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
+        fh = logging.FileHandler("{}/edas-{}-{}.log".format(LOG_DIR, socket.gethostname(), timestamp))
+        fh.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.INFO)
+        formatter = logging.Formatter('ows-wps-%(asctime)s-%(levelname)s: %(message)s')
+        fh.setFormatter(formatter)
+        ch.setFormatter(formatter)
+        owslog.addHandler(fh)
+        owslog.addHandler(ch)
 
         self.api_key = kwargs.get('api_key', None)
 
