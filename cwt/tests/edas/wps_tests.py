@@ -41,6 +41,7 @@ class wpsTest:
 
     @staticmethod
     def configure():
+        print "Configuring logging"
         owslog = logging.getLogger('owslib')
         LOG_DIR = os.path.expanduser("~/.edas/logs")
         if not os.path.exists(LOG_DIR):  os.makedirs(LOG_DIR)
