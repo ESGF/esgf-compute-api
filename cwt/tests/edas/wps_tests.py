@@ -34,7 +34,7 @@ class wpsTest:
         variable = cwt.Variable( "collection://cip_cfsr_mth", 'tas', name='v0' )
         domain   = cwt.Domain.from_dict( domain_data )
 
-        self.client.execute( process, [variable], domain )
+        self.client.execute( process, [variable], domain, method="GET" )
         process.wait()
 
         print "Completed execution, result available at: " + process.output.uri
