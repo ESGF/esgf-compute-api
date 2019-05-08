@@ -228,7 +228,7 @@ class WPSClient(object):
 
                 logger.debug('Response %r', response_text)
 
-                process.context = self.client.execute(process.identifier, None, request=response.url, response=response_text)
+                process.context = self.client.execute( process.identifier, None, request=response.url )
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e) + "\n" + traceback.format_exc() )
         else:
