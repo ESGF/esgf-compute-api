@@ -1,6 +1,6 @@
 """ A WPS Client """
 
-import json
+import json, traceback
 import logging
 import re
 import sys
@@ -230,7 +230,7 @@ class WPSClient(object):
 
                 process.context = self.client.execute(process.identifier, None, request=response.url, response=response_text)
             except Exception as e:
-                raise WPSClientError('Client error {!r}', str(e))
+                raise WPSClientError('Client error {!r}', str(e) + "\n" + traceback.format_exc() )
         else:
             raise WPSClientError('Unsupported method {!r}', method)
 
