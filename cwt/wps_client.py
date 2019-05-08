@@ -75,7 +75,7 @@ class WPSClient(object):
         LOG_DIR = os.path.expanduser("~/.edas/logs")
         if not os.path.exists(LOG_DIR):  os.makedirs(LOG_DIR)
         timestamp = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
-        fh = logging.FileHandler("{}/edas-{}-{}.log".format(LOG_DIR, socket.gethostname(), timestamp))
+        fh = logging.FileHandler("{}/ows-wps-{}-{}.log".format(LOG_DIR, socket.gethostname(), timestamp))
         fh.setLevel(logging.DEBUG)
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
