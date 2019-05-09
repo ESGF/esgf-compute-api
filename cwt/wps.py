@@ -581,7 +581,7 @@ class WPSExecution(object):
     """
 
     def __init__(self, version=WPS_DEFAULT_VERSION, url=None, username=None, password=None, verbose=False,
-                 headers=None, verify=True, cert=None, timeout=None):
+                 headers=None, verify=True, cert=None, timeout=None, method="get"):
 
         # initialize fields
         self.url = url
@@ -593,6 +593,7 @@ class WPSExecution(object):
         self.verify = verify
         self.cert = cert
         self.timeout = timeout
+        self.method = method
 
         # request document
         self.request = None
@@ -872,13 +873,10 @@ class WPSExecution(object):
         """
 
         self.request = request
-        log.info("0")
         reader = WPSExecuteReader(verbose=self.verbose, timeout=self.timeout)
-        log.info("1")
-        response = reader.readFromUrl(
-            self.url, request, method='Post', username=self.username, password=self.password,
-            headers=self.headers, verify=self.verify, cert=self.cert)
-        log.info("2")
+        log.info("Start Request")
+        response = reader.readFromUrl( self.url, request, method=self.method, username=self.username, password=self.password, headers=self.headers, verify=self.verify, cert=self.cert )
+        log.info( "Request Response: " + str(response) )
         self.response = response
         return response
 
