@@ -344,7 +344,7 @@ class WebProcessingService(object):
             requestElement = execution.buildRequest(identifier, inputs, output, mode=mode, lineage=lineage)
             request = etree.tostring(requestElement)
             execution.request = request
-        log.debug(request)
+        log.info( "Request: " + request)
 
         # submit the request to the live server
         if response is None:
@@ -352,7 +352,7 @@ class WebProcessingService(object):
         else:
             response = etree.fromstring(response)
 
-        log.debug(etree.tostring(response))
+        log.info( "Response: " + etree.tostring(response))
 
         # parse response
         execution.parseResponse(response)
