@@ -468,8 +468,9 @@ class WPSReader(object):
 
         if method == 'Get':
             # full HTTP request url
+            log.info( "build_get_url: url= '{}', data= '{}'".format(url, data))
             request_url = build_get_url(url, data, overwrite=True)
-            log.debug(request_url)
+            log.info(request_url)
 
             # split URL into base url and query string to use utility function
             spliturl = request_url.split('?')
@@ -519,8 +520,7 @@ class WPSCapabilitiesReader(WPSReader):
         :param str password: optional user credentials
         """
         return self._readFromUrl(url,
-                                 {'service': 'WPS', 'request':
-                                     'GetCapabilities', 'version': self.version},
+                                 {'service': 'WPS', 'request':'GetCapabilities', 'version': self.version},
                                  self.timeout,
                                  username=username, password=password,
                                  headers=headers, verify=verify, cert=cert)
@@ -546,8 +546,7 @@ class WPSDescribeProcessReader(WPSReader):
             'request', and 'identifier'.
         """
         return self._readFromUrl(url,
-                                 {'service': 'WPS', 'request': 'DescribeProcess',
-                                     'version': self.version, 'identifier': identifier},
+                                 {'service': 'WPS', 'request': 'DescribeProcess', 'version': self.version, 'identifier': identifier},
                                  self.timeout,
                                  username=username, password=password,
                                  headers=headers, verify=verify, cert=cert)
@@ -563,15 +562,13 @@ class WPSExecuteReader(WPSReader):
         # superclass initializer
         super(WPSExecuteReader, self).__init__(verbose=verbose, timeout=timeout)
 
-    def readFromUrl(self, url, data={}, method='Get', username=None, password=None,
-                    headers=None, verify=True, cert=None):
+    def readFromUrl(self, url, data={}, method='Get', username=None, password=None, headers=None, verify=True, cert=None):
         """
         Reads a WPS status document from a remote service and returns the XML etree object.
         :param str url: the URL to submit the GET/POST request to.
         """
 
-        return self._readFromUrl(url, data, self.timeout, method, username=username, password=password,
-                                 headers=headers, verify=verify, cert=cert)
+        return self._readFromUrl(url, data, self.timeout, method, username=username, password=password, headers=headers, verify=verify, cert=cert)
 
 
 class WPSExecution(object):
