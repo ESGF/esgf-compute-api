@@ -581,7 +581,7 @@ class WPSExecution(object):
     """
 
     def __init__(self, version=WPS_DEFAULT_VERSION, url=None, username=None, password=None, verbose=False,
-                 headers=None, verify=True, cert=None, timeout=None, method="get"):
+                 headers=None, verify=True, cert=None, timeout=None, method="Get"):
 
         # initialize fields
         self.url = url
