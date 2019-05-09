@@ -39,24 +39,6 @@ class wpsTest:
 
         print "Completed execution, result available at: " + process.output.uri
 
-    @staticmethod
-    def configure():
-        print "Configuring logging"
-        owslog = logging.getLogger('owslib')
-        LOG_DIR = os.path.expanduser("~/.edas/logs")
-        if not os.path.exists(LOG_DIR):  os.makedirs(LOG_DIR)
-        timestamp = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
-        fh = logging.FileHandler("{}/ows-wps-{}-{}.log".format(LOG_DIR, socket.gethostname(), timestamp))
-        fh.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('ows-wps-%(asctime)s-%(levelname)s: %(message)s')
-        fh.setFormatter(formatter)
-        ch.setFormatter(formatter)
-        owslog.addHandler(fh)
-        owslog.addHandler(ch)
-
 if __name__ == '__main__':
-    wpsTest.configure()
     tester = wpsTest()
     tester.cfsr_mth_time_ave()

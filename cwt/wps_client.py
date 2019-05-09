@@ -5,8 +5,7 @@ import logging
 import re
 import sys
 import requests
-from owslib import wps
-
+from cwt import wps
 from cwt.domain import Domain
 from cwt.errors import CWTError
 from cwt.errors import WPSClientError
