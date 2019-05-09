@@ -313,7 +313,7 @@ class WebProcessingService(object):
         else:
             return processes[0]
 
-    def execute(self, identifier, inputs, output=None, mode=ASYNC, lineage=False, request=None, response=None):
+    def execute(self, identifier, inputs, output=None, mode=ASYNC, lineage=False, request=None ):
         """
         Submits a WPS process execution request.
         Returns a WPSExecution object, which can be used to monitor the status of the job, and ultimately
@@ -344,19 +344,13 @@ class WebProcessingService(object):
             requestElement = execution.buildRequest(identifier, inputs, output, mode=mode, lineage=lineage)
             request = etree.tostring(requestElement)
             execution.request = request
+
         log.info( "Request: " + request)
-
-        # submit the request to the live server
-        if response is None:
-            response = execution.submitRequest(request)
-        else:
-            response = etree.fromstring(response)
-
+        response = execution.submitRequest(request)
         log.info( "Response: " + etree.tostring(response))
 
         # parse response
         execution.parseResponse(response)
-
         return execution
 
     def getOperationByName(self, name):
@@ -878,10 +872,13 @@ class WPSExecution(object):
         """
 
         self.request = request
+        log.info("0")
         reader = WPSExecuteReader(verbose=self.verbose, timeout=self.timeout)
+        log.info("1")
         response = reader.readFromUrl(
             self.url, request, method='Post', username=self.username, password=self.password,
             headers=self.headers, verify=self.verify, cert=self.cert)
+        log.info("2")
         self.response = response
         return response
 
