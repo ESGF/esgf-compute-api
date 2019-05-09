@@ -32,7 +32,7 @@ class WPSClient(object):
             cert: A str path to an SSL client cert or a tuple as ('cert', 'key').
             headers: A dict that will be passed as HTTP headers.
         """
-        self.log = kwargs.get( 'log', True )
+        self.log = kwargs.get( 'log', True   )
 
         self.log_file = None
 
