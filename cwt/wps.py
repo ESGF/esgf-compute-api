@@ -468,8 +468,10 @@ class WPSReader(object):
 
         if method == 'Get':
             # full HTTP request url
-            log.info( "build_get_url: url= '{}', data= '{}'".format(url, data))
-            request_url = build_get_url(url, data, overwrite=True)
+#            log.info( "build_get_url: url= '{}', data= '{}'".format(url, data))
+#            request_url = build_get_url(url, data, overwrite=True)
+
+            request_url = data
             log.info(request_url)
 
             # split URL into base url and query string to use utility function
