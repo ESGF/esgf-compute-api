@@ -32,7 +32,7 @@ class WPSClient(object):
             cert: A str path to an SSL client cert or a tuple as ('cert', 'key').
             headers: A dict that will be passed as HTTP headers.
         """
-        self.log = kwargs.get('log', False)
+        self.log = kwargs.get( 'log', True )
 
         self.log_file = None
 
@@ -41,8 +41,7 @@ class WPSClient(object):
 
             root_logger.setLevel(logging.DEBUG)
 
-            formatter = logging.Formatter(
-                '[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
+            formatter = logging.Formatter( '[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s' )
 
             stream_handler = logging.StreamHandler(sys.stdout)
 
