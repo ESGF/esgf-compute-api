@@ -291,6 +291,22 @@ class Process(Parameter):
 
         return msg
 
+    def copy(self):
+        if self.process is not None:
+            obj = Process.from_owslib(self.process)
+        else:
+            obj = Process(identifier=self.identifier, name=self.name)
+
+        obj.context = self.context
+
+        obj.inputs = self.inputs.copy()
+
+        obj.parameters = self.parameters.copy()
+
+        obj.domain = self.domain
+
+        return obj
+
     def check_context_status(self, value):
         try:
             return self.context.status == value

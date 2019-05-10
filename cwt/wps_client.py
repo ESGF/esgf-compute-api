@@ -167,6 +167,11 @@ class WPSClient(object):
 
             client.execute(proc, inputs=v0, axes=['lat', 'lon])
 
+        NOTES:
+            * `inputs` will be merged with existing values of `process.inputs`
+            * `domain` will override the value of `process.domain`
+            * `kwargs` will be merged with existing values of `process.parameters`
+
         Args:
             process: An instance of cwt.Process.
             inputs: An instance of cwt.Variable or a list of cwt.Variable.
@@ -314,33 +319,31 @@ class WPSClient(object):
             A dictionary containing the operations, domains and variables
             associated with the process.
         """
+        temp_process = process.copy()
+
         domains = {}
 
         if domain is not None:
             domains[domain.name] = domain
 
-            process.domain = domain
+            temp_process.domain = domain
 
         if not isinstance(inputs, (list, tuple)):
             inputs = [inputs, ]
 
-        process.inputs.extend(inputs)
+        temp_process.inputs.extend(inputs)
 
         if 'gridder' in kwargs:
-            process.gridder = kwargs.pop('gridder')
+            temp_process.gridder = kwargs.pop('gridder')
 
-        process.add_parameters(**kwargs)
+        temp_process.add_parameters(**kwargs)
 
-        processes, variables = process.collect_input_processes()
+        processes, variables = temp_process.collect_input_processes()
 
         # Collect all the domains from nested processes
         for item in processes.values():
             if item.domain is not None and item.domain.name not in domains:
                 domains[item.domain.name] = item.domain
-
-        for name in list(processes.keys()):
-            if processes[name].identifier == 'CDAT.workflow':
-                processes.pop(name)
 
         variable = json.dumps([x.to_dict() for x in variables.values()])
 
