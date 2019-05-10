@@ -28,7 +28,8 @@ class WPSClient(object):
             url: A string url path for the WPS server.
             api_key: A string that will be passed as the value to COMPUTE-TOKEN HTTP header.
             version: A string version of the WPS server.
-            log: A boolean flag to enable logging
+            log: A boolean flag to enable logging.
+            log_level: A string log level (default: INFO).
             log_file: A string path for a log file.
             verify: A bool to enable/disable verifying a server's TLS certificate.
             cert: A str path to an SSL client cert or a tuple as ('cert', 'key').
@@ -39,9 +40,11 @@ class WPSClient(object):
         self.log_file = None
 
         if self.log:
+            log_level = kwargs.get('log_level', 'info').upper()
+
             root_logger = logging.getLogger()
 
-            root_logger.setLevel(logging.DEBUG)
+            root_logger.setLevel(log_level)
 
             formatter = logging.Formatter(
                 '[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
@@ -50,7 +53,7 @@ class WPSClient(object):
 
             stream_handler.setFormatter(formatter)
 
-            stream_handler.setLevel(logging.DEBUG)
+            stream_handler.setLevel(log_level)
 
             root_logger.addHandler(stream_handler)
 
@@ -63,7 +66,7 @@ class WPSClient(object):
 
                 file_handler.setFormatter(formatter)
 
-                file_handler.setLevel(logging.DEBUG)
+                file_handler.setLevel(log_level)
 
                 root_logger.addHandler(file_handler)
 
