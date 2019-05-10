@@ -148,7 +148,7 @@ class WPSClient(object):
         documentation.
 
         If method is set to GET then you may pass any of the following WPS Execute parameters:
-        (ResponseDocument, RawDataOutput, storeExecuteResponse, lineage, status). See the 
+        (ResponseDocument, RawDataOutput, storeExecuteResponse, lineage, status). See the
         WPS document at (http://portal.opengeospatial.org/files/?artifact_id=24151).
 
         Examples:
@@ -215,12 +215,14 @@ class WPSClient(object):
                     'DataInputs': data_inputs.replace(' ', ''),
                 })
 
-                extras = {}
+                extras = {
+                    'verify': self.verify,
+                }
 
                 if self.cert is not None:
                     extras['cert'] = self.cert
 
-                logger.debug('params %r', params)
+                logger.debug('params %r extras %r', params, extras)
 
                 response = requests.get(self.url, params=params, headers=self.headers, **extras)
 
@@ -228,7 +230,8 @@ class WPSClient(object):
 
                 logger.debug('Response %r', response_text)
 
-                process.context = self.client.execute(process.identifier, None, request=response.url, response=response_text)
+                process.context = self.client.execute(process.identifier, None, request=response.url,
+                                                      response=response_text)
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e))
         else:
