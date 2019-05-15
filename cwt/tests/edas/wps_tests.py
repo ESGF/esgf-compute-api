@@ -15,8 +15,6 @@ TAS_ESGF= [
 
 SERVER = os.environ.get( "EDAS_HOST_ADDRESS", "https://edas.nccs.nasa.gov/wps/cwt" )
 
-
-
 class wpsTest:
 
     def __init__(self):
@@ -25,9 +23,7 @@ class wpsTest:
 
     def cfsr_mth_time_ave(self):
 
-        domain_data = {'id': 'd0', 'lat': {'start': 23.7, 'end': 49.2, 'crs': 'values'},  'lon': {'start': -125, 'end': -70.3, 'crs': 'values'},
-                       'time': {'start': '1980-01-01T00:00:00', 'end': '2016-12-31T23:00:00', 'crs': 'timestamps'}}
-
+        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '1980-12-31T23:00:00', 'crs': 'timestamps'}}
         process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'p0' }
 
         process  = cwt.Process.from_dict( process_data )
