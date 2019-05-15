@@ -5,7 +5,8 @@ import logging
 import re
 import sys
 import requests
-from cwt import wps
+from owslib import wps
+
 from cwt.domain import Domain
 from cwt.errors import CWTError
 from cwt.errors import WPSClientError
@@ -224,7 +225,7 @@ class WPSClient(object):
 
                 logger.debug('Response %r', response_text)
 
-                process.context = self.client.execute( process.identifier, None, request=response.url )
+                process.context = self.client.execute(process.identifier, None, request=response.url, response=response_text)
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e) + "\n" + traceback.format_exc() )
         else:
