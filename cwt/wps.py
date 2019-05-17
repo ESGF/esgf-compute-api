@@ -121,7 +121,7 @@ try:                    # Python 3
 except ImportError:     # Python 2
     from urlparse import urlparse
 
-import six
+import six, traceback
 # namespace definition
 n = Namespaces()
 
@@ -770,7 +770,7 @@ class WPSExecution(object):
                     self.statusLocation, username=self.username, password=self.password,
                     headers=self.headers, verify=self.verify, cert=self.cert)
             except Exception as err:
-                log.error("Could not read status document: " + str(err) )
+                log.error("Could not read status document: " + str(err) + "\n" + traceback.format_exc() )
         else:
             response = reader.readFromString(response)
 
