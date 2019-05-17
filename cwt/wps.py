@@ -778,8 +778,8 @@ class WPSExecution(object):
                 response = reader.readFromUrl(
                     self.statusLocation, username=self.username, password=self.password,
                     headers=self.headers, verify=self.verify, cert=self.cert)
-            except Exception:
-                log.error("Could not read status document.")
+            except Exception as err:
+                log.error("Could not read status document: " + str(err) )
         else:
             response = reader.readFromString(response)
 
@@ -787,7 +787,7 @@ class WPSExecution(object):
         try:
             xml = etree.tostring(response)
         except Exception:
-            log.error("Could not parse XML response.")
+            log.error( "Could not parse XML response: " + str(response) )
         else:
             self.response = xml
             log.debug(self.response)
