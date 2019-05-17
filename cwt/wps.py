@@ -113,7 +113,7 @@ from owslib.ows import DEFAULT_OWS_NAMESPACE, XLINK_NAMESPACE
 from owslib.ows import ServiceIdentification, ServiceProvider, OperationsMetadata, BoundingBox
 from time import sleep
 from owslib.util import (testXMLValue, testXMLAttribute, build_get_url, clean_ows_url, dump, getTypedValue,
-                         getNamespace, element_to_string, nspath, openURL, nspath_eval )
+                         getNamespace, element_to_string, nspath, openURL, nspath_eval, log)
 from xml.dom.minidom import parseString
 from owslib.namespaces import Namespaces
 try:                    # Python 3
@@ -121,7 +121,7 @@ try:                    # Python 3
 except ImportError:     # Python 2
     from urlparse import urlparse
 
-import six, logging, os, socket, time
+import six
 # namespace definition
 n = Namespaces()
 
@@ -151,24 +151,9 @@ def get_namespaces():
     ns["ows"] = DEFAULT_OWS_NAMESPACE
     return ns
 
-def get_logger():
-    owslog = logging.getLogger('owslib')
-    LOG_DIR = os.path.expanduser("~/.edas/logs")
-    if not os.path.exists(LOG_DIR):  os.makedirs(LOG_DIR)
-    timestamp = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
-    fh = logging.FileHandler("{}/ows-wps-{}-{}.log".format(LOG_DIR, socket.gethostname(), timestamp))
-    fh.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('ows-wps-%(asctime)s-%(levelname)s: %(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    owslog.addHandler(fh)
-    owslog.addHandler(ch)
-    return owslog
 
 namespaces = get_namespaces()
-log = get_logger()
+
 
 def is_reference(val):
     """
@@ -313,7 +298,7 @@ class WebProcessingService(object):
         else:
             return processes[0]
 
-    def execute(self, identifier, inputs, output=None, mode=ASYNC, lineage=False, request=None ):
+    def execute(self, identifier, inputs, output=None, mode=ASYNC, lineage=False, request=None, response=None):
         """
         Submits a WPS process execution request.
         Returns a WPSExecution object, which can be used to monitor the status of the job, and ultimately
@@ -344,13 +329,19 @@ class WebProcessingService(object):
             requestElement = execution.buildRequest(identifier, inputs, output, mode=mode, lineage=lineage)
             request = etree.tostring(requestElement)
             execution.request = request
+        log.debug(request)
 
-        log.info( "Request: " + request)
-        response = execution.submitRequest(request)
-        log.info( "Response: " + etree.tostring(response))
+        # submit the request to the live server
+        if response is None:
+            response = execution.submitRequest(request)
+        else:
+            response = etree.fromstring(response)
+
+        log.debug(etree.tostring(response))
 
         # parse response
         execution.parseResponse(response)
+
         return execution
 
     def getOperationByName(self, name):
@@ -468,11 +459,8 @@ class WPSReader(object):
 
         if method == 'Get':
             # full HTTP request url
-#            log.info( "build_get_url: url= '{}', data= '{}'".format(url, data))
-#            request_url = build_get_url(url, data, overwrite=True)
-
-            request_url = data
-            log.info(request_url)
+            request_url = build_get_url(url, data, overwrite=True)
+            log.debug(request_url)
 
             # split URL into base url and query string to use utility function
             spliturl = request_url.split('?')
@@ -522,7 +510,8 @@ class WPSCapabilitiesReader(WPSReader):
         :param str password: optional user credentials
         """
         return self._readFromUrl(url,
-                                 {'service': 'WPS', 'request':'GetCapabilities', 'version': self.version},
+                                 {'service': 'WPS', 'request':
+                                     'GetCapabilities', 'version': self.version},
                                  self.timeout,
                                  username=username, password=password,
                                  headers=headers, verify=verify, cert=cert)
@@ -548,7 +537,8 @@ class WPSDescribeProcessReader(WPSReader):
             'request', and 'identifier'.
         """
         return self._readFromUrl(url,
-                                 {'service': 'WPS', 'request': 'DescribeProcess', 'version': self.version, 'identifier': identifier},
+                                 {'service': 'WPS', 'request': 'DescribeProcess',
+                                     'version': self.version, 'identifier': identifier},
                                  self.timeout,
                                  username=username, password=password,
                                  headers=headers, verify=verify, cert=cert)
@@ -564,13 +554,15 @@ class WPSExecuteReader(WPSReader):
         # superclass initializer
         super(WPSExecuteReader, self).__init__(verbose=verbose, timeout=timeout)
 
-    def readFromUrl(self, url, data={}, method='Get', username=None, password=None, headers=None, verify=True, cert=None):
+    def readFromUrl(self, url, data={}, method='Get', username=None, password=None,
+                    headers=None, verify=True, cert=None):
         """
         Reads a WPS status document from a remote service and returns the XML etree object.
         :param str url: the URL to submit the GET/POST request to.
         """
 
-        return self._readFromUrl(url, data, self.timeout, method, username=username, password=password, headers=headers, verify=verify, cert=cert)
+        return self._readFromUrl(url, data, self.timeout, method, username=username, password=password,
+                                 headers=headers, verify=verify, cert=cert)
 
 
 class WPSExecution(object):
@@ -580,7 +572,7 @@ class WPSExecution(object):
     """
 
     def __init__(self, version=WPS_DEFAULT_VERSION, url=None, username=None, password=None, verbose=False,
-                 headers=None, verify=True, cert=None, timeout=None, method="Get"):
+                 headers=None, verify=True, cert=None, timeout=None):
 
         # initialize fields
         self.url = url
@@ -592,7 +584,6 @@ class WPSExecution(object):
         self.verify = verify
         self.cert = cert
         self.timeout = timeout
-        self.method = method
 
         # request document
         self.request = None
@@ -787,7 +778,7 @@ class WPSExecution(object):
         try:
             xml = etree.tostring(response)
         except Exception:
-            log.error( "Could not parse XML response: " + str(response) )
+            log.error("Could not parse XML response: " + str(response) )
         else:
             self.response = xml
             log.debug(self.response)
@@ -873,9 +864,9 @@ class WPSExecution(object):
 
         self.request = request
         reader = WPSExecuteReader(verbose=self.verbose, timeout=self.timeout)
-        log.info("Start Request")
-        response = reader.readFromUrl( self.url, request, method=self.method, username=self.username, password=self.password, headers=self.headers, verify=self.verify, cert=self.cert )
-        log.info( "Request Response: " + str(response) )
+        response = reader.readFromUrl(
+            self.url, request, method='Post', username=self.username, password=self.password,
+            headers=self.headers, verify=self.verify, cert=self.cert)
         self.response = response
         return response
 
