@@ -770,7 +770,7 @@ class WPSExecution(object):
                     self.statusLocation, username=self.username, password=self.password,
                     headers=self.headers, verify=self.verify, cert=self.cert)
             except Exception as err:
-                log.error( "Could not read status document using url " + self.statusLocation + ": " + str(err) + "\n" + traceback.format_exc() )
+                log.error( "Could not read status document using url " + str(self.statusLocation) + ": " + str(err) + "\n" + traceback.format_exc() )
         else:
             response = reader.readFromString(response)
 
@@ -928,6 +928,7 @@ class WPSExecution(object):
         self.serviceInstance = root.get('serviceInstance')
         if self.statusLocation is None:
             self.statusLocation = root.get('statusLocation')
+            log.info( "Check status location, location = " + str(self.statusLocation) + ", response = " + str(root) )
 
         # <ns0:Status creationTime="2011-11-09T14:19:50Z">
         #  <ns0:ProcessSucceeded>PyWPS Process v.net.path successfully calculated</ns0:ProcessSucceeded>
