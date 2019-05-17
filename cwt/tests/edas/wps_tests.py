@@ -33,7 +33,7 @@ class wpsTest:
         self.client.execute( process, inputs=[variable], domain=domain, method='get' )
         process.wait()
 
-        print "Completed execution, result available at: " + process.output.uri
+        print "Completed execution, result available at: " + str(process.context.processOutputs)
 
 if __name__ == '__main__':
     tester = wpsTest()
