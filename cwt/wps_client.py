@@ -28,7 +28,8 @@ class WPSClient(object):
             url: A string url path for the WPS server.
             api_key: A string that will be passed as the value to COMPUTE-TOKEN HTTP header.
             version: A string version of the WPS server.
-            log: A boolean flag to enable logging
+            log: A boolean flag to enable logging.
+            log_level: A string log level (default: INFO).
             log_file: A string path for a log file.
             verify: A bool to enable/disable verifying a server's TLS certificate.
             cert: A str path to an SSL client cert or a tuple as ('cert', 'key').
@@ -39,9 +40,11 @@ class WPSClient(object):
         self.log_file = None
 
         if self.log:
+            log_level = kwargs.get('log_level', 'info').upper()
+
             root_logger = logging.getLogger()
 
-            root_logger.setLevel(logging.DEBUG)
+            root_logger.setLevel(log_level)
 
             formatter = logging.Formatter( '[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s' )
 
@@ -49,7 +52,7 @@ class WPSClient(object):
 
             stream_handler.setFormatter(formatter)
 
-            stream_handler.setLevel(logging.DEBUG)
+            stream_handler.setLevel(log_level)
 
             root_logger.addHandler(stream_handler)
 
@@ -62,7 +65,7 @@ class WPSClient(object):
 
                 file_handler.setFormatter(formatter)
 
-                file_handler.setLevel(logging.DEBUG)
+                file_handler.setLevel(log_level)
 
                 root_logger.addHandler(file_handler)
 
@@ -146,7 +149,7 @@ class WPSClient(object):
         documentation.
 
         If method is set to GET then you may pass any of the following WPS Execute parameters:
-        (ResponseDocument, RawDataOutput, storeExecuteResponse, lineage, status). See the 
+        (ResponseDocument, RawDataOutput, storeExecuteResponse, lineage, status). See the
         WPS document at (http://portal.opengeospatial.org/files/?artifact_id=24151).
 
         Examples:
@@ -161,6 +164,11 @@ class WPSClient(object):
             client.execute(proc, inputs=v0, axes='time')
 
             client.execute(proc, inputs=v0, axes=['lat', 'lon])
+
+        NOTES:
+            * `inputs` will be merged with existing values of `process.inputs`
+            * `domain` will override the value of `process.domain`
+            * `kwargs` will be merged with existing values of `process.parameters`
 
         Args:
             process: An instance of cwt.Process.
@@ -213,12 +221,14 @@ class WPSClient(object):
                     'DataInputs': data_inputs.replace(' ', ''),
                 })
 
-                extras = {}
+                extras = {
+                    'verify': self.verify,
+                }
 
                 if self.cert is not None:
                     extras['cert'] = self.cert
 
-                logger.debug('params %r', params)
+                logger.debug('params %r extras %r', params, extras)
 
                 response = requests.get(self.url, params=params, headers=self.headers, **extras)
 
@@ -226,7 +236,8 @@ class WPSClient(object):
 
                 logger.debug('Response %r', response_text)
 
-                process.context = self.client.execute(process.identifier, None, request=response.url, response=response_text)
+                process.context = self.client.execute(process.identifier, None, request=response.url,
+                                                      response=response_text)
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e) + "\n" + traceback.format_exc() )
         else:
@@ -306,33 +317,31 @@ class WPSClient(object):
             A dictionary containing the operations, domains and variables
             associated with the process.
         """
+        temp_process = process.copy()
+
         domains = {}
 
         if domain is not None:
             domains[domain.name] = domain
 
-            process.domain = domain
+            temp_process.domain = domain
 
         if not isinstance(inputs, (list, tuple)):
             inputs = [inputs, ]
 
-        process.inputs.extend(inputs)
+        temp_process.inputs.extend(inputs)
 
         if 'gridder' in kwargs:
-            process.gridder = kwargs.pop('gridder')
+            temp_process.gridder = kwargs.pop('gridder')
 
-        process.add_parameters(**kwargs)
+        temp_process.add_parameters(**kwargs)
 
-        processes, variables = process.collect_input_processes()
+        processes, variables = temp_process.collect_input_processes()
 
         # Collect all the domains from nested processes
         for item in processes.values():
             if item.domain is not None and item.domain.name not in domains:
                 domains[item.domain.name] = item.domain
-
-        for name in list(processes.keys()):
-            if processes[name].identifier == 'CDAT.workflow':
-                processes.pop(name)
 
         variable = json.dumps([x.to_dict() for x in variables.values()])
 

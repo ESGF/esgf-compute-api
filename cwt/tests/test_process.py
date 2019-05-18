@@ -138,7 +138,7 @@ class TestProcess(unittest.TestCase):
             self.process).processing = mock.PropertyMock(
             side_effect=processing)
 
-        self.process.wait(stale_threshold=10)
+        self.process.wait()
 
         mock_tracker.called_with(10)
 
@@ -182,14 +182,90 @@ class TestProcess(unittest.TestCase):
 
         self.assertEqual(self.process.parameters['axes'], param)
 
-    def test_collect_input_processes(self):
-        self.process.add_inputs(self.process2)
+    def test_collect_ip_share_inputs(self):
+        v1 = cwt.Variable('file:///file1', 'tas')
 
-        processes, inputs = self.process.collect_input_processes()
+        v2 = cwt.Variable('file:///file2', 'tas')
 
-        self.assertEqual(processes, [self.process2])
+        p1 = cwt.Process(identifier='CDAT.max')
 
-        self.assertEqual(inputs, [])
+        p1.add_inputs(v1, v2)
+
+        p2 = cwt.Process(identifier='CDAT.min')
+
+        p2.add_inputs(v1, v2)
+
+        p3 = cwt.Process(identifier='CDAT.subtract')
+
+        p3.add_inputs(p1, p2)
+
+        processes, inputs = p3.collect_input_processes()
+
+        self.assertEqual(len(inputs), 2)
+        self.assertIn(v1.name, inputs)
+        self.assertIn(v2.name, inputs)
+
+        self.assertEqual(len(processes), 3)
+        self.assertIn(p1.name, processes)
+        self.assertIn(p2.name, processes)
+        self.assertIn(p3.name, processes)
+
+    def test_collect_ip_multipe_process(self):
+        v1 = cwt.Variable('file:///file1', 'tas')
+
+        v2 = cwt.Variable('file:///file2', 'tas')
+
+        p1 = cwt.Process(identifier='CDAT.aggregate')
+
+        p1.add_inputs(v1, v2)
+
+        v3 = cwt.Variable('file:///file3', 'tas')
+
+        v4 = cwt.Variable('file:///file4', 'tas')
+
+        p2 = cwt.Process(identifier='CDAT.aggregate')
+
+        p2.add_inputs(v3, v4)
+
+        p3 = cwt.Process(identifier='CDAT.max')
+
+        p3.add_inputs(p1, p2)
+
+        processes, inputs = p3.collect_input_processes()
+
+        self.assertEqual(len(inputs), 4)
+        self.assertIn(v1.name, inputs)
+        self.assertIn(v2.name, inputs)
+        self.assertIn(v3.name, inputs)
+        self.assertIn(v4.name, inputs)
+
+        self.assertEqual(len(processes), 3)
+        self.assertIn(p1.name, processes)
+        self.assertIn(p2.name, processes)
+        self.assertIn(p3.name, processes)
+
+    def test_collect_ip_simple(self):
+        v1 = cwt.Variable('file:///file1', 'tas')
+
+        v2 = cwt.Variable('file:///file2', 'tas')
+
+        p1 = cwt.Process(identifier='CDAT.aggregate')
+
+        p1.add_inputs(v1, v2)
+
+        p2 = cwt.Process(identifier='CDAT.subset')
+
+        p2.add_inputs(p1)
+
+        processes, inputs = p2.collect_input_processes()
+
+        self.assertEqual(len(inputs), 2)
+        self.assertIn(v1.name, inputs)
+        self.assertIn(v2.name, inputs)
+
+        self.assertEqual(len(processes), 2)
+        self.assertIn(p1.name, processes)
+        self.assertIn(p2.name, processes)
 
     def test_to_dict(self):
         data = self.process.to_dict()

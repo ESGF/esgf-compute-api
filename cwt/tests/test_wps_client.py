@@ -2,6 +2,7 @@
 WPS client unit tests
 """
 
+import json
 import unittest
 
 import mock
@@ -67,15 +68,16 @@ class TestWPSClient(unittest.TestCase):
         self.assertEqual(len(processes), 2)
 
     def test_execute_no_domain(self):
-        with mock.patch.object(self.client, 'prepare_data_inputs') as mock_prepare:
+        with mock.patch.object(self.client, 'prepare_data_inputs', return_value=('', '', '')) as mock_prepare:
             self.client.execute(self.process, [self.variable])
+
             mock_prepare.assert_called_with(
                 self.process, [self.variable], None)
 
         self.assertIsNone(self.process.domain)
 
     def test_execute_no_inputs(self):
-        with mock.patch.object(self.client, 'prepare_data_inputs') as mock_prepare:
+        with mock.patch.object(self.client, 'prepare_data_inputs', return_value=('', '', '')) as mock_prepare:
             self.client.execute(self.process, domain=self.domain)
 
             mock_prepare.assert_called_with(self.process, [], self.domain)
@@ -89,30 +91,112 @@ class TestWPSClient(unittest.TestCase):
             self.client.execute(self.process)
 
     def test_execute(self):
-        with mock.patch.object(self.client, 'prepare_data_inputs', return_value='data_inputs'):
+        with mock.patch.object(self.client, 'prepare_data_inputs', return_value=('', '', '')) as mock_prepare:
             self.client.execute(self.process, [self.variable], self.domain)
 
-        self.client.client.execute.assert_called_with(
-            self.process.identifier, 'data_inputs')
+            mock_prepare.assert_called_with(self.process, [self.variable], self.domain)
 
         self.assertEqual(
             self.client.client.execute.return_value,
             self.process.context)
 
-    def test_prepare_data_inputs(self):
-        data_inputs = self.client.prepare_data_inputs(
-            self.process, [self.variable], self.domain, axes='lats')
+    def test_prepare_data_inputs_override_domain(self):
+        v1 = cwt.Variable('file:///test1.nc', 'tas')
 
+        self.process.add_inputs(v1)
+
+        self.process.add_parameters(feature='test')
+
+        domain = cwt.Domain(time=(10, 20), lat=(-90, 0))
+
+        self.process.domain = domain
+
+        data_inputs = self.client.prepare_data_inputs(self.process, [self.variable, ], self.domain, axes='lats')
+
+        # Check original process is untouched
+        self.assertEqual(self.process.inputs, [v1])
+        self.assertEqual(self.process.domain, domain)
+        self.assertEqual(self.process.parameters, {'feature': cwt.NamedParameter('feature', 'test')})
+
+        # Verify the outputs
         self.assertEqual(len(data_inputs), 3)
 
-        self.assertEqual(data_inputs[0][0], 'variable')
-        self.assertIn(self.variable.name, data_inputs[0][1].value)
+        self.assertIn(json.dumps(self.variable.to_dict()), data_inputs[0])
 
-        self.assertEqual(data_inputs[1][0], 'domain')
-        self.assertIn(self.domain.name, data_inputs[1][1].value)
+        self.assertIn(json.dumps(self.domain.to_dict()), data_inputs[1])
 
-        self.assertEqual(data_inputs[2][0], 'operation')
-        self.assertIn(self.process.name, data_inputs[2][1].value)
+        # Complete setup that prepare_data_inputs does on temp_process
+        self.process.domain = self.domain
+
+        self.process.inputs = [v1, self.variable]
+
+        self.process.parameters = {
+            'feature': cwt.NamedParameter('feature', 'test'),
+            'axes': cwt.NamedParameter('axes', 'lats'),
+        }
+
+        self.assertIn(json.dumps(self.process.to_dict()), data_inputs[2])
+
+    def test_prepare_data_inputs_preserve_process(self):
+        v1 = cwt.Variable('file:///test1.nc', 'tas')
+
+        self.process.add_inputs(v1)
+
+        self.process.add_parameters(feature='test')
+
+        domain = cwt.Domain(time=(10, 20), lat=(-90, 0))
+
+        self.process.domain = domain
+
+        data_inputs = self.client.prepare_data_inputs(self.process, [self.variable, ], domain=None, axes='lats')
+
+        # Check original process is untouched
+        self.assertEqual(self.process.inputs, [v1])
+        self.assertEqual(self.process.domain, domain)
+        self.assertEqual(self.process.parameters, {'feature': cwt.NamedParameter('feature', 'test')})
+
+        # Verify the outputs
+        self.assertEqual(len(data_inputs), 3)
+
+        self.assertIn(json.dumps(self.variable.to_dict()), data_inputs[0])
+
+        self.assertIn(json.dumps(domain.to_dict()), data_inputs[1])
+
+        # Complete setup that prepare_data_inputs does on temp_process
+        self.process.domain = domain
+
+        self.process.inputs = [v1, self.variable]
+
+        self.process.parameters = {
+            'feature': cwt.NamedParameter('feature', 'test'),
+            'axes': cwt.NamedParameter('axes', 'lats'),
+        }
+
+        self.assertIn(json.dumps(self.process.to_dict()), data_inputs[2])
+
+    def test_prepare_data_inputs(self):
+        data_inputs = self.client.prepare_data_inputs(self.process, [self.variable, ], self.domain, axes='lats')
+
+        # Check original process is untouched
+        self.assertEqual(self.process.inputs, [])
+        self.assertEqual(self.process.domain, None)
+        self.assertEqual(self.process.parameters, {})
+
+        # Verify the outputs
+        self.assertEqual(len(data_inputs), 3)
+
+        self.assertIn(json.dumps(self.variable.to_dict()), data_inputs[0])
+
+        self.assertIn(json.dumps(self.domain.to_dict()), data_inputs[1])
+
+        # Complete setup that prepare_data_inputs does on temp_process
+        self.process.domain = self.domain
+
+        self.process.inputs = [self.variable]
+
+        self.process.parameters = {'axes': cwt.NamedParameter('axes', 'lats')}
+
+        self.assertIn(json.dumps(self.process.to_dict()), data_inputs[2])
 
     def test_parse_data_inputs(self):
         variable = '{"id": "tas|tas", "uri": "file:///test.nc", "result": "v0"}'
