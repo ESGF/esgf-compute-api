@@ -1,4 +1,5 @@
 import cwt, os, logging, time, socket
+from cwt.wps import monitorExecution
 
 TAS = [
     'https://aims3.llnl.gov/thredds/dodsC/css03_data/CMIP6/CMIP/NASA-GISS/GISS-E2-1-G/amip/r1i1p1f1/Amon/tas/gn/v20181016/tas_Amon_GISS-E2-1-G_amip_r1i1p1f1_gn_185001-190012.nc',
@@ -31,7 +32,7 @@ class wpsTest:
         domain   = cwt.Domain.from_dict( domain_data )
 
         self.client.execute( process, inputs=[variable], domain=domain, method='get' )
-        process.wait()
+        monitorExecution( process.context )
 
         print "Completed execution, result available at: " + str(process.context.processOutputs[0].filePath)
 
