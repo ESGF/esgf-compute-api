@@ -32,7 +32,7 @@ class wpsTest:
         domain   = cwt.Domain.from_dict( domain_data )
 
         self.client.execute( process, inputs=[variable], domain=domain, method='get' )
-        monitorExecution( process.context, download = True )
+        monitorExecution( process.context, download = True, filepath="/tmp/" )
 
 if __name__ == '__main__':
     tester = wpsTest()
