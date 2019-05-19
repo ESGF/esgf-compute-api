@@ -35,7 +35,7 @@ class wpsTest:
         monitorExecution( process.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc" )
 
     def metrics_test(self):
-        process_data = { 'name': 'edas.metrics',  'result': 'metrics',  'input': [] }
+        process_data = { 'name': 'edas.metrics',  'result': '',  'input': [] }
         process = cwt.Process.from_dict(process_data)
         self.client.execute( process, method='get' )
         print json.dumps(process.output, indent=True, sort_keys=True)
