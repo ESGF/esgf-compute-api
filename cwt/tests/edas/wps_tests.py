@@ -1,4 +1,4 @@
-import cwt, os, logging, time, socket
+import cwt, os, logging, time, json
 from cwt.wps import monitorExecution
 
 TAS = [
@@ -34,6 +34,12 @@ class wpsTest:
         self.client.execute( process, inputs=[variable], domain=domain, method='get' )
         monitorExecution( process.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc" )
 
+    def metrics_test(self):
+        process_data = { 'name': 'edas.metrics' }
+        process = cwt.Process.from_dict(process_data)
+        self.client.execute( process, method='get' )
+        print json.dumps(process.output, indent=True, sort_keys=True)
+
 if __name__ == '__main__':
     tester = wpsTest()
-    tester.cfsr_mth_time_ave()
+    tester.metrics_test()
