@@ -40,7 +40,8 @@ class wpsTest:
         filePath = "/tmp/result-" + str(time.time()) + ".txt"
         monitorExecution( process.context, download = True, filepath=filePath )
         metrics = json.loads( open( filePath, "r").read() )
-        print "METRICS: " + str( metrics )
+        print "METRICS: "
+        for k,v in metrics.items(): print ( " * " + str(k) + " = " + str(v) )
 
 if __name__ == '__main__':
     tester = wpsTest()
