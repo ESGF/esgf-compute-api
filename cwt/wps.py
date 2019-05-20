@@ -763,7 +763,7 @@ class WPSExecution(object):
             # override status location
             if url is not None:
                 self.statusLocation = url
-            log.info('\nChecking execution status... (location=%s)' % self.statusLocation)
+            log.info('\nChecking execution status...   (location=%s)' % self.statusLocation)
             try:
                 response = reader.readFromUrl(  self.statusLocation, username=self.username, password=self.password, headers=self.headers, verify=self.verify, cert=self.cert)
             except Exception as err:
