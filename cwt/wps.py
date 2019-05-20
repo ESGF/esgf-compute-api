@@ -763,12 +763,9 @@ class WPSExecution(object):
             # override status location
             if url is not None:
                 self.statusLocation = url
-            log.info('\nChecking execution status... (location=%s)' %
-                     self.statusLocation)
+            log.info('\nChecking execution status... (location=%s)' % self.statusLocation)
             try:
-                response = reader.readFromUrl(
-                    self.statusLocation, username=self.username, password=self.password,
-                    headers=self.headers, verify=self.verify, cert=self.cert)
+                response = reader.readFromUrl(  self.statusLocation, username=self.username, password=self.password, headers=self.headers, verify=self.verify, cert=self.cert)
             except Exception as err:
                 log.error( "Could not read status document using url " + str(self.statusLocation) + ": " + str(err) + "\n" + traceback.format_exc() )
         else:
@@ -781,7 +778,7 @@ class WPSExecution(object):
             log.error("Could not parse XML response: " + str(response) )
         else:
             self.response = xml
-            log.debug(self.response)
+            log.info(self.response)
 
             self.parseResponse(response)
 
