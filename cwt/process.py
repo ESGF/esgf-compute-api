@@ -299,7 +299,7 @@ class Process(Parameter):
 
         obj.context = self.context
 
-        obj.inputs = self.inputs.copy()
+        obj.inputs = list(self.inputs)
 
         obj.parameters = self.parameters.copy()
 
