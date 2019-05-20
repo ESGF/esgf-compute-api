@@ -42,4 +42,4 @@ class wpsTest:
 
 if __name__ == '__main__':
     tester = wpsTest()
-    tester.metrics_test()
+    tester.cfsr_mth_time_ave()
