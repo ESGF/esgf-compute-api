@@ -37,8 +37,8 @@ class wpsTest:
     def metrics_test(self):
         process = cwt.Process( 'edas.metrics' )
         self.client.execute( process, method='get' )
-        print( str(process.output) )
-        print json.dumps(process.output, indent=True, sort_keys=True)
+        monitorExecution( process.context, download = True, filepath="/tmp/metrics-" + str(time.time()) + ".nc" )
+#        print json.dumps(process.output, indent=True, sort_keys=True)
 
 if __name__ == '__main__':
     tester = wpsTest()
