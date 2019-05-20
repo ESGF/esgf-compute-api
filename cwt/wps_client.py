@@ -228,16 +228,18 @@ class WPSClient(object):
                 if self.cert is not None:
                     extras['cert'] = self.cert
 
-                logger.debug('params %r extras %r', params, extras)
+                logger.info('params %r extras %r', params, extras)
 
                 response = requests.get(self.url, params=params, headers=self.headers, **extras)
 
                 response_text = response.text.encode('utf-8')
 
-                logger.debug('Response %r', response_text)
+                logger.info('Response %r', response_text)
 
-                process.context = self.client.execute(process.identifier, None, request=response.url,
-                                                      response=response_text)
+                process.context = self.client.execute(process.identifier, None, request=response.url, response=response_text)
+
+                logger.info( 'Execution Complete' )
+
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e) + "\n" + traceback.format_exc() )
         else:
