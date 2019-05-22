@@ -40,6 +40,7 @@ class wpsTest:
         self.monitorExecution( process.context )
 
     def monitorExecution(execution, download=False):
+        print 'Monitoring Execution'
         while execution.isComplete() is False:
             execution.checkStatus(sleepSecs=3)
             print 'Execution status: %s' % execution.status
@@ -52,6 +53,7 @@ class wpsTest:
                 print "METRICS: "
                 for k, v in metrics.items(): print (" * " + str(k) + " = " + str(v))
             else:
+                print 'Execution succeeded, nOutputs: ' + str(len(execution.processOutputs))
                 for output in execution.processOutputs:
                     print 'Output: %s' % str(output)
                     if output.reference is not None:
