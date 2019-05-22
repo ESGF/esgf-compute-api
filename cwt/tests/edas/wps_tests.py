@@ -47,11 +47,9 @@ class wpsTest:
 
         if execution.isSucceded():
             if download:
-                filePath = "/tmp/result-" + str(time.time()) + ".txt"
-                execution.getOutput(filepath=filePath)
-                metrics = json.loads(open(filePath, "r").read())
-                print "METRICS: "
-                for k, v in metrics.items(): print (" * " + str(k) + " = " + str(v))
+                for output in execution.processOutputs:
+                    output_content = output.retrieveData(execution.username, execution.password, headers=execution.headers, verify=execution.verify, cert=execution.cert)
+                    print (" GOT output content: " + str(output_content))
             else:
                 print 'Execution succeeded, nOutputs: ' + str(len(execution.processOutputs))
                 for output in execution.processOutputs:
