@@ -37,11 +37,28 @@ class wpsTest:
     def metrics_test(self):
         process = cwt.Process( 'edas.metrics' )
         self.client.execute( process, method='get' )
-        filePath = "/tmp/result-" + str(time.time()) + ".txt"
-        monitorExecution( process.context, download = True, filepath=filePath )
-        metrics = json.loads( open( filePath, "r").read() )
-        print "METRICS: "
-        for k,v in metrics.items(): print ( " * " + str(k) + " = " + str(v) )
+        self.monitorExecution( process.context )
+
+    def monitorExecution(execution, download=False):
+        while execution.isComplete() is False:
+            execution.checkStatus(sleepSecs=3)
+            print 'Execution status: %s' % execution.status
+
+        if execution.isSucceded():
+            if download:
+                filePath = "/tmp/result-" + str(time.time()) + ".txt"
+                execution.getOutput(filepath=filePath)
+                metrics = json.loads(open(filePath, "r").read())
+                print "METRICS: "
+                for k, v in metrics.items(): print (" * " + str(k) + " = " + str(v))
+            else:
+                for output in execution.processOutputs:
+                    print 'Output: %s' % str(output)
+                    if output.reference is not None:
+                        print 'Output URL=%s' % output.reference
+        else:
+            for ex in execution.errors:
+                print 'Error: code=%s, locator=%s, text=%s' % (ex.code, ex.locator, ex.text)
 
 if __name__ == '__main__':
     tester = wpsTest()
