@@ -823,9 +823,9 @@ class WPSExecution(object):
             content = b''
             for output in self.processOutputs:
 
-                output_content = output.retrieveData(
-                    self.username, self.password,
-                    headers=self.headers, verify=self.verify, cert=self.cert)
+                output_content = output.retrieveData( self.username, self.password, headers=self.headers, verify=self.verify, cert=self.cert)
+
+                print ( " GOT output content: " + str(output_content) )
 
                 # ExecuteResponse contains reference to server-side output
                 if output_content != b'':
