@@ -39,7 +39,7 @@ class wpsTest:
         self.client.execute( process, method='get' )
         self.monitorExecution( process.context )
 
-    def monitorExecution(execution, download=False):
+    def monitorExecution(self, execution, download=False):
         print 'Monitoring Execution'
         while execution.isComplete() is False:
             execution.checkStatus(sleepSecs=3)
