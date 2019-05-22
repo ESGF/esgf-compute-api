@@ -44,7 +44,7 @@ class wpsTest:
             execution.checkStatus(sleepSecs=3)
 
         if execution.isSucceded():
-            output_content = execution.processOutputs[0].retrieveData()
+            output_content = json.loads( execution.processOutputs[0].retrieveData() )
             print (" METRICS: ")
             for k,v in output_content.items(): print ( " * " + str(k) + ": " + str(v) )
         else:
