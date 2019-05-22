@@ -37,19 +37,11 @@ class wpsTest:
     def metrics_test(self):
         process = cwt.Process( 'edas.metrics' )
         self.client.execute( process, method='get' )
-        self.getMetricsResults( process.context )
+        process.wait()
+        output_content = json.loads(process.context.processOutputs[0].retrieveData())
+        print (" METRICS: ")
+        for k, v in output_content.items(): print (" * " + str(k) + ": " + str(v))
 
-    def getMetricsResults(self, execution):
-        while execution.isComplete() is False:
-            execution.checkStatus(sleepSecs=3)
-
-        if execution.isSucceded():
-            output_content = json.loads( execution.processOutputs[0].retrieveData() )
-            print (" METRICS: ")
-            for k,v in output_content.items(): print ( " * " + str(k) + ": " + str(v) )
-        else:
-            for ex in execution.errors:
-                print 'Error: code=%s, locator=%s, text=%s' % (ex.code, ex.locator, ex.text)
 
 if __name__ == '__main__':
     tester = wpsTest()
