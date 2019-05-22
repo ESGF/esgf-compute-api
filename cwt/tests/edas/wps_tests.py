@@ -37,25 +37,16 @@ class wpsTest:
     def metrics_test(self):
         process = cwt.Process( 'edas.metrics' )
         self.client.execute( process, method='get' )
-        self.monitorExecution( process.context )
+        self.getMetricsResults( process.context )
 
-    def monitorExecution(self, execution, download=True):
-        print 'Monitoring Execution'
+    def getMetricsResults(self, execution):
         while execution.isComplete() is False:
             execution.checkStatus(sleepSecs=3)
-            print 'Execution status: %s' % execution.status
 
         if execution.isSucceded():
-            if download:
-                for output in execution.processOutputs:
-                    output_content = output.retrieveData(execution.username, execution.password, headers=execution.headers, verify=execution.verify, cert=execution.cert)
-                    print (" GOT output content: " + str(output_content))
-            else:
-                print 'Execution succeeded, nOutputs: ' + str(len(execution.processOutputs))
-                for output in execution.processOutputs:
-                    print 'Output: %s' % str(output)
-                    if output.reference is not None:
-                        print 'Output URL=%s' % output.reference
+            output_content = execution.processOutputs[0].retrieveData()
+            print (" METRICS: ")
+            for k,v in output_content.items(): print ( " * " + str(k) + ": " + str(v) )
         else:
             for ex in execution.errors:
                 print 'Error: code=%s, locator=%s, text=%s' % (ex.code, ex.locator, ex.text)
