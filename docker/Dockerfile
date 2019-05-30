@@ -1,30 +1,44 @@
-FROM continuumio/miniconda:4.3.27
+FROM continuumio/miniconda:4.6.14 as base
 
-RUN apt-get update && \
-	apt-get install --no-install-recommends -y build-essential && \
-	rm -rf /var/lib/apt/lists/*
+COPY . /compute-api
 
-COPY environment.yml environment.yml
+WORKDIR /compute-api
 
-RUN conda install -c conda-forge jupyterlab nb_conda_kernels nodejs && \
-      conda create -n esgf-compute-api -c conda-forge -c cdat python=2 nomkl mesalib cdms2 vcs ipykernel && \
-      conda env update -n esgf-compute-api -f environment.yml && \
-      conda clean -y --all && \
-      rm environment.yml && \
-      rm -rf /opt/conda/pkgs/*
+ENV TINI_VERSION v0.18.0
 
-COPY docker/jupyter_notebook_config.json /root/.jupyter/jupyter_notebook_config.json
+RUN curl https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini -o /tini && \
+      chmod +x /tini
 
-COPY docker/entrypoint.sh entrypoint.sh
+CMD ["/tini", "--"]
 
-COPY . /esgf-compute-api
+FROM base as builder
 
-WORKDIR /esgf-compute-api
+RUN conda install -c conda-forge -y conda-build=3.17.8 && \
+      conda build -c conda-forge conda/
 
-RUN PATH=/opt/conda/envs/esgf-compute-api/bin:$PATH pip install -e .
+FROM base as dev
 
-WORKDIR /esgf-compute-api/docker
+RUN conda install -c conda-forge -y conda-build=3.17.8 ipython && \
+      conda develop .
 
-EXPOSE 9999
+ENTRYPOINT ["/bin/bash"]
 
-ENTRYPOINT ["./entrypoint.sh"]
+FROM continuumio/miniconda:4.6.14 as prod
+
+COPY --from=builder /opt/conda/conda-bld/noarch/* /opt/conda/conda-bld/noarch/
+
+RUN conda install -c conda-forge --use-local esgf-compute-api ipython
+
+ENTRYPOINT ["ipython"]
+
+FROM prod as jupyterlab
+
+RUN conda install -c conda-forge jupyterlab
+
+COPY docker/jupyter_notebook_config.json /root/.jupyter/
+
+EXPOSE 8888
+
+COPY --from=base /compute-api/examples* /compute-api/examples/
+
+ENTRYPOINT ["jupyter", "lab", "--ip", "0.0.0.0", "--port", "8888", "--allow-root", "--notebook-dir", "/compute-api/examples"]

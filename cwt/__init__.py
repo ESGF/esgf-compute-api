@@ -15,17 +15,11 @@ from cwt.dimension import TIMESTAMPS  # noqa
 from cwt.dimension import INDICES  # noqa
 from cwt.dimension import VALUES  # noqa
 from cwt.dimension import CRS  # noqa
-"""
-WPS Client library imports.
-"""
-
+from cwt._version import __version__
 
 import warnings
 
 warnings.simplefilter('default')
-
-__version__ = 'devel'
-
 
 NorthernHemisphere = Dimension('latitude', 0, 90)
 SouthernHemisphere = Dimension('latitude', -90, 0)
