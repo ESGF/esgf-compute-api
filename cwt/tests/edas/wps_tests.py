@@ -48,8 +48,8 @@ if __name__ == '__main__':
 
     t1 = time.time()
     tester.cfsr_mth_time_ave(0,80)
-    print(" Completed request1 in " + str(time.time() - t1) + " seconds")
+    print("\n Completed request1 in " + str(time.time() - t1) + " seconds \n")
 
     t2 = time.time()
     tester.cfsr_mth_time_ave(-80,0)
-    print(" Completed request2 in " + str(time.time() - t2) + " seconds")
+    print("\n Completed request2 in " + str(time.time() - t2) + " seconds \n")
