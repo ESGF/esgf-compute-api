@@ -63,8 +63,9 @@ class wpsTest:
                             print('Error: code=%s, locator=%s, text=%s' % (ex.code, ex.locator, ex.text))
 
 if __name__ == '__main__':
+    concurrent = True
     tester = wpsTest()
     t0 = time.time()
-    p0 = tester.cfsr_mth_time_ave( -80, 0,  True )
-    p1 = tester.cfsr_mth_time_ave(   0, 80, True )
-#    tester.monitorExecution( [ p0, p1 ], t0 )
+    p0 = tester.cfsr_mth_time_ave( -80, 0,  not concurrent )
+    p1 = tester.cfsr_mth_time_ave(   0, 80, not concurrent )
+    if concurrent: tester.monitorExecution( [ p0, p1 ], t0 )
