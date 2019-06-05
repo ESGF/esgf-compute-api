@@ -22,17 +22,20 @@ class wpsTest:
         self.client = cwt.WPSClient(SERVER)
         print "Connecting to wps host: " + SERVER
 
-    def cfsr_mth_time_ave(self, lat_start, lat_end ):
-
+    def cfsr_mth_time_ave(self, lat_start, lat_end, wait = True ):
+        t0 = time.time()
         domain_data = {'id': 'd0', 'lat': {"start":lat_start, "end":lat_end, "crs":"values"}, 'time': {'start': '1980-01-01T00:00:00', 'end': '2011-12-31T23:00:00', 'crs': 'timestamps'}}
         process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'p0' }
 
         process  = cwt.Process.from_dict( process_data )
-        variable = cwt.Variable( "collection://cip_cfsr_mth", 'ta', name='v0' )
+        variable = cwt.Variable( "collection://cip_cfsr_mth", 'tas', name='v0' )
         domain   = cwt.Domain.from_dict( domain_data )
 
         self.client.execute( process, inputs=[variable], domain=domain, method='get' )
-        monitorExecution( process.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc" )
+        if wait:
+            monitorExecution( process.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc" )
+            print("\n Completed request in " + str(time.time() - t0) + " seconds \n")
+        return process
 
     def metrics_test(self):
         process = cwt.Process( 'edas.metrics' )
@@ -42,14 +45,26 @@ class wpsTest:
         print (" METRICS: ")
         for k, v in output_content.items(): print (" * " + str(k) + ": " + str(v))
 
+    def monitorExecution( self, processes, t0 = time.time() ):
+        executions = [ process.context for process in processes ]
+        while len(executions) > 0:
+            time.sleep(0.2)
+            for execution in executions:
+                execution.checkStatus()
+                if execution.isComplete():
+                    if execution.isSucceded():
+                        executions.remove(execution)
+                        print("\n Completed request in " + str(time.time() - t0) + " seconds \n")
+                        for output in execution.processOutputs:
+                            if output.reference is not None:
+                                print( 'Output URL=%s' % output.reference )
+                    else:
+                        for ex in execution.errors:
+                            print('Error: code=%s, locator=%s, text=%s' % (ex.code, ex.locator, ex.text))
 
 if __name__ == '__main__':
     tester = wpsTest()
-
-    t1 = time.time()
-    tester.cfsr_mth_time_ave(-80,0)
-    print("\n Completed request1 in " + str(time.time() - t1) + " seconds \n")
-
-    t2 = time.time()
-    tester.cfsr_mth_time_ave(0,80)
-    print("\n Completed request2 in " + str(time.time() - t2) + " seconds \n")
+    t0 = time.time()
+    p0 = tester.cfsr_mth_time_ave( -80, 0,  False )
+    p1 = tester.cfsr_mth_time_ave(   0, 80, False )
+    tester.monitorExecution( [ p0, p1 ], t0 )
