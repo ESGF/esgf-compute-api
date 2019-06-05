@@ -24,7 +24,7 @@ class wpsTest:
 
     def cfsr_mth_time_ave(self):
 
-        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '1980-12-31T23:00:00', 'crs': 'timestamps'}}
+        domain_data = {'id': 'd0', 'time': {'start': '1980-01-01T00:00:00', 'end': '2011-12-31T23:00:00', 'crs': 'timestamps'}}
         process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'p0' }
 
         process  = cwt.Process.from_dict( process_data )
@@ -45,4 +45,6 @@ class wpsTest:
 
 if __name__ == '__main__':
     tester = wpsTest()
+    t1 = time.time()
     tester.cfsr_mth_time_ave()
+    print(" Completed request1 in " + str(time.time() - t1) + " seconds")
