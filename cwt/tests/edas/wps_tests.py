@@ -47,9 +47,9 @@ if __name__ == '__main__':
     tester = wpsTest()
 
     t1 = time.time()
-    tester.cfsr_mth_time_ave(0,80)
+    tester.cfsr_mth_time_ave(-80,0)
     print("\n Completed request1 in " + str(time.time() - t1) + " seconds \n")
 
     t2 = time.time()
-    tester.cfsr_mth_time_ave(-80,0)
+    tester.cfsr_mth_time_ave(0,80)
     print("\n Completed request2 in " + str(time.time() - t2) + " seconds \n")
