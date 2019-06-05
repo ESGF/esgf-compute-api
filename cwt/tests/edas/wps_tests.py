@@ -65,6 +65,6 @@ class wpsTest:
 if __name__ == '__main__':
     tester = wpsTest()
     t0 = time.time()
-    p0 = tester.cfsr_mth_time_ave( -80, 0,  False )
-    p1 = tester.cfsr_mth_time_ave(   0, 80, False )
-    tester.monitorExecution( [ p0, p1 ], t0 )
+    p0 = tester.cfsr_mth_time_ave( -80, 0,  True )
+    p1 = tester.cfsr_mth_time_ave(   0, 80, True )
+#    tester.monitorExecution( [ p0, p1 ], t0 )
