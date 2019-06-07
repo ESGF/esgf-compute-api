@@ -234,6 +234,8 @@ class WPSClient(object):
 
                 response = requests.get(self.url, params=params, headers=self.headers, **extras)
 
+                logger.debug('Request url %r', response.url)
+
                 response_text = response.text.encode('utf-8')
 
                 logger.debug('Response %r', response_text)
