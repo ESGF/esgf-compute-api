@@ -50,7 +50,7 @@ class wpsTest:
         while len(executions) > 0:
             time.sleep(0.2)
             for execution in executions:
-                execution.checkStatus()
+                execution.checkStatus( sleepSecs=2 )
                 if execution.isComplete():
                     if execution.isSucceded():
                         filepath = "/tmp/result-" + str(time.time()) + ".nc"
