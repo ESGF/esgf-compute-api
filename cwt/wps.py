@@ -778,7 +778,7 @@ class WPSExecution(object):
             log.error("Could not parse XML response: " + str(response) )
         else:
             self.response = xml
-            log.info(self.response)
+#            log.info(self.response)
 
             self.parseResponse(response)
 
