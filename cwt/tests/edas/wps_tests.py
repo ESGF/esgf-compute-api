@@ -33,7 +33,7 @@ class wpsTest:
 
         self.client.execute( process, inputs=[variable], domain=domain, method='get' )
         if wait:
-            monitorExecution( process.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc" )
+            monitorExecution( process.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc", sleepSecs=2 )
             print("\n Completed request in " + str(time.time() - t0) + " seconds \n")
         return process
 
