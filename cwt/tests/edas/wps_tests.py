@@ -25,10 +25,10 @@ class wpsTest:
     def cfsr_mth_time_ave(self, lat_start, lat_end, wait = True ):
         t0 = time.time()
         domain_data = {'id': 'd0', 'lat': {"start":lat_start, "end":lat_end, "crs":"values"}, 'time': {'start': '1980-01-01T00:00:00', 'end': '2011-12-31T23:00:00', 'crs': 'timestamps'}}
-        process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'p0' }
+        process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "tz",  'domain': "d0",  'result': 'p0' }
 
         process  = cwt.Process.from_dict( process_data )
-        variable = cwt.Variable( "collection://cip_cfsr_mth", 'tas', name='v0' )
+        variable = cwt.Variable( "collection://cip_cfsr_mth", 'va', name='v0' )
         domain   = cwt.Domain.from_dict( domain_data )
 
         self.client.execute( process, inputs=[variable], domain=domain, method='get' )
@@ -65,8 +65,12 @@ class wpsTest:
                             print('Error: code=%s, locator=%s, text=%s' % (ex.code, ex.locator, ex.text))
 
 if __name__ == '__main__':
+    concurrent = False
     tester = wpsTest()
     t0 = time.time()
-    p0 = tester.cfsr_mth_time_ave( -80, 0,  False )
-    p1 = tester.cfsr_mth_time_ave(   0, 80, False )
-    tester.monitorExecution( [ p0, p1 ], t0 )
+    if concurrent:
+        p0 = tester.cfsr_mth_time_ave( -80, 0,  False )
+        p1 = tester.cfsr_mth_time_ave(   0, 80, False )
+        tester.monitorExecution( [ p0, p1 ], t0 )
+    else:
+        p0 = tester.cfsr_mth_time_ave(-80, 0, True)
