@@ -27,9 +27,9 @@ class wpsTest:
         self.dataMgr = TestDataManager()
         print( "Connecting to wps host: " + SERVER )
 
-    def cfsr_mth_time_ave(self, lat_start, lat_end, wait = True ):
+    def cfsr_mth_time_ave(self, nyears, lat_start, lat_end, wait = True ):
         t0 = time.time()
-        domain_data = {'id': 'd0', 'lat': {"start":lat_start, "end":lat_end, "crs":"values"}, 'time': {'start': '1980-01-01T00:00:00', 'end': '2011-12-31T23:00:00', 'crs': 'timestamps'}}
+        domain_data = {'id': 'd0', 'lat': {"start":lat_start, "end":lat_end, "crs":"values"}, 'time': {'start': '1980-01-01T00:00:00', 'end': '{}-12-31T23:00:00'.format(1980+nyears-1), 'crs': 'timestamps'}}
         process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'p0' }
 
         process  = cwt.Process.from_dict( process_data )
@@ -74,6 +74,6 @@ if __name__ == '__main__':
     concurrent = False
     tester = wpsTest()
     t0 = time.time()
-    p0 = tester.cfsr_mth_time_ave( -80, 0,  not concurrent )
-    p1 = tester.cfsr_mth_time_ave(   0, 80, not concurrent )
-    if concurrent: tester.monitorExecution( [ p0, p1 ], t0 )
+    p0 = tester.cfsr_mth_time_ave( 1, -80, 0,  True )
+#    p1 = tester.cfsr_mth_time_ave( 1,  0, 80,  not concurrent )
+#    if concurrent: tester.monitorExecution( [ p0, p1 ], t0 )
