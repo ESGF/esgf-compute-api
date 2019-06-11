@@ -25,7 +25,7 @@ class wpsTest:
     def cfsr_mth_time_ave(self, lat_start, lat_end, wait = True ):
         t0 = time.time()
         domain_data = {'id': 'd0', 'lat': {"start":lat_start, "end":lat_end, "crs":"values"}, 'time': {'start': '1980-01-01T00:00:00', 'end': '2011-12-31T23:00:00', 'crs': 'timestamps'}}
-        process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "tz",  'domain': "d0",  'result': 'p0' }
+        process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'p0' }
 
         process  = cwt.Process.from_dict( process_data )
         variable = cwt.Variable( "collection://cip_cfsr_mth", 'tas', name='v0' )
