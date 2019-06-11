@@ -71,9 +71,9 @@ class wpsTest:
 
 
 if __name__ == '__main__':
-    concurrent = False
+    block = False
     tester = wpsTest()
     t0 = time.time()
-    p0 = tester.cfsr_mth_time_ave( 1, -80, 0,  True )
-#    p1 = tester.cfsr_mth_time_ave( 1,  0, 80,  not concurrent )
-#    if concurrent: tester.monitorExecution( [ p0, p1 ], t0 )
+    p0 = tester.cfsr_mth_time_ave( 30, -80, 0,  block )
+    p1 = tester.cfsr_mth_time_ave( 30,  0, 80,  block)
+    if not block: tester.monitorExecution( [ p0, p1 ], t0 )
