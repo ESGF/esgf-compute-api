@@ -22,6 +22,22 @@ class wpsTest:
         self.client = cwt.WPSClient(SERVER)
         print "Connecting to wps host: " + SERVER
 
+    def KE_performance_test_35y(self, wait = True ):
+        t0 = time.time()
+        domain_data = {'id': 'd0', 'time': {'start':'1980-01-01T00:00:00','end':'2014-12-31T23:00:00','crs':'timestamps'} }
+        process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "tyx",  'domain': "d0",  'result': 'p0' }
+
+        process  = cwt.Process.from_dict( process_data )
+        variable = cwt.Variable( "collection://merrra2_m2i1nxint", 'KE', name='v0' )
+        domain   = cwt.Domain.from_dict( domain_data )
+
+        self.client.execute( process, inputs=[variable], domain=domain, method='get' )
+        if wait:
+            monitorExecution( process.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc", sleepSecs=2 )
+            print("\n Completed request in " + str(time.time() - t0) + " seconds \n")
+        return process
+
+
     def cfsr_mth_time_ave(self, lat_start, lat_end, wait = True ):
         t0 = time.time()
         domain_data = {'id': 'd0', 'lat': {"start":lat_start, "end":lat_end, "crs":"values"}, 'time': {'start': '1980-01-01T00:00:00', 'end': '2011-12-31T23:00:00', 'crs': 'timestamps'}}
@@ -64,13 +80,15 @@ class wpsTest:
                         for ex in execution.errors:
                             print('Error: code=%s, locator=%s, text=%s' % (ex.code, ex.locator, ex.text))
 
+    def cfsr_concurrency_tests(self, concurrent ):
+        t0 = time.time()
+        if concurrent:
+            p0 = self.cfsr_mth_time_ave(-80, 0, False)
+            p1 = self.cfsr_mth_time_ave(0, 80, False)
+            self.monitorExecution([p0, p1], t0)
+        else:
+            p0 = self.cfsr_mth_time_ave(-80, 0, True)
+
 if __name__ == '__main__':
-    concurrent = False
     tester = wpsTest()
-    t0 = time.time()
-    if concurrent:
-        p0 = tester.cfsr_mth_time_ave( -80, 0,  False )
-        p1 = tester.cfsr_mth_time_ave(   0, 80, False )
-        tester.monitorExecution( [ p0, p1 ], t0 )
-    else:
-        p0 = tester.cfsr_mth_time_ave(-80, 0, True)
+    tester.KE_performance_test_35y()
