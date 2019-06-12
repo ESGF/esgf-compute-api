@@ -91,5 +91,5 @@ class wpsTest:
 
 if __name__ == '__main__':
     tester = wpsTest()
-#    tester.KE_performance_test_35y()
-    tester.cfsr_concurrency_tests( False )
+    tester.KE_performance_test_35y()
+#    tester.cfsr_concurrency_tests( False )
