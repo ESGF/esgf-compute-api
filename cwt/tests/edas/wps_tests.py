@@ -22,9 +22,10 @@ class wpsTest:
         self.client = cwt.WPSClient(SERVER)
         print "Connecting to wps host: " + SERVER
 
-    def KE_performance_test_35y(self, wait = True ):
+    def KE_performance_test(self, nyears = 35, wait = True ):
         t0 = time.time()
-        domain_data = {'id': 'd0', 'time': {'start':'1980-01-01T00:00:00','end':'2014-12-31T23:00:00','crs':'timestamps'} }
+        end_year = 1980 + nyears - 1
+        domain_data = {'id': 'd0', 'time': {'start':'1980-01-01T00:00:00','end': str(end_year) + '-12-31T23:00:00','crs':'timestamps'} }
         process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "tyx",  'domain': "d0",  'result': 'p0' }
 
         process  = cwt.Process.from_dict( process_data )
@@ -91,5 +92,5 @@ class wpsTest:
 
 if __name__ == '__main__':
     tester = wpsTest()
-    tester.KE_performance_test_35y()
+    tester.KE_performance_test( 10 )
 #    tester.cfsr_concurrency_tests( False )
