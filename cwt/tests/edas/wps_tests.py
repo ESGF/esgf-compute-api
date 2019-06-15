@@ -31,7 +31,7 @@ class wpsTest:
         process  = cwt.Process.from_dict( process_data )
         variable = cwt.Variable( "collection://merrra2_m2i1nxint", 'KE', name='v0' )
         domain   = cwt.Domain.from_dict( domain_data )
-
+        print( "KE_performance_test, time range = " + str( domain_data['time'] ) )
         self.client.execute( process, inputs=[variable], domain=domain, method='get' )
         if wait:
             monitorExecution( process.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc", sleepSecs=2 )
