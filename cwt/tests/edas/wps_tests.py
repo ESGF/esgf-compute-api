@@ -29,7 +29,7 @@ class wpsTest:
         process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "tyx",  'domain': "d0",  'result': 'p0' }
 
         process  = cwt.Process.from_dict( process_data )
-        variable = cwt.Variable( "collection://merrra2_m2i1nxint", 'KE', name='v0' )
+        variable = cwt.Variable( "collection://merrra2_m2i1nxint", 'KE', name='v0', domain="d0" )
         domain   = cwt.Domain.from_dict( domain_data )
         print( "KE_performance_test, time range = " + str( domain_data['time'] ) )
         self.client.execute( process, inputs=[variable], domain=domain, method='get' )
