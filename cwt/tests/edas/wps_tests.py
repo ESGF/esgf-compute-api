@@ -26,11 +26,9 @@ class wpsTest:
         t0 = time.time()
         end_year = 1980 + nyears - 1
         domain_data = {'id': 'd0', 'time': {'start':'1980-01-01T00:00:00','end': str(end_year) + '-12-31T23:00:00','crs':'timestamps'} }
-        process1  = cwt.Process.from_dict( { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'p0' } )
-        process2  = self.client.process_by_name( 'edas.ave' )
+        process1  = cwt.Process.from_dict( { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'r0' } )
+        process2  = cwt.Process.from_dict( { 'name': 'edas.ave',  'input': [],  'axes': "xy",  'domain': "d0",  'result': 'r1' } )
         process2.add_inputs( [process1] )
-        process2.add_parameters( axes="xy" )
-        process2.set_domain("d0")
         variable = cwt.Variable( "collection://merrra2_m2i1nxint", 'KE', name='v0', domain="d0" )
         domain   = cwt.Domain.from_dict( domain_data )
         print( "KE_performance_test, time range = " + str( domain_data['time'] ) )
