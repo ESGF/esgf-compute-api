@@ -26,7 +26,7 @@ class wpsTest:
         t0 = time.time()
         end_year = 1980 + nyears - 1
         domain_data = {'id': 'd0', 'time': {'start':'1980-01-01T00:00:00','end': str(end_year) + '-12-31T23:00:00','crs':'timestamps'} }
-        process1  = cwt.Process.from_dict( { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0" } )
+        process1  = cwt.Process.from_dict( { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'p0' } )
         process2  = self.client.process_by_name( 'edas.ave' )
         process2.add_inputs( [process1] )
         process2.add_parameters( axes="xy" )
@@ -108,5 +108,5 @@ class wpsTest:
 
 if __name__ == '__main__':
     tester = wpsTest()
-    tester.KE_performance_test( 35 )
+    tester.KE_performance_test( 1 )
 #    tester.cfsr_concurrency_tests( False )
