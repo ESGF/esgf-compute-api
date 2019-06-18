@@ -26,17 +26,19 @@ class wpsTest:
         t0 = time.time()
         end_year = 1980 + nyears - 1
         domain_data = {'id': 'd0', 'time': {'start':'1980-01-01T00:00:00','end': str(end_year) + '-12-31T23:00:00','crs':'timestamps'} }
-        process_data = { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0",  'result': 'p0' }
-
-        process  = cwt.Process.from_dict( process_data )
+        process1  = cwt.Process.from_dict( { 'name': 'edas.ave',  'input': [ 'v0' ],  'axes': "t",  'domain': "d0" } )
+        process2  = self.client.process_by_name( 'edas.ave' )
+        process2.add_inputs( [process1] )
+        process2.add_parameters( axes="xy" )
+        process2.set_domain("d0")
         variable = cwt.Variable( "collection://merrra2_m2i1nxint", 'KE', name='v0', domain="d0" )
         domain   = cwt.Domain.from_dict( domain_data )
         print( "KE_performance_test, time range = " + str( domain_data['time'] ) )
-        self.client.execute( process, inputs=[variable], domain=domain, method='get' )
+        self.client.execute( process2, inputs=[variable], domain=domain, method='get' )
         if wait:
-            monitorExecution( process.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc", sleepSecs=2 )
+            monitorExecution( process2.context, download = True, filepath="/tmp/result-" + str(time.time()) + ".nc", sleepSecs=2 )
             print("\n Completed request in " + str(time.time() - t0) + " seconds \n")
-        return process
+        return process2
 
     def KE_mem_error_test(self, wait = True ):
         t0 = time.time()
