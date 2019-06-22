@@ -270,15 +270,36 @@ class WPSClient(object):
 
         return items
 
-    def process_by_name(self, identifier):
+    def process_by_name(self, identifier, version=None):
         if not self._has_capabilities:
             self.get_capabilities()
 
+        matches = []
+
         for x in self.client.processes:
             if x.identifier == identifier:
-                return Process.from_owslib(x)
+                matches.append(x)
 
-        return None
+        if len(matches) == 0:
+            raise CWTError('No matching process {!r}', identifier)
+
+        process = None
+
+        if version is None:
+            matches = sorted(matches, key=lambda x: x.processVersion)
+
+            process = Process.from_owslib(matches[-1])
+        else:
+            for x in matches:
+                if x.processVersion == version:
+                    process = Process.from_owslib(x)
+
+                    break
+
+        if process is None:
+            raise CWTError('No matching process {!r} version {!r}', identifier, version)
+
+        return process
 
     @staticmethod
     def parse_data_inputs(data_inputs):
