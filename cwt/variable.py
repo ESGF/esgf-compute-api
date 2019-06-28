@@ -2,6 +2,7 @@
 Variable module.
 """
 
+from builtins import str
 import warnings
 
 from cwt.parameter import Parameter

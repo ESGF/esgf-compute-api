@@ -1,7 +1,9 @@
 """
 Process Module.
 """
+from __future__ import print_function
 
+from builtins import object
 import json
 import logging
 import time
@@ -152,7 +154,7 @@ class Process(Parameter):
 
         ignore = ('name', 'input', 'result', 'domain')
 
-        for name, value in data.items():
+        for name, value in list(data.items()):
             if name not in ignore:
                 if name == 'gridder':
                     obj.parameters[name] = Gridder.from_dict(value)
@@ -299,7 +301,11 @@ class Process(Parameter):
 
         obj.context = self.context
 
-        obj.inputs = self.inputs.copy()
+        try:
+            obj.inputs = self.inputs.copy()
+        except AttributeError:
+            # Python2 compat
+            obj.inputs = self.inputs[:]
 
         obj.parameters = self.parameters.copy()
 
@@ -383,7 +389,7 @@ class Process(Parameter):
 
             self.parameters[a.name] = a
 
-        for name, value in kwargs.items():
+        for name, value in list(kwargs.items()):
             if not isinstance(value, (list, tuple)):
                 value = [value]
 
@@ -455,7 +461,7 @@ class Process(Parameter):
                 'gridder': gridder.to_dict(),
             })
 
-        for name, value in self.parameters.items():
+        for name, value in list(self.parameters.items()):
             data.update(value.to_dict())
 
         return data

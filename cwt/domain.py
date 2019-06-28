@@ -50,7 +50,7 @@ class Domain(Parameter):
             for dim in dimensions:
                 self.dimensions[dim.name] = dim
 
-        for name, value in kwargs.items():
+        for name, value in list(kwargs.items()):
             self.add_dimension(name, value)
 
     @classmethod
@@ -65,7 +65,7 @@ class Domain(Parameter):
 
         dimensions = []
 
-        for key, value in data.items():
+        for key, value in list(data.items()):
             if key not in blacklist:
                 dimensions.append(Dimension.from_dict(value, key))
 
@@ -109,7 +109,7 @@ class Domain(Parameter):
         self.dimensions[name] = Dimension(*args)
 
     def get_dimension(self, *names):
-        for name, value in self.dimensions.items():
+        for name, value in list(self.dimensions.items()):
             if name in names:
                 return value
 
@@ -121,7 +121,7 @@ class Domain(Parameter):
             'id': self.name
         }
 
-        for name, value in self.dimensions.items():
+        for name, value in list(self.dimensions.items()):
             data[name] = value.to_dict()
 
         if self.mask is not None:

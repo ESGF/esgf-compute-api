@@ -2,6 +2,8 @@
 Dimension module.
 """
 
+from builtins import str
+from builtins import object
 import warnings
 
 from cwt.errors import CWTError

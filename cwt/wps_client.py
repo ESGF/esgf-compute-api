@@ -1,5 +1,7 @@
 """ A WPS Client """
 
+from builtins import str
+from builtins import object
 import json
 import logging
 import re
@@ -364,14 +366,14 @@ class WPSClient(object):
         processes, variables = temp_process.collect_input_processes()
 
         # Collect all the domains from nested processes
-        for item in processes.values():
+        for item in list(processes.values()):
             if item.domain is not None and item.domain.name not in domains:
                 domains[item.domain.name] = item.domain
 
-        variable = json.dumps([x.to_dict() for x in variables.values()])
+        variable = json.dumps([x.to_dict() for x in list(variables.values())])
 
-        domain = json.dumps([x.to_dict() for x in domains.values()])
+        domain = json.dumps([x.to_dict() for x in list(domains.values())])
 
-        operation = json.dumps([x.to_dict() for x in processes.values()])
+        operation = json.dumps([x.to_dict() for x in list(processes.values())])
 
         return variable, domain, operation
