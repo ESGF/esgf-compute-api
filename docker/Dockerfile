@@ -18,7 +18,7 @@ RUN conda install -c conda-forge anaconda-client
 
 ENTRYPOINT ["/bin/bash", "-c"]
 
-CMD ["anaconda login && anaconda upload /opt/conda/build-pkg/noarch/esgf-compute-api-${VER}-py_0.tar.bz2"]
+CMD ["anaconda login && anaconda upload /opt/conda/build-pkg/noarch/esgf-compute-api-${VER}-py_0.tar.bz2 -u cdat"]
 
 FROM continuumio/miniconda3:4.6.14 as prod
 
