@@ -32,7 +32,7 @@ COPY --from=builder /opt/conda/conda-bld/noarch/* /opt/conda/conda-bld/noarch/
 
 COPY --from=builder /compute-api/examples/* /examples/
 
-RUN conda install -c cdat -c conda-forge --use-local esgf-compute-api=${VER} jupyterlab mesalib nomkl vcs cdms2 && \
+RUN conda install -c cdat -c conda-forge --use-local esgf-compute-api=${VER} jupyterlab ipython mesalib nomkl vcs cdms2 && \
      rm -rf /opt/conda/conda-bld
 
 ENV TINI_VERSION v0.18.0
