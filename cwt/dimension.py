@@ -2,6 +2,8 @@
 Dimension module.
 """
 
+from builtins import str
+from builtins import object
 import warnings
 
 from cwt.errors import CWTError
@@ -48,26 +50,36 @@ INDICES = CRS('indices')
 TIMESTAMPS = CRS('timestamps')
 
 
-def int_or_float(data):
-    try:
-        return int(data)
-    except ValueError:
-        pass
+def int_or_float(value):
+    # Only attempt to convert if not already in a valid format
+    if not isinstance(value, (int, float)):
+        try:
+            value = int(value)
+        except ValueError:
+            try:
+                value = float(value)
+            except ValueError:
+                raise CWTError('Could not convert {!r} to either int or float', value)
 
-    try:
-        return float(data)
-    except ValueError:
-        raise CWTError('Could not convert {!r} to either int or float', data)
+    return value
 
 
 def get_crs_value(crs, value):
-    if crs == VALUES or crs == INDICES:
-        return int_or_float(value)
-    elif crs == TIMESTAMPS:
-        return value
-    else:
-        raise CWTError('Unknown CRS value "{!s}", available: {!s}',
-                       crs, ', '.join([str(x) for x in [VALUES, INDICES, TIMESTAMPS]]))
+    try:
+        if crs == INDICES:
+            value = int(value)
+        elif crs == VALUES:
+            value = int_or_float(value)
+        elif crs == TIMESTAMPS:
+            value = value
+        else:
+            raise CWTError('Unknown CRS value "{!s}", available: {!s}',
+                           crs, ', '.join([str(x) for x in [VALUES, INDICES, TIMESTAMPS]]))
+    # Could be raised from int() conversion
+    except ValueError:
+        raise CWTError('Failed to parse %r from %r', crs, value)
+
+    return value
 
 
 class Dimension(Parameter):

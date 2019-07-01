@@ -2,6 +2,8 @@
 Parameter module.
 """
 
+from builtins import str
+from builtins import object
 from uuid import uuid4 as uuid
 
 

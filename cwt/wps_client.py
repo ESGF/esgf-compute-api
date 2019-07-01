@@ -1,5 +1,7 @@
 """ A WPS Client """
 
+from builtins import str
+from builtins import object
 import json
 import logging
 import re
@@ -270,15 +272,36 @@ class WPSClient(object):
 
         return items
 
-    def process_by_name(self, identifier):
+    def process_by_name(self, identifier, version=None):
         if not self._has_capabilities:
             self.get_capabilities()
 
+        matches = []
+
         for x in self.client.processes:
             if x.identifier == identifier:
-                return Process.from_owslib(x)
+                matches.append(x)
 
-        return None
+        if len(matches) == 0:
+            raise CWTError('No matching process {!r}', identifier)
+
+        process = None
+
+        if version is None:
+            matches = sorted(matches, key=lambda x: x.processVersion)
+
+            process = Process.from_owslib(matches[-1])
+        else:
+            for x in matches:
+                if x.processVersion == version:
+                    process = Process.from_owslib(x)
+
+                    break
+
+        if process is None:
+            raise CWTError('No matching process {!r} version {!r}', identifier, version)
+
+        return process
 
     @staticmethod
     def parse_data_inputs(data_inputs):
@@ -343,14 +366,14 @@ class WPSClient(object):
         processes, variables = temp_process.collect_input_processes()
 
         # Collect all the domains from nested processes
-        for item in processes.values():
+        for item in list(processes.values()):
             if item.domain is not None and item.domain.name not in domains:
                 domains[item.domain.name] = item.domain
 
-        variable = json.dumps([x.to_dict() for x in variables.values()])
+        variable = json.dumps([x.to_dict() for x in list(variables.values())])
 
-        domain = json.dumps([x.to_dict() for x in domains.values()])
+        domain = json.dumps([x.to_dict() for x in list(domains.values())])
 
-        operation = json.dumps([x.to_dict() for x in processes.values()])
+        operation = json.dumps([x.to_dict() for x in list(processes.values())])
 
         return variable, domain, operation

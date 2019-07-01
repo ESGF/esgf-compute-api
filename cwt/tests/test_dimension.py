@@ -49,7 +49,7 @@ class TestDimension(unittest.TestCase):
 
         self.assertEqual(value, 4)
 
-        self.assertEqual(mock_conv.call_count, 2)
+        self.assertEqual(mock_conv.call_count, 1)
 
     def test_int_or_float_not_supported(self):
         with self.assertRaises(cwt.CWTError):
@@ -64,6 +64,17 @@ class TestDimension(unittest.TestCase):
         data = int_or_float('3')
 
         self.assertIsInstance(data, int)
+
+    def test_int_or_float_correct_format(self):
+        data = int_or_float(3)
+
+        self.assertIsInstance(data, int)
+        self.assertEqual(data, 3)
+
+        data = int_or_float(3.2)
+
+        self.assertIsInstance(data, float)
+        self.assertEqual(data, 3.2)
 
     def test_from_single_index(self):
         dimension = cwt.Dimension.from_single_index('time', 365, step=4)
