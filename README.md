@@ -45,7 +45,22 @@ process.wait()
 
 ### Docker image
 
-Docker [image](docs/source/cwt_docker.md) containing Jupyter lab and ESGF CWT end-user api.
+```
+docker pull jasonb87/compute-api:2.2.0
+```
+
+##### Jupyter Lab
+
+```
+docker run -it -p 8888:8888 jasonb87/compute-api:2.2.0
+```
+
+Open a browser to http://0.0.0.0:8888/lab and the password will be "esgf".
+
+#### IPython
+```
+docker run -it jasonb87/compute-api:2.2.0 ipython
+```
 
 ### Examples
 
@@ -54,4 +69,3 @@ Jupyter Notebook cotnaining examples can be found [here](examples/)
 ### Compatibility
 
 Compatibility document can be found on [here](docs/source/cwt.compat.rst)
-
