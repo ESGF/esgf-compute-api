@@ -9,6 +9,7 @@
 *.nc
 *.log
 *.ipynb_*
+*.eggs
 
 .build/
 _build/
