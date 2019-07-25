@@ -1,6 +1,6 @@
 # Retrieving an API Token
 
-> Some of the [ESGF](https://esgf.llnl.gov/) [WPS](https://www.opengeospatial.org/standards/wps) services may require a token to access their compute resources. Below you will find instructions to retrieve an API token for the [LLNL WPS service](https://aims2.llnl.gov/).
+> Some of the [ESGF](https://esgf.llnl.gov/) [WPS](https://www.opengeospatial.org/standards/wps) services may require a token to access their compute resources. Below you will find instructions to retrieve an API token/key for the [LLNL WPS service](https://aims2.llnl.gov/).
 
 ### LLNL WPS Home page
 ---
