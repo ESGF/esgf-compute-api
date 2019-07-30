@@ -21,4 +21,11 @@ setup(
     author_email='boutte3@llnl.gov',
     version=__version__,
     url='https://github.com/ESGF/esgf-compute-api',
+    install_requires=[
+        "owslib>=0.17.1",
+    ],
+    tests_require=[
+        "pytest>=5.0.1",
+        "mock>=3.0.5",
+    ]
 )
