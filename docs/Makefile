@@ -50,6 +50,7 @@ clean:
 
 .PHONY: html
 html:
+	pandoc ../README.md -f gfm -t rst -s -o source/readme.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

@@ -1,3 +1,14 @@
-.. include:: README.rst
+.. include:: readme.rst
 
-.. include:: modules.rst
+.. toctree::
+   :maxdepth: 1
+
+   API <modules>
+   cwt.compat
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

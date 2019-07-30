@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>cwt &#8212; esgf-compute-api 1.0.0 documentation</title>
+    <title>ESGF Compute end-user API &#8212; esgf-compute-api 1.0.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -14,6 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="cwt" href="modules.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -30,10 +31,91 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="cwt">
-<h1>cwt<a class="headerlink" href="#cwt" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
+  <div class="section" id="esgf-compute-end-user-api">
+<h1>ESGF Compute end-user API<a class="headerlink" href="#esgf-compute-end-user-api" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div><p>The ESGF Compute end-user API provides an object-oriented climatology
+package to access large scale computational resources through the Web
+Processing Service interface standard.</p>
+</div></blockquote>
+<p>Supported WPS version: 1.0.0</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">cdat</span> <span class="n">esgf</span><span class="o">-</span><span class="n">compute</span><span class="o">-</span><span class="n">api</span>
+</pre></div>
 </div>
+<p>or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ESGF</span><span class="o">/</span><span class="n">esgf</span><span class="o">-</span><span class="n">compute</span><span class="o">-</span><span class="n">api</span>
+
+<span class="n">cd</span> <span class="n">esgf</span><span class="o">-</span><span class="n">compute</span><span class="o">-</span><span class="n">api</span>
+
+<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p><a class="reference external" href="examples/getting_started.ipynb">Getting Started</a></p>
+</div></blockquote>
+<p>or</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cwt</span>
+
+<span class="n">tas</span> <span class="o">=</span> <span class="n">cwt</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="s1">&#39;http://thredds/dap/test.nc&#39;</span><span class="p">,</span> <span class="s1">&#39;tas&#39;</span><span class="p">)</span>
+
+<span class="n">wps</span> <span class="o">=</span> <span class="n">cwt</span><span class="o">.</span><span class="n">WPSClient</span><span class="p">(</span><span class="s1">&#39;http://localhost:8000/wps&#39;</span><span class="p">)</span>
+
+<span class="n">process</span> <span class="o">=</span> <span class="n">wps</span><span class="o">.</span><span class="n">get_process</span><span class="p">(</span><span class="s1">&#39;CDAT.subset&#39;</span><span class="p">)</span>
+
+<span class="n">wps</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">process</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="n">tas</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">)</span>
+
+<span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="docker-image">
+<h2>Docker image<a class="headerlink" href="#docker-image" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">pull</span> <span class="n">jasonb87</span><span class="o">/</span><span class="n">compute</span><span class="o">-</span><span class="n">api</span><span class="p">:</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">0</span>
+</pre></div>
+</div>
+<div class="section" id="jupyter-lab">
+<h3>Jupyter Lab<a class="headerlink" href="#jupyter-lab" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">-</span><span class="n">p</span> <span class="mi">8888</span><span class="p">:</span><span class="mi">8888</span> <span class="n">jasonb87</span><span class="o">/</span><span class="n">compute</span><span class="o">-</span><span class="n">api</span><span class="p">:</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">0</span>
+</pre></div>
+</div>
+<p>Open a browser to <a class="reference external" href="http://0.0.0.0:8888/lab">http://0.0.0.0:8888/lab</a>
+and the password will be “esgf”.</p>
+</div>
+<div class="section" id="ipython">
+<h3>IPython<a class="headerlink" href="#ipython" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="n">jasonb87</span><span class="o">/</span><span class="n">compute</span><span class="o">-</span><span class="n">api</span><span class="p">:</span><span class="mf">2.2</span><span class="o">.</span><span class="mi">0</span> <span class="n">ipython</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Jupyter Notebook cotnaining examples can be found <a class="reference external" href="examples/">here</a></p>
+</div>
+<div class="section" id="compatibility">
+<h2>Compatibility<a class="headerlink" href="#compatibility" title="Permalink to this headline">¶</a></h2>
+<p>Compatibility document can be found on
+<a class="reference external" href="docs/source/cwt.compat.rst">here</a></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cwt.compat.html">Compatibility</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
 </div>
 
 
@@ -53,11 +135,16 @@
 
 
 <h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cwt.compat.html">Compatibility</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="modules.html" title="next chapter">cwt</a></li>
   </ul></li>
 </ul>
 </div>
