@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Compatibility &#8212; esgf-compute-api 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="compatibility">
+<h1>Compatibility<a class="headerlink" href="#compatibility" title="Permalink to this headline">¶</a></h1>
+<p>The following define the WPS process requirements to be compatible with
+the ESGF end-user API. Included are various examples of the WPS process
+<a class="reference internal" href="#id1">inputs</a> and <a class="reference internal" href="#id7">output</a>.</p>
+<p>Original <a class="reference external" href="https://docs.google.com/document/d/1GSLwSJPUCfs-ZrYCG1n7BcWyldvb4pT9nYD3zkPCwao">document</a>.</p>
+<p>Full <a class="reference internal" href="#examples">examples</a>.</p>
+<div class="section" id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline">¶</a></h2>
+<p id="id1">The <strong>datainputs</strong> parameter will consist of the following three types.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#id2">Domain</a></p></li>
+<li><p><a class="reference internal" href="#id4">Variable</a></p></li>
+<li><p><a class="reference internal" href="#id5">Operation</a></p></li>
+</ul>
+<div class="section" id="domain">
+<h3>Domain<a class="headerlink" href="#domain" title="Permalink to this headline">¶</a></h3>
+<p id="id2">This WPS input should use the identifier <strong>domain</strong>. The input will be passed
+an array of domains that are comprised of one or more <a class="reference internal" href="#dimensions">dimensions</a>.</p>
+<ul class="simple">
+<li><p>id <em>[Required]</em></p></li>
+<li><p><a class="reference internal" href="#id3">mask</a> <em>[Optional]</em></p></li>
+<li><p>One ore more <a class="reference internal" href="#dimensions">dimensions</a> keyed using a descriptive identifier. <em>[Required]</em></p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">domain</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span><span class="s2">&quot;d0&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span><span class="s2">&quot;d1&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">}]</span>
+</pre></div>
+</div>
+<p>Domain Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;id&quot;</span><span class="p">:</span><span class="s2">&quot;d0&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="mf">45.0</span><span class="p">,</span>
+    <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+    <span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="s2">&quot;values&quot;</span><span class="p">,</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="s2">&quot;indices&quot;</span><span class="p">,</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="mi">1981</span><span class="p">,</span>
+    <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="mi">2016</span><span class="p">,</span>
+    <span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="s2">&quot;values&quot;</span><span class="p">,</span>
+  <span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="dimension">
+<h4>Dimension<a class="headerlink" href="#dimension" title="Permalink to this headline">¶</a></h4>
+<p id="dimensions">Dimensions describe either a spatial or temporal space.</p>
+<ul class="simple">
+<li><p>start <em>[Required]</em></p></li>
+<li><p>stop <em>[Required]</em></p></li>
+<li><p>step <em>[Optional]</em></p></li>
+<li><p>crs <em>[Required]</em></p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="mf">90.0</span><span class="p">,</span> <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="s2">&quot;indices&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mask">
+<h4>Mask<a class="headerlink" href="#mask" title="Permalink to this headline">¶</a></h4>
+<p id="id3">Defines a mask to be applied to the <a class="reference internal" href="#id4">variable</a>. The acceptable values for
+operation are constants, <em>mask_data</em>, <em>var_data</em> and any function implemented
+by the server. i.e. sin(<em>var_data</em>), etc</p>
+<ul class="simple">
+<li><p>uri <em>[Required]</em></p></li>
+<li><p>id <em>[Required]</em></p></li>
+<li><p>operation <em>[Required]</em></p></li>
+</ul>
+<p>Example:</p>
+<blockquote>
+<div><p>{“uri”: “<a class="reference external" href="http://.../tas_mask.nc">http://…/tas_mask.nc</a>”, “id”: “tas”, “operation”: “mask_data&gt;0.5”}</p>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="variable">
+<h3>Variable<a class="headerlink" href="#variable" title="Permalink to this headline">¶</a></h3>
+<p id="id4">This WPS input should use the identifier <strong>variable</strong>. The input will be passed
+an array of variables that define all inputs for the process.</p>
+<ul class="simple">
+<li><p>id <em>[Required]</em> - Can be extended with a <strong>|</strong> followed by an identifier that will be used to reference the <em>Variable</em></p></li>
+<li><p>uri <em>[Required]</em></p></li>
+<li><p>domain <em>[Optional]</em></p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;tas|v0&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;tas|v1&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">}]</span>
+</pre></div>
+</div>
+<p>Variable Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;tas|v0&quot;</span><span class="p">,</span> <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;http://.../test.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;d0&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="operation">
+<h3>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h3>
+<p id="id5">This WPS input should use the identifier <strong>operation</strong>. The input will be passed
+an array of operations.</p>
+<ul class="simple">
+<li><p>name <em>[Required]</em></p></li>
+<li><p>input <em>[Required]</em> - List of inputs</p></li>
+<li><p>result <em>[Optional]</em> - Name that can be referenced by other operations when creating workflows</p></li>
+<li><p>domain <em>[Optional]</em></p></li>
+<li><p>axes <em>[Optional]</em></p></li>
+<li><p><a class="reference internal" href="#id6">gridder</a> <em>[Optional]</em></p></li>
+<li><p>Zero or more additional parameters <em>[Optional]</em></p></li>
+</ul>
+<p><strong>Notes:</strong>
+Axes and additional parameter values can be a single value or multiple separated
+by a |.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">operation</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;CDS.timeBin&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">},{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CDS.diff2&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">}]</span>
+</pre></div>
+</div>
+<p>Operation Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CDS.timeBin&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;v0&quot;</span><span class="p">],</span>
+  <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;cycle&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;d0&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;axes&quot;</span><span class="p">:</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;bins&quot;</span><span class="p">:</span> <span class="s2">&quot;t|month|ave|year&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="gridder">
+<h4>Gridder<a class="headerlink" href="#gridder" title="Permalink to this headline">¶</a></h4>
+<p id="id6">Defines the regridder to use for the operation it’s passed to.</p>
+<ul class="simple">
+<li><p>tool <em>[Required]</em></p></li>
+<li><p>method <em>[Required]</em></p></li>
+<li><p>grid <em>[Required]</em></p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;esmf&quot;</span><span class="p">,</span> <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;grid&quot;</span><span class="p">:</span> <span class="s2">&quot;T42&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Operation Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;averager.multi_model_ensemble_mv&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;gridder&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;esmf&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;grid&quot;</span><span class="p">:</span> <span class="s2">&quot;T42&quot;</span><span class="p">,</span>
+  <span class="p">},</span>
+  <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p id="id7">The WPS process should only have a single <a class="reference internal" href="#id7">output</a> whose identifier is <strong>output</strong>. It
+should have an application/json mimetype and contain an list of Variable like objects.</p>
+<ul class="simple">
+<li><p>uri <em>[Required]</em></p></li>
+<li><p>id <em>[Optional]</em></p></li>
+<li><p>domain <em>[Optional]</em></p></li>
+<li><p>mime-type <em>[Optional]</em></p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[{</span>
+  <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;http://..../output.nc&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;tas_avg_mon&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span><span class="s2">&quot;d0&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">},</span>
+  <span class="s2">&quot;mime-type&quot;</span><span class="p">:</span> <span class="s2">&quot;x-application/netcdf&quot;</span><span class="p">,</span>
+<span class="p">}]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="full-examples">
+<h2>Full Examples<a class="headerlink" href="#full-examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate" id="examples"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">esgf</span>
+
+<span class="n">NH</span> <span class="o">=</span> <span class="n">esgf</span><span class="o">.</span><span class="n">Domain</span><span class="p">(</span><span class="n">dimensions</span><span class="o">=</span><span class="p">[</span>
+  <span class="n">esgf</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">,</span> <span class="n">esgf</span><span class="o">.</span><span class="n">Dimension</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;latitude&#39;</span><span class="p">),</span>
+<span class="p">],</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;d0&#39;</span><span class="p">)</span>
+
+<span class="n">tas</span> <span class="o">=</span> <span class="n">esgf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="s1">&#39;http://.../tas.nc&#39;</span><span class="p">,</span> <span class="s1">&#39;tas&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;v0&#39;</span><span class="p">,</span> <span class="n">domains</span><span class="o">=</span><span class="p">[</span><span class="n">NH</span><span class="p">])</span>
+
+<span class="n">wps</span> <span class="o">=</span> <span class="n">esgf</span><span class="o">.</span><span class="n">WPS</span><span class="p">(</span><span class="s1">&#39;http://.../wps&#39;</span><span class="p">)</span>
+
+<span class="n">avg</span> <span class="o">=</span> <span class="n">wps</span><span class="o">.</span><span class="n">get_process</span><span class="p">(</span><span class="s1">&#39;averager.mv&#39;</span><span class="p">)</span>
+
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="n">esgf</span><span class="o">.</span><span class="n">NamedParameter</span><span class="p">(</span><span class="s1">&#39;axes&#39;</span><span class="p">,</span> <span class="s1">&#39;latitude&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">avg</span><span class="o">.</span><span class="n">execute</span><span class="p">([</span><span class="n">tas</span><span class="p">],</span> <span class="n">domain</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Formed Url:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http://.../wps?service=WPS&amp;version=1.0.0&amp;request=execute&amp;identifier=averager.mv&amp;datainputs=
+  domain=[{&quot;id&quot;:&quot;d0&quot;,&quot;latitude&quot;:{&quot;start&quot;:0.0,&quot;end&quot;:90.0,&quot;step&quot;:1.0,&quot;crs&quot;:&quot;values&quot;}}];
+  variable=[{&quot;id&quot;:&quot;tas|tas&quot;,&quot;uri&quot;:&quot;http://.../tas.nc&quot;,domain=&quot;d0&quot;}];
+  operation=[{&quot;name&quot;:&quot;averager.mv&quot;,&quot;input&quot;:[&quot;v0&quot;],&quot;axes&quot;:&quot;latitude&quot;}]
+  &amp;storeexecuteresponse=false&amp;status=&amp;false
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">esgf-compute-api</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Jason Boutte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/cwt.compat.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
