@@ -50,6 +50,7 @@ clean:
 
 .PHONY: html
 html:
+	pandoc source/token.md -f gfm -t rst -s -o source/token.rst
 	pandoc ../README.md -f gfm -t rst -s -o source/readme.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo

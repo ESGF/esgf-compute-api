@@ -4,6 +4,7 @@
    :maxdepth: 1
 
    API <modules>
+   Service Token <token>
    cwt.compat
 
 Indices and tables
