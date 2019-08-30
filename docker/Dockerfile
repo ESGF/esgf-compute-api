@@ -1,46 +1,41 @@
 FROM continuumio/miniconda3:4.6.14 as builder
 
-ARG VER
+ARG COMPUTE_API_VER
+ENV COMPUTE_API_VER=${COMPUTE_API_VER}
 
-COPY . /compute-api
+WORKDIR /src
 
-WORKDIR /compute-api
+COPY conda conda/
+COPY cwt cwt/
+COPY setup.py .
 
-ENV VER=${VER}
-
-RUN echo "__version__ = '${VER}'" > cwt/_version.py && \
-      conda install -c conda-forge conda-build && \
+RUN echo "__version__ = '${COMPUTE_API_VER}'" > cwt/_version.py && \
+      conda install conda-build anaconda-client && \
       conda build -c conda-forge conda/
 
-FROM builder as uploader
+ENTRYPOINT ["tini", "--"]
 
-RUN conda install -c conda-forge anaconda-client 
+FROM builder as dev
 
-ENTRYPOINT ["/bin/bash", "-c"]
+RUN apt-get update && \
+      apt-get install -y --no-install-recommends vim-nox && \
+      rm -rf /var/lib/apt/lists/* && \
+      conda install -c conda-forge --use-local --only-deps esgf-compute-api && \
+      conda install -c conda-forge -y flake8 pytest pytest-mock pytest-cov mock && \
+      pip install -e .
 
-CMD ["anaconda login && anaconda upload /opt/conda/build-pkg/noarch/esgf-compute-api-${VER}-py_0.tar.bz2 -u cdat"]
-
-FROM continuumio/miniconda3:4.6.14 as prod
-
-ARG VER
-
-ENV VER=${VER}
+FROM continuumio/miniconda3:4.6.14
 
 WORKDIR /
 
-COPY --from=builder /opt/conda/conda-bld/noarch/* /opt/conda/conda-bld/noarch/
+COPY --from=builder /opt/conda/conda-bld/noarch /opt/conda/conda-bld/noarch/
+COPY --from=builder /opt/conda/pkgs /opts/conda/pkgs/
 
-COPY --from=builder /compute-api/examples/* /examples/
-
-RUN conda install -c cdat -c conda-forge --use-local esgf-compute-api=${VER} jupyterlab ipython mesalib nomkl vcs cdms2 && \
-     rm -rf /opt/conda/conda-bld
-
-ENV TINI_VERSION v0.18.0
-
-RUN curl https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini -o /tini && \
-      chmod +x /tini
-
+COPY examples /examples/
 COPY docker/jupyter_notebook_config.json /root/.jupyter/
+
+RUN conda install -c conda-forge -c cdat --use-local esgf-compute-api jupyterlab mesalib nomkl vcs cdms2 && \
+      conda clean -y -a
 
 EXPOSE 8888
 

@@ -2,12 +2,51 @@
 WPS client unit tests
 """
 
+import os
 import json
 import unittest
 
 import mock
 
 import cwt
+
+
+def test_compute_token_env_over_kwarg(mocker):
+    mocker.patch.dict(os.environ, {
+        'COMPUTE_TOKEN': 'test'
+    })
+
+    client = cwt.WPSClient('https://127.0.0.1/wps', compute_token='test2')
+
+    assert client.headers['COMPUTE-TOKEN'] == 'test'
+
+
+def test_compute_token_env(mocker):
+    mocker.patch.dict(os.environ, {
+        'COMPUTE_TOKEN': 'test'
+    })
+
+    client = cwt.WPSClient('https://127.0.0.1/wps')
+
+    assert client.headers['COMPUTE-TOKEN'] == 'test'
+
+
+def test_compute_token():
+    client = cwt.WPSClient('https://127.0.0.1/wps', compute_token='test')
+
+    assert client.headers['COMPUTE-TOKEN'] == 'test'
+
+
+def test_api_key_not_present():
+    client = cwt.WPSClient('https://127.0.0.1/wps')
+
+    assert 'COMPUTE-TOKEN' not in client.headers
+
+
+def test_api_key():
+    client = cwt.WPSClient('https://127.0.0.1/wps', api_key='test')
+
+    assert client.headers['COMPUTE-TOKEN'] == 'test'
 
 
 class TestWPSClient(unittest.TestCase):
