@@ -4,6 +4,7 @@ from builtins import str
 from builtins import object
 import json
 import logging
+import os
 import re
 import sys
 
@@ -76,10 +77,18 @@ class WPSClient(object):
 
         self.headers = kwargs.get('headers', {})
 
-        self.api_key = kwargs.get('api_key', None)
+        # Deprecating in favor of COMPUTE_TOKEN
+        api_key = kwargs.get('api_key', None)
 
-        if self.api_key is not None:
-            self.headers['COMPUTE-TOKEN'] = self.api_key
+        if api_key is not None:
+            print('Deprecating api_key for compute_token')
+
+        compute_token = kwargs.get('compute_token', api_key)
+
+        compute_token = os.environ.get('COMPUTE_TOKEN', compute_token)
+
+        if compute_token is not None:
+            self.headers['COMPUTE-TOKEN'] = compute_token
 
         self.verify = kwargs.get('verify', True)
 
