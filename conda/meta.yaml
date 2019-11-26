@@ -8,7 +8,7 @@ source:
   path: ../
 
 build:
-  number: {{ environ.get('BUILD_NUMBER', 0) }}
+  number: 0
   script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
   noarch: python
 
