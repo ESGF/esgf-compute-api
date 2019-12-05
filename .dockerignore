@@ -11,5 +11,4 @@ examples/
 .git/
 .gitignore
 Jenkinsfile
-jupyter_notebook_config.json
 README.md
