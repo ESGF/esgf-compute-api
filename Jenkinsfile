@@ -45,6 +45,9 @@ buildctl-daemonless.sh build \\
     }
 
     stage('Publish Conda') {
+      when {
+        branch 'master'
+      }
       environment {
         CONDA = credentials('conda')
       }
