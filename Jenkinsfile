@@ -32,8 +32,10 @@ pipeline {
 	--opt target=testresult \\
 	--output type=local,dest=output \\
 	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
+          sh 'ls -la output/'
         }
 
+        sh 'chown -R 10000:10000 output/'
       }
     }
 
