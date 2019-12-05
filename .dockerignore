@@ -1,3 +1,15 @@
+.circleci/
 ci-support/
+CONTRIBUTING.md
+DEVELOPER.md
+Dockerfile
+.dockerignore
 docs/
+environment_py3.yml
+environment.yml
 examples/
+.git/
+.gitignore
+Jenkinsfile
+jupyter_notebook_config.json
+README.md
