@@ -35,7 +35,8 @@ pipeline {
           sh 'chown -R 10000:10000 output/'
         }
 
-        sh 'ls -la output/'
+        cobertura(autoUpdateHealth: true, autoUpdateStability: true, failNoReports: true, failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 2, coberturaReportFile: 'output/coverage.xml')
+        junit 'output/unittest.xml'
       }
     }
 
