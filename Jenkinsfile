@@ -8,8 +8,10 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        container(name: 'buildkit', shell: '/bin/sh') {
-          sh '''buildctl-daemonless.sh build \\
+        container(name: 'buildkit', shell: '/bin/bash') {
+          sh '''#! /bin/bash
+
+buildctl-daemonless.sh build \\
 	--frontend dockerfile.v0 \\
 	--local context=. \\
 	--local dockerfile=. \\
@@ -24,8 +26,10 @@ pipeline {
 
     stage('Testing') {
       steps {
-        container(name: 'buildkit', shell: '/bin/sh') {
-          sh '''buildctl-daemonless.sh build \\
+        container(name: 'buildkit', shell: '/bin/bash') {
+          sh '''#! /bin/bash
+
+buildctl-daemonless.sh build \\
 	--frontend dockerfile.v0 \\
 	--local context=. \\
 	--local dockerfile=. \\
@@ -45,9 +49,8 @@ pipeline {
         CONDA = credentials('conda')
       }
       steps {
-        container(name: 'buildkit', shell: '/bin/sh') {
-          sh '''echo ${CONDA_USR}
-echo ${CONDA_PSW}
+        container(name: 'buildkit', shell: '/bin/bash') {
+          sh '''#! /bin/bash
 
 buildctl-daemonless.sh build \\
 	--frontend dockerfile.v0 \\
