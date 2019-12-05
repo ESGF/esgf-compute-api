@@ -58,6 +58,6 @@ ENV CONDA_PASSWORD $CONDA_PASSWORD
 
 RUN conda install anaconda-client
 
-RUN anaconda login --username ${CONDA_USERNAME} --password ${CONDA_PASSWORD}
-      
-RUN anaconda upload -u cdat --skip $(conda build -c conda-forge . --output)
+RUN anaconda config --set ssl_verify false && \
+      anaconda login --username ${CONDA_USERNAME} --password ${CONDA_PASSWORD} && \
+      anaconda upload -u cdat --skip $(conda build -c conda-forge . --output)
