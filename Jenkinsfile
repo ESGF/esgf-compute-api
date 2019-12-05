@@ -40,5 +40,24 @@ pipeline {
       }
     }
 
+    stage('Publish Conda') {
+      environment {
+        CONDA = credentials('conda')
+      }
+      steps {
+        container(name: 'buildkit', shell: '/bin/sh') {
+          sh '''buildctl-daemonless.sh build \\
+	--frontend dockerfile.v0 \\
+	--local context=. \\
+	--local dockerfile=. \\
+	--opt target=publish \\
+	--opt build-arg:CONDA_USERNAME=${CONDA_USR} \\
+	--opt build-arg:CONDA_PASSWORD=${CONDA_PSW} \\
+	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
+        }
+
+      }
+    }
+
   }
 }
