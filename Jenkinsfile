@@ -8,7 +8,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        container(name: 'buildkit', shell: '/bin/bash') {
+        container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/bash
 
 buildctl-daemonless.sh build \\
@@ -26,7 +26,7 @@ buildctl-daemonless.sh build \\
 
     stage('Testing') {
       steps {
-        container(name: 'buildkit', shell: '/bin/bash') {
+        container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/bash
 
 buildctl-daemonless.sh build \\
@@ -49,7 +49,7 @@ buildctl-daemonless.sh build \\
         CONDA = credentials('conda')
       }
       steps {
-        container(name: 'buildkit', shell: '/bin/bash') {
+        container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/bash
 
 buildctl-daemonless.sh build \\
