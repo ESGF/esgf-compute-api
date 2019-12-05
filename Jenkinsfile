@@ -9,7 +9,7 @@ pipeline {
     stage('Build') {
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
-          sh '''#! /bin/bash
+          sh '''#! /bin/sh
 
 buildctl-daemonless.sh build \\
 	--frontend dockerfile.v0 \\
@@ -27,7 +27,7 @@ buildctl-daemonless.sh build \\
     stage('Testing') {
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
-          sh '''#! /bin/bash
+          sh '''#! /bin/sh
 
 buildctl-daemonless.sh build \\
 	--frontend dockerfile.v0 \\
@@ -50,7 +50,7 @@ buildctl-daemonless.sh build \\
       }
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
-          sh '''#! /bin/bash
+          sh '''#! /bin/sh
 
 buildctl-daemonless.sh build \\
 	--frontend dockerfile.v0 \\
