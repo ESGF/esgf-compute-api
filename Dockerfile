@@ -56,6 +56,8 @@ ENV CONDA_USERNAME $CONDA_USERNAME
 ARG CONDA_PASSWORD
 ENV CONDA_PASSWORD $CONDA_PASSWORD
 
-RUN conda install anaconda-client && \
-      anaconda login --username ${CONDA_USERNAME} --password ${CONDA_PASSWORD} && \
-      anaconda upload -u cdat --skip $(conda build -c conda-forge . --output)
+RUN conda install anaconda-client
+
+RUN anaconda login --username ${CONDA_USERNAME} --password ${CONDA_PASSWORD}
+      
+RUN anaconda upload -u cdat --skip $(conda build -c conda-forge . --output)
