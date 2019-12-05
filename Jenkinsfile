@@ -46,7 +46,10 @@ pipeline {
       }
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
-          sh '''buildctl-daemonless.sh build \\
+          sh '''echo ${CONDA_USR}
+echo ${CONDA_PSW}
+
+buildctl-daemonless.sh build \\
 	--frontend dockerfile.v0 \\
 	--local context=. \\
 	--local dockerfile=. \\
