@@ -22,5 +22,20 @@ pipeline {
       }
     }
 
+    stage('Testing') {
+      steps {
+        container(name: 'buildkit', shell: '/bin/sh') {
+          sh '''buildctl-daemonless.sh build \\
+	--frontend dockerfile.v0 \\
+	--local context=. \\
+	--local dockerfile=. \\
+	--opt target=testresult \\
+	--output type=local,dest=output \\
+	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
+        }
+
+      }
+    }
+
   }
 }
