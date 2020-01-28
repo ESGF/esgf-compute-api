@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import collections
+import warnings
 
 import requests
 from owslib import wps
@@ -76,11 +77,16 @@ class WPSClient(object):
         api_key = kwargs.get('api_key', None)
 
         if api_key is not None:
-            print('Deprecating api_key for compute_token')
+            warnings.warn('api_key is deprecated, use compute_token or environment variable COMPUTE_TOKEN', DeprecationWarning)
 
         compute_token = kwargs.get('compute_token', api_key)
 
         compute_token = os.environ.get('COMPUTE_TOKEN', compute_token)
+
+        auth = kwargs.get('auth', None)
+
+        if auth is not None:
+            compute_token = auth.get_token()
 
         if compute_token is not None:
             self.headers['COMPUTE-TOKEN'] = compute_token
