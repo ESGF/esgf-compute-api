@@ -1,117 +1,72 @@
-node('build-pod') {
-  stage('Checkout') {
-    checkout scm
-  }
-
-
-  stage('Unittest') {
-    container('conda') {
-      sh "conda env create -p ${HOME}/cwt -f environment.yml"
-
-      sh "conda env update -p ${HOME}/cwt -f cwt/tests/environment.yml"
-
-      sh ''' #!/bin/bash
-      . /opt/conda/etc/profile.d/conda.sh
-
-      conda activate ${HOME}/cwt
-
-      conda install -y -c conda-forge flake8
-
-      pytest cwt/tests \
-        --junit-xml=junit_py2.xml
-
-      '''
-
-      archiveArtifacts 'junit_py2.xml'
-
-      xunit([JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'junit_py2.xml', skipNoTestFiles: true, stopProcessingIfError: true)])
-
+pipeline {
+  agent {
+    node {
+      label 'jenkins-buildkit'
     }
+
   }
+  stages {
+    stage('Build') {
+      steps {
+        container(name: 'buildkit', shell: '/bin/sh') {
+          sh '''#! /bin/sh
 
-  stage('UnittestPy3') {
-    container('conda') {
-      sh "conda env update -p ${HOME}/cwt_py3 -f cwt/tests/environment_py3.yml"
+buildctl-daemonless.sh build \\
+	--frontend dockerfile.v0 \\
+	--local context=. \\
+	--local dockerfile=. \\
+        --opt target=production \\
+	--output type=image,name=${OUTPUT_REGISTRY}/compute-api:${GIT_COMMIT:0:8},push=true \\
+	--export-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache \\
+	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
+        }
 
-      sh ''' #!/bin/bash
-      . /opt/conda/etc/profile.d/conda.sh
-
-      conda activate ${HOME}/cwt_py3
-
-      pytest cwt/tests \
-        --junit-xml=junit.xml \
-        --cov=cwt --cov-report=xml
-
-      flake8 --format=pylint --output-file=flake8.xml --exit-zero
-      '''
-
-      archiveArtifacts 'junit.xml'
-
-      archiveArtifacts 'coverage.xml'
-
-      archiveArtifacts 'flake8.xml'
-
-      xunit([JUnit(deleteOutputFiles: true, failIfNotNew: true, pattern: 'junit.xml', skipNoTestFiles: true, stopProcessingIfError: true)])
-
-      cobertura(coberturaReportFile: 'coverage.xml')
-
-      def flake8 = scanForIssues filters: [
-      ], tool: flake8(pattern: 'flake8.xml')
-
-      publishIssues issues: [flake8], filters: [includePackage('wps')]
-    }
-  }
-  stage('Build conda package') {
-    def parts = env.BRANCH_NAME.split('/')
-
-    env.API_VERSION = parts[parts.length-1]
-
-    env.GIT_VERSION = env.BRANCH_NAME
-
-    withCredentials([usernamePassword(credentialsId: 'jasonb5-anaconda', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-      container('conda') {
-        sh 'conda install -y -c conda-forge conda-build anaconda-client'
-
-        sh 'conda build -c conda-forge -c cdat conda/'
-
-        sh 'anaconda login --username ${USERNAME} --password ${PASSWORD}'
-
-        sh 'anaconda upload -u cdat --skip-existing $(conda build --output conda/)'
       }
     }
-  }
 
-  stage('Build docker image') {
-    container(name: 'kaniko', shell: '/busybox/sh') {
-      sh '''#!/busybox/sh
-        /kaniko/executor --cache --cache-dir=/cache --context=`pwd` \
-        --destination=${LOCAL_REGISTRY}/api:${GIT_VERSION} \
-        --dockerfile `pwd`/docker/Dockerfile --insecure-registry \
-        ${LOCAL_REGISTRY}
-      '''
+    stage('Testing') {
+      steps {
+        container(name: 'buildkit', shell: '/bin/sh') {
+          sh '''#! /bin/sh
+
+buildctl-daemonless.sh build \\
+	--frontend dockerfile.v0 \\
+	--local context=. \\
+	--local dockerfile=. \\
+	--opt target=testresult \\
+	--output type=local,dest=output \\
+	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
+          sh 'chown -R 10000:10000 output/'
+        }
+
+        cobertura(autoUpdateHealth: true, autoUpdateStability: true, failNoReports: true, failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 2, coberturaReportFile: 'output/coverage.xml')
+        junit 'output/unittest.xml'
+      }
     }
-  }
 
-  stage('Docker image security scan') {
-    container('conda') {
-      sh '''#!/bin/bash
-      clairctl --config ${CLAIR_CONFIG} --log-level debug report ${LOCAL_REGISTRY}/api:${GIT_VERSION}
-      '''
+    stage('Publish Conda') {
+      when {
+        branch 'master'
+      }
+      environment {
+        CONDA = credentials('conda')
+      }
+      steps {
+        container(name: 'buildkit', shell: '/bin/sh') {
+          sh '''#! /bin/sh
 
-      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, 
-          reportDir: 'reports/html/', reportFiles: '*.html', reportName: 'HTML Report', reportTitles: ''])
+buildctl-daemonless.sh build \\
+	--frontend dockerfile.v0 \\
+	--local context=. \\
+	--local dockerfile=. \\
+	--opt target=publish \\
+	--opt build-arg:CONDA_USERNAME=${CONDA_USR} \\
+	--opt build-arg:CONDA_PASSWORD=${CONDA_PSW} \\
+	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
+        }
+
+      }
     }
-  }
 
-  stage('Docker push image') {
-    container('dind') {
-      sh ''' #!/bin/bash
-      docker pull ${LOCAL_REGISTRY}/api:${GIT_VERSION}
-
-      docker tag ${LOCAL_REGISTRY}/api:${GIT_VERSION} jasonb87/cwt_api:${GIT_VERSION}
-
-      docker push jasonb87/cwt_api:${GIT_VERSION}
-      '''
-    }
   }
 }

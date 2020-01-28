@@ -7,6 +7,8 @@ import logging
 import os
 import re
 import sys
+import collections
+import warnings
 
 import requests
 from owslib import wps
@@ -17,7 +19,15 @@ from cwt.errors import WPSClientError
 from cwt.process import Process
 from cwt.variable import Variable
 
-logger = logging.getLogger('cwt.wps_client')
+logger = logging.getLogger('cwt.wps__client')
+
+
+class ProcessCollection(collections.OrderedDict):
+    def __getattr__(self, name):
+        if name in self:
+            return self[name]
+
+        raise AttributeError(name)
 
 
 class WPSClient(object):
@@ -35,7 +45,7 @@ class WPSClient(object):
             log_level: A string log level (default: INFO).
             log_file: A string path for a log file.
             verify: A bool to enable/disable verifying a server's TLS certificate.
-            cert: A str path to an SSL client cert or a tuple as ('cert', 'key').
+            cert: A str path to an SSL _client cert or a tuple as ('cert', 'key').
             headers: A dict that will be passed as HTTP headers.
         """
         self.log = kwargs.get('log', False)
@@ -45,22 +55,8 @@ class WPSClient(object):
         if self.log:
             log_level = kwargs.get('log_level', 'info').upper()
 
-            root_logger = logging.getLogger()
-
-            root_logger.setLevel(log_level)
-
-            formatter = logging.Formatter(
-                '[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
-
-            stream_handler = logging.StreamHandler(sys.stdout)
-
-            stream_handler.setFormatter(formatter)
-
-            stream_handler.setLevel(log_level)
-
-            root_logger.addHandler(stream_handler)
-
-            logger.info('Added stdout handler')
+            logging.basicConfig(level=log_level,
+                    format='[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
 
             self.log_file = kwargs.get('log_file', None)
 
@@ -81,18 +77,23 @@ class WPSClient(object):
         api_key = kwargs.get('api_key', None)
 
         if api_key is not None:
-            print('Deprecating api_key for compute_token')
+            warnings.warn('api_key is deprecated, use compute_token or environment variable COMPUTE_TOKEN', DeprecationWarning)
 
         compute_token = kwargs.get('compute_token', api_key)
 
         compute_token = os.environ.get('COMPUTE_TOKEN', compute_token)
+
+        auth = kwargs.get('auth', None)
+
+        if auth is not None:
+            compute_token = auth.get_token()
 
         if compute_token is not None:
             self.headers['COMPUTE-TOKEN'] = compute_token
 
         self.verify = kwargs.get('verify', True)
 
-        client_kwargs = {
+        _client_kwargs = {
             'skip_caps': True,
             'headers': self.headers,
             'verify': self.verify,
@@ -102,20 +103,20 @@ class WPSClient(object):
         self.version = kwargs.get('version', None)
 
         if self.version is not None:
-            client_kwargs['version'] = self.version
+            _client_kwargs['version'] = self.version
 
         self.cert = kwargs.get('cert', None)
 
         if self.cert is not None:
-            client_kwargs['cert'] = self.cert
+            _client_kwargs['cert'] = self.cert
 
-        logger.info('Initialize OWSLib with %r', client_kwargs)
+        logger.info('Initialize OWSLib with %r', _client_kwargs)
 
         self.url = url
 
-        self.client = wps.WebProcessingService(self.url, **client_kwargs)
+        self._client = wps.WebProcessingService(self.url, **_client_kwargs)
 
-        self._has_capabilities = False
+        self._build_process_collection()
 
     def __repr__(self):
         return ('WPSClient(url={!r}, log={!r}, log_file={!r}, '
@@ -123,25 +124,138 @@ class WPSClient(object):
                     self.url, self.log, self.log_file, self.verify,
                     self.cert, self.version, self.headers)
 
-    def get_capabilities(self, method='get'):
-        """ Executes a GetCapabilities request."""
-        self.client.getcapabilities()
+    @staticmethod
+    def parse_data_inputs(data_inputs):
+        """ Parses a data_inputs string
 
-        self._has_capabilities = True
+        The data_inputs string follows this format:
+
+        [variable=[];domain=[];operation=[]]
+
+        Args:
+            data_inputs: A string containing the processes data_inputs
+
+        Returns:
+            A tuple containing the a list of operations, domains and variables
+            object contained in the data_inputs string.
+        """
+        match = re.search(r'\[(.*)\]', data_inputs)
+
+        kwargs = dict((x.split('=')[0], json.loads(x.split('=')[1]))
+                      for x in match.group(1).split(';'))
+
+        variables = [Variable.from_dict(x) for x in kwargs.get('variable', [])]
+
+        domains = [Domain.from_dict(x) for x in kwargs.get('domain', [])]
+
+        operation = [Process.from_dict(x) for x in kwargs.get('operation', [])]
+
+        return operation, domains, variables
+
+    def _build_process_collection(self):
+        self._client.getcapabilities()
+
+        groups = {}
+
+        processes = sorted(self._client.processes, key=lambda x: x.identifier)
+
+        for x in processes:
+            process = Process.from_owslib(self, x)
+
+            id_parts = process.identifier.split('.')
+
+            if len(id_parts) == 1:
+                name = id_parts[0]
+
+                if 'General' not in groups:
+                    groups['General'] = ProcessCollection()
+
+                groups['General'][name] = process
+            elif len(id_parts) == 2:
+                module, name = id_parts
+
+                if module not in groups:
+                    groups[module] = ProcessCollection()
+
+                groups[module][name] = process
+            else:
+                raise CWTError('Could not group process {!s}.', process.identifier)
+
+        for x, y in groups.items():
+            process_list = '\n'.join(sorted([x for x in y]))
+
+            doc = ("Collection of processes for {module!r} module.\n"
+                   "\n"
+                   "{process_list!s}")
+
+            doc = doc.format(module=x, process_list=process_list)
+
+            setattr(y, '__doc__', doc)
+
+            setattr(self, x, y)
+
+    def processes(self, pattern=None):
+        self.get_capabilities()
+
+        items = []
+
+        logger.info('Matching against pattern %r', pattern)
+
+        for x in self._client.processes:
+            logger.info('Checking %r', x)
+
+            if pattern is not None:
+                try:
+                    if re.match(pattern, x.identifier):
+                        items.append(Process.from_owslib(self, x))
+                except re.error:
+                    raise CWTError(
+                        'Invalid pattern, see python\'s "re" module for documentation')
+            else:
+                items.append(Process.from_owslib(self, x))
+
+        return items
+
+    def process_by_name(self, identifier, version=None):
+        if not self._has_capabilities:
+            self.get_capabilities()
+
+        matches = []
+
+        for x in self._client.processes:
+            if x.identifier == identifier:
+                matches.append(x)
+
+        if len(matches) == 0:
+            raise CWTError('No matching process {!r}', identifier)
+
+        process = None
+
+        if version is None:
+            matches = sorted(matches, key=lambda x: x.processVersion)
+
+            process = Process.from_owslib(self, matches[-1])
+        else:
+            for x in matches:
+                if x.processVersion == version:
+                    process = Process.from_owslib(self, x)
+
+                    break
+
+        if process is None:
+            raise CWTError('No matching process {!r} version {!r}', identifier, version)
+
+        return process
+
+    def get_capabilities(self):
+        """ Executes a GetCapabilities request."""
+        self._client.getcapabilities()
 
     def describe_process(self, process):
         """ Executes a DescribeProcess request."""
-        description = self.client.describeprocess(process.identifier)
+        process.process = self._client.describeprocess(process.identifier)
 
-        new_process = Process.from_owslib(description)
-
-        new_process.inputs = process.inputs
-
-        new_process.domain = process.domain
-
-        new_process.parameters = process.parameters
-
-        return new_process
+        return process
 
     def parse_wps_execute_get_params(self, kwargs):
         params = {}
@@ -154,6 +268,53 @@ class WPSClient(object):
                 params[name] = kwargs.pop(name)
 
         return params
+
+    def prepare_data_inputs(self, process, inputs, domain, **kwargs):
+        """ Preparse a process inputs for the data_inputs string.
+
+        Args:
+            process: A object of type Process to be executed.
+            inputs: A list of Variables/Operations.
+            domain: A Domain object.
+            kwargs: A dict of addiontal named_parameters or k=v pairs.
+
+        Returns:
+            A dictionary containing the operations, domains and variables
+            associated with the process.
+        """
+        temp_process = process.copy()
+
+        domains = {}
+
+        if domain is not None:
+            domains[domain.name] = domain
+
+            temp_process.domain = domain
+
+        if not isinstance(inputs, (list, tuple)):
+            inputs = [inputs, ]
+
+        temp_process.inputs.extend(inputs)
+
+        if 'gridder' in kwargs:
+            temp_process.gridder = kwargs.pop('gridder')
+
+        temp_process.add_parameters(**kwargs)
+
+        processes, variables = temp_process.collect_input_processes()
+
+        # Collect all the domains from nested processes
+        for item in list(processes.values()):
+            if item.domain is not None and item.domain.name not in domains:
+                domains[item.domain.name] = item.domain
+
+        variable = json.dumps([x.to_dict() for x in list(variables.values())])
+
+        domain = json.dumps([x.to_dict() for x in list(domains.values())])
+
+        operation = json.dumps([x.to_dict() for x in list(processes.values())])
+
+        return variable, domain, operation
 
     def execute(self, process, inputs=None, domain=None, **kwargs):
         """ Executes an Execute request.
@@ -209,7 +370,7 @@ class WPSClient(object):
             data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
 
             try:
-                process.context = self.client.execute(process.identifier, data_inputs)
+                process.context = self._client.execute(process.identifier, data_inputs)
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e))
         elif method == 'get':
@@ -251,138 +412,9 @@ class WPSClient(object):
 
                 logger.debug('Response %r', response_text)
 
-                process.context = self.client.execute(process.identifier, None, request=response.url,
+                process.context = self._client.execute(process.identifier, None, request=response.url,
                                                       response=response_text)
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e))
         else:
             raise WPSClientError('Unsupported method {!r}', method)
-
-    def processes(self, pattern=None):
-        if not self._has_capabilities:
-            self.get_capabilities()
-
-        items = []
-
-        logger.info('Matching against pattern %r', pattern)
-
-        for x in self.client.processes:
-            logger.info('Checking %r', x)
-
-            if pattern is not None:
-                try:
-                    if re.match(pattern, x.identifier):
-                        items.append(Process.from_owslib(x))
-                except re.error:
-                    raise CWTError(
-                        'Invalid pattern, see python\'s "re" module for documentation')
-            else:
-                items.append(Process.from_owslib(x))
-
-        return items
-
-    def process_by_name(self, identifier, version=None):
-        if not self._has_capabilities:
-            self.get_capabilities()
-
-        matches = []
-
-        for x in self.client.processes:
-            if x.identifier == identifier:
-                matches.append(x)
-
-        if len(matches) == 0:
-            raise CWTError('No matching process {!r}', identifier)
-
-        process = None
-
-        if version is None:
-            matches = sorted(matches, key=lambda x: x.processVersion)
-
-            process = Process.from_owslib(matches[-1])
-        else:
-            for x in matches:
-                if x.processVersion == version:
-                    process = Process.from_owslib(x)
-
-                    break
-
-        if process is None:
-            raise CWTError('No matching process {!r} version {!r}', identifier, version)
-
-        return process
-
-    @staticmethod
-    def parse_data_inputs(data_inputs):
-        """ Parses a data_inputs string
-
-        The data_inputs string follows this format:
-
-        [variable=[];domain=[];operation=[]]
-
-        Args:
-            data_inputs: A string containing the processes data_inputs
-
-        Returns:
-            A tuple containing the a list of operations, domains and variables
-            object contained in the data_inputs string.
-        """
-        match = re.search(r'\[(.*)\]', data_inputs)
-
-        kwargs = dict((x.split('=')[0], json.loads(x.split('=')[1]))
-                      for x in match.group(1).split(';'))
-
-        variables = [Variable.from_dict(x) for x in kwargs.get('variable', [])]
-
-        domains = [Domain.from_dict(x) for x in kwargs.get('domain', [])]
-
-        operation = [Process.from_dict(x) for x in kwargs.get('operation', [])]
-
-        return operation, domains, variables
-
-    def prepare_data_inputs(self, process, inputs, domain, **kwargs):
-        """ Preparse a process inputs for the data_inputs string.
-
-        Args:
-            process: A object of type Process to be executed.
-            inputs: A list of Variables/Operations.
-            domain: A Domain object.
-            kwargs: A dict of addiontal named_parameters or k=v pairs.
-
-        Returns:
-            A dictionary containing the operations, domains and variables
-            associated with the process.
-        """
-        temp_process = process.copy()
-
-        domains = {}
-
-        if domain is not None:
-            domains[domain.name] = domain
-
-            temp_process.domain = domain
-
-        if not isinstance(inputs, (list, tuple)):
-            inputs = [inputs, ]
-
-        temp_process.inputs.extend(inputs)
-
-        if 'gridder' in kwargs:
-            temp_process.gridder = kwargs.pop('gridder')
-
-        temp_process.add_parameters(**kwargs)
-
-        processes, variables = temp_process.collect_input_processes()
-
-        # Collect all the domains from nested processes
-        for item in list(processes.values()):
-            if item.domain is not None and item.domain.name not in domains:
-                domains[item.domain.name] = item.domain
-
-        variable = json.dumps([x.to_dict() for x in list(variables.values())])
-
-        domain = json.dumps([x.to_dict() for x in list(domains.values())])
-
-        operation = json.dumps([x.to_dict() for x in list(processes.values())])
-
-        return variable, domain, operation

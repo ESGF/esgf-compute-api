@@ -45,7 +45,7 @@ class NamedParameter(Parameter):
 
     def to_dict(self):
         """ Returns dict representation."""
-        return {self.name: '|'.join(self.values)}
+        return {self.name: '|'.join([str(x) for x in self.values])}
 
     def parameterize(self):
         """ Parameterizes NamedParameter for GET request. """

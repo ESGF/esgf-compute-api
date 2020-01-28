@@ -1,16 +1,26 @@
 """ NamedParameter Unittest. """
 
-import unittest
-
 import cwt
 
 
-class TestNamedParameter(unittest.TestCase):
-    """ NamedParameter Test Case. """
+def test_from_string():
+    p = cwt.NamedParameter.from_string('axes', 'x|y')
 
-    def test_from_string(self):
-        p = cwt.NamedParameter.from_string('axes', 'x|y')
+    assert isinstance(p.values, tuple)
+    assert len(p.values) == 2
+    assert p.values == ('x', 'y')
 
-        self.assertIsInstance(p.values, tuple)
-        self.assertEqual(len(p.values), 2)
-        self.assertEqual(p.values, ('x', 'y'))
+
+def test_values():
+    p = cwt.NamedParameter('test', 'data', 3.0, 2, float('inf'))
+
+    output = p.to_dict()
+
+    assert 'test' in output
+
+    value = output['test']
+
+    assert 'data' in value
+    assert '3.0' in value
+    assert '2' in value
+    assert 'inf' in value

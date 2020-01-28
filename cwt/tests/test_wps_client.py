@@ -12,6 +12,8 @@ import cwt
 
 
 def test_compute_token_env_over_kwarg(mocker):
+    mocker.patch('owslib.wps.WebProcessingService')
+
     mocker.patch.dict(os.environ, {
         'COMPUTE_TOKEN': 'test'
     })
@@ -22,6 +24,7 @@ def test_compute_token_env_over_kwarg(mocker):
 
 
 def test_compute_token_env(mocker):
+    mocker.patch('owslib.wps.WebProcessingService')
     mocker.patch.dict(os.environ, {
         'COMPUTE_TOKEN': 'test'
     })
@@ -31,19 +34,22 @@ def test_compute_token_env(mocker):
     assert client.headers['COMPUTE-TOKEN'] == 'test'
 
 
-def test_compute_token():
+def test_compute_token(mocker):
+    mocker.patch('owslib.wps.WebProcessingService')
     client = cwt.WPSClient('https://127.0.0.1/wps', compute_token='test')
 
     assert client.headers['COMPUTE-TOKEN'] == 'test'
 
 
-def test_api_key_not_present():
+def test_api_key_not_present(mocker):
+    mocker.patch('owslib.wps.WebProcessingService')
     client = cwt.WPSClient('https://127.0.0.1/wps')
 
     assert 'COMPUTE-TOKEN' not in client.headers
 
 
-def test_api_key():
+def test_api_key(mocker):
+    mocker.patch('owslib.wps.WebProcessingService')
     client = cwt.WPSClient('https://127.0.0.1/wps', api_key='test')
 
     assert client.headers['COMPUTE-TOKEN'] == 'test'
@@ -52,10 +58,11 @@ def test_api_key():
 class TestWPSClient(unittest.TestCase):
 
     def setUp(self):
-        self.client = cwt.WPSClient('https://0.0.0.0:10000/wps')
+        patcher = mock.patch('owslib.wps.WebProcessingService')
+        self.addCleanup(patcher.stop)
+        patcher.start()
 
-        # Mock owslib.WebProcessingService
-        self.client.client = mock.MagicMock()
+        self.client = cwt.WPSClient('https://0.0.0.0:10000/wps')
 
         subset = mock.MagicMock()
         type(subset).identifier = mock.PropertyMock(return_value='CDAT.subset')
@@ -68,7 +75,7 @@ class TestWPSClient(unittest.TestCase):
         type(metrics).title = mock.PropertyMock(return_value='CDAT.metrics')
         type(metrics).processVersion = mock.PropertyMock(return_value='1.0.0')
 
-        type(self.client.client).processes = mock.PropertyMock(return_value=[
+        type(self.client._client).processes = mock.PropertyMock(return_value=[
             subset,
             metrics,
         ])
@@ -95,7 +102,7 @@ class TestWPSClient(unittest.TestCase):
 
         process = processes[0]
 
-        self.client.client.getcapabilities.assert_called()
+        self.client._client.getcapabilities.assert_called()
 
         self.assertEqual(process.identifier, 'CDAT.subset')
         self.assertEqual(process.title, 'CDAT.subset')
@@ -124,7 +131,7 @@ class TestWPSClient(unittest.TestCase):
         self.assertEqual(self.process.inputs, [])
 
     def test_execute_exception(self):
-        self.client.client.execute.side_effect = Exception()
+        self.client._client.execute.side_effect = Exception()
 
         with self.assertRaises(cwt.WPSClientError):
             self.client.execute(self.process)
@@ -136,7 +143,7 @@ class TestWPSClient(unittest.TestCase):
             mock_prepare.assert_called_with(self.process, [self.variable], self.domain)
 
         self.assertEqual(
-            self.client.client.execute.return_value,
+            self.client._client.execute.return_value,
             self.process.context)
 
     def test_prepare_data_inputs_override_domain(self):
@@ -267,8 +274,6 @@ class TestWPSClient(unittest.TestCase):
 
         new_process = self.client.describe_process(self.process)
 
-        self.assertNotEqual(self.process, new_process)
-
         self.assertEqual(new_process.inputs, [self.variable])
         self.assertEqual(new_process.domain, self.domain)
         self.assertEqual(new_process.parameters, self.process.parameters)
@@ -276,4 +281,4 @@ class TestWPSClient(unittest.TestCase):
     def test_get_capabilities(self):
         self.client.get_capabilities()
 
-        self.client.client.getcapabilities.assert_called()
+        self.client._client.getcapabilities.assert_called()
