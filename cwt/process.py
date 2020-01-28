@@ -76,8 +76,12 @@ class Process(Parameter):
         name: A string name for the process to be used as the input of another process.
     """
 
-    def __init__(self, identifier=None, process=None, name=None):
+    def __init__(self, identifier=None, client=None, process=None, name=None):
         super(Process, self).__init__(name)
+
+        self._identifier = identifier
+
+        self._client = client
 
         self.process = process
 
@@ -93,46 +97,28 @@ class Process(Parameter):
 
         self.status_tracker = None
 
-        self._identifier = identifier
-        self._title = None
-        self._process_outputs = None
-        self._data_inputs = None
-        self._status_supported = None
-        self._store_supported = None
-        self._process_version = None
-        self._abstract = None
-        self._metadata = None
-
     def __repr__(self):
-        return ('Process(identifier={!r}, title={!r}, status_supported={!r}, '
-                'store_supported={!r}, process_version={!r}, abstract={!r}, '
-                'metadata={!r})').format(self.identifier, self.title, self.status_supported,
-                                         self.store_supported, self.process_version,
-                                         self.abstract, self.metadata)
+        fmt = ('Process('
+               'identifier={}, '
+               'inputs={}, '
+               'parameters={}, '
+               'domain={}, '
+               'title={}, '
+               'process_outputs={}, '
+               'data_inputs={}, '
+               'status_supported={}, '
+               'store_supported={}, '
+               'process_version={}, '
+               'abstract={}, '
+               'metadata={})')
+
+        return fmt.format(self.identifier, self.inputs, self.parameters, self.domain,
+                          self.title, self.process_outputs, self.data_inputs, self.status_supported,
+                          self.store_supported, self.process_version, self.abstract, self.metadata)
 
     @classmethod
-    def from_owslib(cls, process):
-        obj = cls(process)
-
-        obj._identifier = process.identifier
-
-        obj._title = process.title
-
-        obj._process_outputs = [input_output_to_dict(x)
-                                for x in process.processOutputs]
-
-        obj._data_inputs = [input_output_to_dict(x)
-                            for x in process.dataInputs]
-
-        obj._status_supported = process.statusSupported
-
-        obj._store_supported = process.storeSupported
-
-        obj._process_version = process.processVersion
-
-        obj._abstract = process.abstract
-
-        obj._metadata = [x.__dict__ for x in process.metadata]
+    def from_owslib(cls, client, process):
+        obj = cls(client=client, process=process)
 
         return obj
 
@@ -166,39 +152,83 @@ class Process(Parameter):
 
     @property
     def identifier(self):
-        return self._identifier
+        try:
+            return self.process.identifier
+        except AttributeError:
+            return self._identifier
+
 
     @property
     def title(self):
-        return self._title
+        try:
+            return self.process.title
+        except AttributeError:
+            logger.info('Undefined attribute, try calling describe first.')
+
+            return None
 
     @property
     def process_outputs(self):
-        return self._process_outputs
+        try:
+            return [input_output_to_dict(x) for x in self.process.processOutputs]
+        except AttributeError:
+            logger.info('Undefined attribute, try calling describe first.')
+
+            return None
 
     @property
     def data_inputs(self):
-        return self._data_inputs
+        try:
+            return [input_output_to_dict(x) for x in self.process.dataInputs]
+        except AttributeError:
+            logger.info('Undefined attribute, try calling describe first.')
+
+            return None
 
     @property
     def status_supported(self):
-        return self._status_supported
+        try:
+            return self.process.statusSupported
+        except AttributeError:
+            logger.info('Undefined attribute, try calling describe first.')
+
+            return None
 
     @property
     def store_supported(self):
-        return self._store_supported
+        try:
+            return self.process.storeSupported
+        except AttributeError:
+            logger.info('Undefined attribute, try calling describe first.')
+
+            return None
 
     @property
     def process_version(self):
-        return self._process_version
+        try:
+            return self.process.processVersion
+        except AttributeError:
+            logger.info('Undefined attribute, try calling describe first.')
+
+            return None
 
     @property
     def abstract(self):
-        return self._abstract
+        try:
+            return self.process.abstract
+        except AttributeError:
+            logger.info('Undefined attribute, try calling describe first.')
+
+            return None
 
     @property
     def metadata(self):
-        return self._metadata
+        try:
+            return [x.__dict__ for x in self.process.metadata]
+        except AttributeError:
+            logger.info('Undefined attribute, try calling describe first.')
+
+            return None
 
     @property
     def processing(self):
@@ -293,23 +323,38 @@ class Process(Parameter):
 
         return msg
 
-    def copy(self):
+    def describe(self):
+        self.process = self._client.describe_process(self.process)
+
+    def __call__(self, *args, domain=None, **kwargs):
+        new_process = self.copy(True)
+
+        new_process.add_inputs(*args)
+
+        new_process.set_domain(domain)
+
+        new_process.add_parameters(**kwargs)
+
+        return new_process
+
+    def copy(self, blank=False):
         if self.process is not None:
-            obj = Process.from_owslib(self.process)
+            obj = Process.from_owslib(self._client, self.process)
         else:
             obj = Process(identifier=self.identifier, name=self.name)
 
         obj.context = self.context
 
-        try:
-            obj.inputs = self.inputs.copy()
-        except AttributeError:
-            # Python2 compat
-            obj.inputs = self.inputs[:]
+        if not blank:
+            try:
+                obj.inputs = self.inputs.copy()
+            except AttributeError:
+                # Python2 compat
+                obj.inputs = self.inputs[:]
 
-        obj.parameters = self.parameters.copy()
+            obj.parameters = self.parameters.copy()
 
-        obj.domain = self.domain
+            obj.domain = self.domain
 
         return obj
 
