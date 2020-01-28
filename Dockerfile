@@ -41,11 +41,10 @@ RUN conda install -c conda-forge pytest pytest-mock pytest-cov mock
 
 COPY cwt/ cwt/
 
-RUN pytest -vvv --cov=cwt --cov-report=html:coverage/ --cov-report=xml:coverage.xml --junit-xml=unittest.xml
+RUN pytest -vvv --cov=cwt --cov-report=xml:coverage.xml --junit-xml=unittest.xml
 
 FROM scratch as testresult
 
-COPY --from=testing /testing/coverage/ coverage/
 COPY --from=testing /testing/coverage.xml .
 COPY --from=testing /testing/unittest.xml .
 

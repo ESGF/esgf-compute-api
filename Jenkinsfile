@@ -1,12 +1,13 @@
 pipeline {
-  agent {
-    node {
-      label 'jenkins-buildkit'
-    }
-
-  }
+  agent none
   stages {
     stage('Build') {
+      agent {
+        node {
+          label 'jenkins-buildkit'
+        }
+
+      }
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/sh
@@ -25,6 +26,12 @@ buildctl-daemonless.sh build \\
     }
 
     stage('Testing') {
+      agent {
+        node {
+          label 'jenkins-buildkit'
+        }
+
+      }
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/sh
@@ -45,6 +52,12 @@ buildctl-daemonless.sh build \\
     }
 
     stage('Publish Conda') {
+      agent {
+        node {
+          label 'jenkins-buildkit'
+        }
+
+      }
       when {
         branch 'master'
       }
