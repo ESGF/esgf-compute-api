@@ -62,7 +62,7 @@ buildctl-daemonless.sh build \\
         branch 'master'
       }
       environment {
-        CONDA = credentials('conda')
+        CONDA_TOKEN = credentials('conda-token')
       }
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
@@ -73,8 +73,7 @@ buildctl-daemonless.sh build \\
 	--local context=. \\
 	--local dockerfile=. \\
 	--opt target=publish \\
-	--opt build-arg:CONDA_USERNAME=${CONDA_USR} \\
-	--opt build-arg:CONDA_PASSWORD=${CONDA_PSW} \\
+	--opt build-arg:CONDA_TOKEN=${CONDA_TOKEN} \\
 	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
         }
 
