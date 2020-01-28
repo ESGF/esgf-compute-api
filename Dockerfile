@@ -50,13 +50,10 @@ COPY --from=testing /testing/unittest.xml .
 
 FROM builder as publish
 
-ARG CONDA_USERNAME
-ENV CONDA_USERNAME $CONDA_USERNAME
-ARG CONDA_PASSWORD
-ENV CONDA_PASSWORD $CONDA_PASSWORD
+ARG CONDA_TOKEN
+ENV CONDA_TOKEN $CONDA_TOKEN
 
 RUN conda install anaconda-client
 
 RUN anaconda config --set ssl_verify false && \
-      anaconda login --username ${CONDA_USERNAME} --password ${CONDA_PASSWORD} && \
-      anaconda upload -u cdat --skip $(conda build -c conda-forge . --output)
+      anaconda -t ${CONDA_TOKEN} upload -u cdat --skip $(conda build -c conda-forge . --output)
