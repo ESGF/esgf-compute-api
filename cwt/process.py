@@ -163,8 +163,6 @@ class Process(Parameter):
         try:
             return self.process.title
         except AttributeError:
-            logger.info('Undefined attribute, try calling describe first.')
-
             return None
 
     @property
@@ -172,8 +170,6 @@ class Process(Parameter):
         try:
             return [input_output_to_dict(x) for x in self.process.processOutputs]
         except AttributeError:
-            logger.info('Undefined attribute, try calling describe first.')
-
             return None
 
     @property
@@ -181,8 +177,6 @@ class Process(Parameter):
         try:
             return [input_output_to_dict(x) for x in self.process.dataInputs]
         except AttributeError:
-            logger.info('Undefined attribute, try calling describe first.')
-
             return None
 
     @property
@@ -190,8 +184,6 @@ class Process(Parameter):
         try:
             return self.process.statusSupported
         except AttributeError:
-            logger.info('Undefined attribute, try calling describe first.')
-
             return None
 
     @property
@@ -199,8 +191,6 @@ class Process(Parameter):
         try:
             return self.process.storeSupported
         except AttributeError:
-            logger.info('Undefined attribute, try calling describe first.')
-
             return None
 
     @property
@@ -208,8 +198,6 @@ class Process(Parameter):
         try:
             return self.process.processVersion
         except AttributeError:
-            logger.info('Undefined attribute, try calling describe first.')
-
             return None
 
     @property
@@ -217,8 +205,6 @@ class Process(Parameter):
         try:
             return self.process.abstract
         except AttributeError:
-            logger.info('Undefined attribute, try calling describe first.')
-
             return None
 
     @property
@@ -226,8 +212,6 @@ class Process(Parameter):
         try:
             return [x.__dict__ for x in self.process.metadata]
         except AttributeError:
-            logger.info('Undefined attribute, try calling describe first.')
-
             return None
 
     @property
