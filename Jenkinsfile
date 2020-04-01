@@ -50,7 +50,7 @@ make TARGET=publish'''
               }
             }
           }
-          env {
+          environment {
             CONDA_TOKEN = credentials('conda-token')
           }
           steps {
