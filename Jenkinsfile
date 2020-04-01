@@ -21,14 +21,30 @@ make TARGET=testresult'''
     }
 
     stage('Publish') {
-      when {
-        branch 'master'
-      }
-      steps {
-        container(name: 'buildkit', shell: '/bin/sh') {
-          sh '''#! /bin/sh
+      parallel {
+        stage('Conda') {
+          when {
+            branch 'master'
+          }
+          steps {
+            container(name: 'buildkit', shell: '/bin/sh') {
+              sh '''#! /bin/sh
 
 make TARGET=publish'''
+            }
+
+          }
+        }
+
+        stage('Container') {
+          steps {
+            container(name: 'buildkit', shell: '/bin/sh') {
+              sh '''#! /bin/sh
+
+make TARGET=production'''
+            }
+
+          }
         }
 
       }
