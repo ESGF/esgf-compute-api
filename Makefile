@@ -34,7 +34,7 @@ OUTPUT = --output type=local,dest=output
 endif
 endif
 
-TARGET = --opt target=$(TARGET)
+EXTRA += --opt target=$(TARGET)
 
 build:
-	$(BUILD) build.sh $(TARGET) $(EXTRA) $(CACHE) $(OUTPUT)
+	$(BUILD) build.sh $(EXTRA) $(CACHE) $(OUTPUT)
