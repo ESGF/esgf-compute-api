@@ -12,69 +12,19 @@ pipeline {
         container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/sh
 
-buildctl-daemonless.sh build \\
-	--frontend dockerfile.v0 \\
-	--local context=. \\
-	--local dockerfile=. \\
-        --opt target=production \\
-	--output type=image,name=${OUTPUT_REGISTRY}/compute-api:${GIT_COMMIT:0:8},push=true \\
-	--export-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache \\
-	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
-        }
-
-      }
-    }
-
-    stage('Testing') {
-      agent {
-        node {
-          label 'jenkins-buildkit'
-        }
-
-      }
-      steps {
-        container(name: 'buildkit', shell: '/bin/sh') {
-          sh '''#! /bin/sh
-
-buildctl-daemonless.sh build \\
-	--frontend dockerfile.v0 \\
-	--local context=. \\
-	--local dockerfile=. \\
-	--opt target=testresult \\
-	--output type=local,dest=output \\
-	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
+make TARGET=testresult'''
           sh 'chown -R 10000:10000 output/'
         }
 
         cobertura(autoUpdateHealth: true, autoUpdateStability: true, failNoReports: true, failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 2, coberturaReportFile: 'output/coverage.xml')
         junit 'output/unittest.xml'
-      }
-    }
-
-    stage('Publish Conda') {
-      agent {
-        node {
-          label 'jenkins-buildkit'
-        }
-
-      }
-      when {
-        branch 'master'
-      }
-      environment {
-        CONDA_TOKEN = credentials('conda-token')
-      }
-      steps {
         container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/sh
 
-buildctl-daemonless.sh build \\
-	--frontend dockerfile.v0 \\
-	--local context=. \\
-	--local dockerfile=. \\
-	--opt target=publish \\
-	--opt build-arg:CONDA_TOKEN=${CONDA_TOKEN} \\
-	--import-cache type=registry,ref=${OUTPUT_REGISTRY}/compute-api:cache'''
+if [[ ${GIT_BRANCH} == "master" ]]
+the
+  make TARGET=publish
+fi'''
         }
 
       }
