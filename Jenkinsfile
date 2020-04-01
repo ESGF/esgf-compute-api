@@ -1,13 +1,12 @@
 pipeline {
-  agent none
-  stages {
-    stage('Build') {
-      agent {
-        node {
-          label 'jenkins-buildkit'
-        }
+  agent {
+    node {
+      label 'jenkins-buildkit'
+    }
 
-      }
+  }
+  stages {
+    stage('Testing') {
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/sh
@@ -18,13 +17,18 @@ make TARGET=testresult'''
 
         cobertura(autoUpdateHealth: true, autoUpdateStability: true, failNoReports: true, failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 2, coberturaReportFile: 'output/coverage.xml')
         junit 'output/unittest.xml'
+      }
+    }
+
+    stage('Publish') {
+      when {
+        branch 'master'
+      }
+      steps {
         container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/sh
 
-if [[ ${GIT_BRANCH} == "master" ]]
-the
-  make TARGET=publish
-fi'''
+make TARGET=publish'''
         }
 
       }
