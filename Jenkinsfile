@@ -37,6 +37,9 @@ make TARGET=publish'''
         }
 
         stage('Container') {
+          when {
+            branch 'master'
+          }
           steps {
             container(name: 'buildkit', shell: '/bin/sh') {
               sh '''#! /bin/sh
