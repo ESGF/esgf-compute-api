@@ -24,7 +24,12 @@ make TARGET=testresult'''
       parallel {
         stage('Conda') {
           when {
-            branch 'master'
+            anyOf {
+              branch 'master'
+              expression {
+                return params.FORCE_CONDA
+              }
+            }
           }
           steps {
             container(name: 'buildkit', shell: '/bin/sh') {
@@ -38,13 +43,21 @@ make TARGET=publish'''
 
         stage('Container') {
           when {
-            branch 'master'
+            anyOf {
+              branch 'master'
+              expression {
+                return params.FORCE_CONTAINER
+              }
+            }
+          }
+          env {
+            CONDA_TOKEN = credentials('conda-token')
           }
           steps {
             container(name: 'buildkit', shell: '/bin/sh') {
               sh '''#! /bin/sh
 
-make TARGET=production'''
+make TARGET=production REGISTRY=${OUTPUT_REGISTRY}'''
             }
 
           }
@@ -53,5 +66,9 @@ make TARGET=production'''
       }
     }
 
+  }
+  parameters {
+    booleanParam(name: 'FORCE_CONDA', defaultValue: false, description: 'Force pushing conda package.')
+    booleanParam(name: 'FORCE_CONTAINER', defaultValue: false, description: 'Force pushing production container image.')
   }
 }

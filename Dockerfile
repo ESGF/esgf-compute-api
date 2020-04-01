@@ -45,4 +45,4 @@ ARG CONDA_TOKEN
 ENV CONDA_TOKEN $CONDA_TOKEN
 
 RUN anaconda config --set ssl_verify false && \
-      anaconda -t ${CONDA_TOKEN} upload -u cdat --skip $(conda build -c conda-forge . --output)
+      anaconda -t ${CONDA_TOKEN} upload -u cdat --skip-existing $(conda build -c conda-forge . --output)
