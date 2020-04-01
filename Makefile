@@ -26,7 +26,7 @@ ifeq ($(TARGET),production)
 IMAGE = $(if $(REGISTRY),$(REGISTRY)/)compute-api
 VERSION = 2.3.0
 OUTPUT = --output type=image,name=$(IMAGE):$(VERSION),push=true
-else ($(TARGET),testresult)
+else ifeq ($(TARGET),testresult)
 ifeq ($(shell which buildctl-daemonless.sh),)
 OUTPUT = --output type=local,dest=/output
 else
