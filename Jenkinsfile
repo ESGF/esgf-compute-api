@@ -29,7 +29,12 @@ make TARGET=testresult'''
               expression {
                 return params.FORCE_CONDA
               }
+
             }
+
+          }
+          environment {
+            CONDA_TOKEN = credentials('conda-token')
           }
           steps {
             container(name: 'buildkit', shell: '/bin/sh') {
@@ -48,10 +53,9 @@ make TARGET=publish'''
               expression {
                 return params.FORCE_CONTAINER
               }
+
             }
-          }
-          environment {
-            CONDA_TOKEN = credentials('conda-token')
+
           }
           steps {
             container(name: 'buildkit', shell: '/bin/sh') {
