@@ -59,7 +59,9 @@ make TARGET=publish'''
         container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/sh
 
-make TARGET=production REGISTRY=${OUTPUT_REGISTRY}'''
+make TARGET=production REGISTRY=${OUTPUT_REGISTRY}
+
+make TARGET=production REGISTRY=${OUTPUT_REGISTRY} VERSION=latest'''
         }
 
       }
