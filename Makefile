@@ -18,8 +18,9 @@ TARGET = publish
 CACHE = --export-cache type=local,dest=/cache,mode=max \
 				--import-cache type=local,src=/cache
 
-EXTRA = --opt target=$(TARGET) \
-				--opt build-arg:CONDA_TOKEN=$(CONDA_TOKEN)
+ifeq ($(TARGET),publish)
+EXTRA = --opt build-arg:CONDA_TOKEN=$(CONDA_TOKEN)
+endif
 
 ifeq ($(TARGET),production)
 IMAGE = $(if $(REGISTRY),$(REGISTRY)/)compute-api
@@ -33,5 +34,7 @@ OUTPUT = --output type=local,dest=output
 endif
 endif
 
+TARGET = --opt target=$(TARGET)
+
 build:
-	$(BUILD) build.sh $(EXTRA) $(CACHE) $(OUTPUT)
+	$(BUILD) build.sh $(TARGET) $(EXTRA) $(CACHE) $(OUTPUT)
