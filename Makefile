@@ -18,20 +18,23 @@ TARGET = publish
 CACHE = --export-cache type=local,dest=/cache,mode=max \
 				--import-cache type=local,src=/cache
 
-EXTRA = --opt target=$(TARGET) \
-				--opt build-arg:CONDA_TOKEN=$(CONDA_TOKEN)
+ifeq ($(TARGET),publish)
+EXTRA = --opt build-arg:CONDA_TOKEN=$(CONDA_TOKEN)
+endif
 
 ifeq ($(TARGET),production)
 IMAGE = $(if $(REGISTRY),$(REGISTRY)/)compute-api
 VERSION = 2.3.0
 OUTPUT = --output type=image,name=$(IMAGE):$(VERSION),push=true
-else ($(TARGET),testresult)
+else ifeq ($(TARGET),testresult)
 ifeq ($(shell which buildctl-daemonless.sh),)
 OUTPUT = --output type=local,dest=/output
 else
 OUTPUT = --output type=local,dest=output
 endif
 endif
+
+EXTRA += --opt target=$(TARGET)
 
 build:
 	$(BUILD) build.sh $(EXTRA) $(CACHE) $(OUTPUT)

@@ -20,38 +20,56 @@ make TARGET=testresult'''
       }
     }
 
-    stage('Publish') {
-      parallel {
-        stage('Conda') {
-          when {
-            branch 'master'
+    stage('Conda') {
+      when {
+        anyOf {
+          branch 'master'
+          expression {
+            return params.FORCE_CONDA
           }
-          steps {
-            container(name: 'buildkit', shell: '/bin/sh') {
-              sh '''#! /bin/sh
 
-make TARGET=publish'''
-            }
-
-          }
         }
 
-        stage('Container') {
-          when {
-            branch 'master'
-          }
-          steps {
-            container(name: 'buildkit', shell: '/bin/sh') {
-              sh '''#! /bin/sh
+      }
+      environment {
+        CONDA_TOKEN = credentials('conda-token')
+      }
+      steps {
+        container(name: 'buildkit', shell: '/bin/sh') {
+          sh '''#! /bin/sh
 
-make TARGET=production'''
-            }
-
-          }
+make TARGET=publish'''
         }
 
       }
     }
 
+    stage('Container') {
+      when {
+        anyOf {
+          branch 'master'
+          expression {
+            return params.FORCE_CONTAINER
+          }
+
+        }
+
+      }
+      steps {
+        container(name: 'buildkit', shell: '/bin/sh') {
+          sh '''#! /bin/sh
+
+make TARGET=production REGISTRY=${OUTPUT_REGISTRY}
+
+make TARGET=production REGISTRY=${OUTPUT_REGISTRY} VERSION=latest'''
+        }
+
+      }
+    }
+
+  }
+  parameters {
+    booleanParam(name: 'FORCE_CONDA', defaultValue: false, description: 'Force pushing conda package.')
+    booleanParam(name: 'FORCE_CONTAINER', defaultValue: false, description: 'Force pushing production container image.')
   }
 }

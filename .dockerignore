@@ -17,7 +17,6 @@ examples
 .gitignore
 .ipynb_checkpoints
 Jenkinsfile
-jupyter_notebook_config.json
 Makefile
 output
 .pytest_cache

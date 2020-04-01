@@ -15,18 +15,9 @@ FROM continuumio/miniconda3:4.6.14 as production
 
 WORKDIR /
 
-COPY --from=builder /opt/conda/conda-bld /opt/conda/conda-bld
-COPY --from=builder /opt/conda/pkgs /opt/conda/pkgs
-
-RUN conda install -c conda-forge --use-local esgf-compute-api jupyterlab cdms2 matplotlib
+RUN conda install -c conda-forge -c cdat jupyterlab esgf-compute-api
 
 COPY jupyter_notebook_config.json .
-
-ENV TINI_VERSION v0.18.0
-
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-
-RUN chmod +x /tini
 
 EXPOSE 8080
 
@@ -45,4 +36,4 @@ ARG CONDA_TOKEN
 ENV CONDA_TOKEN $CONDA_TOKEN
 
 RUN anaconda config --set ssl_verify false && \
-      anaconda -t ${CONDA_TOKEN} upload -u cdat --skip $(conda build -c conda-forge . --output)
+      anaconda -t ${CONDA_TOKEN} upload -u cdat --skip-existing $(conda build -c conda-forge . --output)
