@@ -22,12 +22,6 @@ RUN conda install -c conda-forge --use-local esgf-compute-api jupyterlab cdms2 m
 
 COPY jupyter_notebook_config.json .
 
-ENV TINI_VERSION v0.18.0
-
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-
-RUN chmod +x /tini
-
 EXPOSE 8080
 
 ENTRYPOINT ["/tini", "--"]
