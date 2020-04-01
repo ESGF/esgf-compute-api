@@ -5,12 +5,27 @@ BUILD = docker run \
 				-it --rm \
 				--privileged \
 				-v $(PWD):/build -w /build \
+				-v $(PWD)/cache:/cache \
+				-v $(PWD)/output:/output \
 				--entrypoint=/bin/sh \
 				moby/buildkit:master
 else
 BUILD = $(SHELL)
 endif
 
-build: EXTRA = --opt build-arg:CONDA_TOKEN=$(CONDA_TOKEN)
+TARGET = publish
+
+CACHE = --export-cache type=local,dest=/cache,mode=max \
+				--import-cache type=local,src=/cache
+
+EXTRA = --opt target=$(TARGET) \
+				--opt build-arg:CONDA_TOKEN=$(CONDA_TOKEN)
+
+ifeq ($(TARGET),production)
+IMAGE = $(if $(REGISTRY),$(REGISTRY)/)compute-api
+VERSION = 2.2.3
+OUTPUT = --output type=image,name=$(IMAGE):$(VERSION),push=true
+endif
+
 build:
-	$(BUILD) build.sh $(EXTRA)
+	$(BUILD) build.sh $(EXTRA) $(CACHE) $(OUTPUT)
