@@ -23,7 +23,7 @@ EXTRA = --opt target=$(TARGET) \
 
 ifeq ($(TARGET),production)
 IMAGE = $(if $(REGISTRY),$(REGISTRY)/)compute-api
-VERSION = 2.2.4
+VERSION = 2.3.0
 OUTPUT = --output type=image,name=$(IMAGE):$(VERSION),push=true
 else ($(TARGET),testresult)
 ifeq ($(shell which buildctl-daemonless.sh),)
