@@ -1,8 +1,16 @@
+.PHONY: build
+
+ifeq ($(shell which buildctl-daemonless.sh),)
+BUILD = docker run \
+				-it --rm \
+				--privileged \
+				-v $(PWD):/build -w /build \
+				--entrypoint=/bin/sh \
+				moby/buildkit:master
+else
+BUILD = $(SHELL)
+endif
+
+build: EXTRA = --opt build-arg:CONDA_TOKEN=$(CONDA_TOKEN)
 build:
-	docker run -it --rm \
-		-v $(PWD):/data -w /data \
-		--privileged \
-		--entrypoint=/bin/sh \
-		-e CONDA_TOKEN=$(CONDA_TOKEN) \
-		moby/buildkit:master \
-		build.sh
+	$(BUILD) build.sh $(EXTRA)
