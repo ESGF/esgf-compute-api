@@ -13,6 +13,7 @@ import warnings
 import requests
 from owslib import wps
 
+from cwt import utilities
 from cwt.domain import Domain
 from cwt.errors import CWTError
 from cwt.errors import WPSClientError
@@ -282,39 +283,40 @@ class WPSClient(object):
             A dictionary containing the operations, domains and variables
             associated with the process.
         """
-        temp_process = process.copy()
+        return utilities.prepare_data_inputs(process, inputs, domain, **kwargs)
+        # temp_process = process.copy()
 
-        domains = {}
+        # domains = {}
 
-        if domain is not None:
-            domains[domain.name] = domain
+        # if domain is not None:
+        #     domains[domain.name] = domain
 
-            temp_process.domain = domain
+        #     temp_process.domain = domain
 
-        if not isinstance(inputs, (list, tuple)):
-            inputs = [inputs, ]
+        # if not isinstance(inputs, (list, tuple)):
+        #     inputs = [inputs, ]
 
-        temp_process.inputs.extend(inputs)
+        # temp_process.inputs.extend(inputs)
 
-        if 'gridder' in kwargs:
-            temp_process.gridder = kwargs.pop('gridder')
+        # if 'gridder' in kwargs:
+        #     temp_process.gridder = kwargs.pop('gridder')
 
-        temp_process.add_parameters(**kwargs)
+        # temp_process.add_parameters(**kwargs)
 
-        processes, variables = temp_process.collect_input_processes()
+        # processes, variables = temp_process.collect_input_processes()
 
-        # Collect all the domains from nested processes
-        for item in list(processes.values()):
-            if item.domain is not None and item.domain.name not in domains:
-                domains[item.domain.name] = item.domain
+        # # Collect all the domains from nested processes
+        # for item in list(processes.values()):
+        #     if item.domain is not None and item.domain.name not in domains:
+        #         domains[item.domain.name] = item.domain
 
-        variable = json.dumps([x.to_dict() for x in list(variables.values())])
+        # variable = json.dumps([x.to_dict() for x in list(variables.values())])
 
-        domain = json.dumps([x.to_dict() for x in list(domains.values())])
+        # domain = json.dumps([x.to_dict() for x in list(domains.values())])
 
-        operation = json.dumps([x.to_dict() for x in list(processes.values())])
+        # operation = json.dumps([x.to_dict() for x in list(processes.values())])
 
-        return variable, domain, operation
+        # return variable, domain, operation
 
     def execute(self, process, inputs=None, domain=None, **kwargs):
         """ Executes an Execute request.

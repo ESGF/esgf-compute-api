@@ -65,6 +65,11 @@ class StatusTracker(object):
 
             logger.info(message)
 
+def ensure_list(x):
+    if not isinstance(x, (list, tuple)):
+        return [x]
+
+    return x
 
 class Process(Parameter):
     """ A WPS Process
@@ -76,24 +81,24 @@ class Process(Parameter):
         name: A string name for the process to be used as the input of another process.
     """
 
-    def __init__(self, identifier=None, client=None, process=None, name=None):
-        super(Process, self).__init__(name)
+    def __init__(self, **kwargs):
+        super(Process, self).__init__(kwargs.get('name', None))
 
-        self._identifier = identifier
+        self._identifier = kwargs.get('identifier', None)
 
-        self._client = client
+        self._client = kwargs.get('client', None)
 
-        self.process = process
+        self.process = kwargs.get('process', None)
+
+        self.inputs = ensure_list(kwargs.get('inputs', []))
+
+        self.parameters = kwargs.get('parameters', {})
+
+        self.domain = kwargs.get('domain', None)
 
         self.context = None
 
         self.processed = False
-
-        self.inputs = []
-
-        self.parameters = {}
-
-        self.domain = None
 
         self.status_tracker = None
 
