@@ -31,6 +31,7 @@ OUTPUT = --output type=local,dest=/output
 else
 OUTPUT = --output type=local,dest=output
 endif
+endif
 
 build:
 	$(BUILD) build.sh $(EXTRA) $(CACHE) $(OUTPUT)
