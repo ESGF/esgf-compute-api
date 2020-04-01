@@ -20,51 +20,46 @@ make TARGET=testresult'''
       }
     }
 
-    stage('Publish') {
-      parallel {
-        stage('Conda') {
-          when {
-            anyOf {
-              branch 'master'
-              expression {
-                return params.FORCE_CONDA
-              }
-
-            }
-
+    stage('Conda') {
+      when {
+        anyOf {
+          branch 'master'
+          expression {
+            return params.FORCE_CONDA
           }
-          environment {
-            CONDA_TOKEN = credentials('conda-token')
-          }
-          steps {
-            container(name: 'buildkit', shell: '/bin/sh') {
-              sh '''#! /bin/sh
 
-make TARGET=publish'''
-            }
-
-          }
         }
 
-        stage('Container') {
-          when {
-            anyOf {
-              branch 'master'
-              expression {
-                return params.FORCE_CONTAINER
-              }
+      }
+      environment {
+        CONDA_TOKEN = credentials('conda-token')
+      }
+      steps {
+        container(name: 'buildkit', shell: '/bin/sh') {
+          sh '''#! /bin/sh
 
-            }
+make TARGET=publish'''
+        }
 
+      }
+    }
+
+    stage('Container') {
+      when {
+        anyOf {
+          branch 'master'
+          expression {
+            return params.FORCE_CONTAINER
           }
-          steps {
-            container(name: 'buildkit', shell: '/bin/sh') {
-              sh '''#! /bin/sh
+
+        }
+
+      }
+      steps {
+        container(name: 'buildkit', shell: '/bin/sh') {
+          sh '''#! /bin/sh
 
 make TARGET=production REGISTRY=${OUTPUT_REGISTRY}'''
-            }
-
-          }
         }
 
       }

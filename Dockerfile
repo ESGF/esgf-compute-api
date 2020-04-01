@@ -15,10 +15,7 @@ FROM continuumio/miniconda3:4.6.14 as production
 
 WORKDIR /
 
-COPY --from=builder /opt/conda/conda-bld /opt/conda/conda-bld
-COPY --from=builder /opt/conda/pkgs /opt/conda/pkgs
-
-RUN conda install -c conda-forge --use-local esgf-compute-api jupyterlab cdms2 matplotlib
+RUN conda install -c conda-forge -c cdat jupyterlab esgf-compute-api
 
 COPY jupyter_notebook_config.json .
 
