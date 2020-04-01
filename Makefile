@@ -26,7 +26,10 @@ IMAGE = $(if $(REGISTRY),$(REGISTRY)/)compute-api
 VERSION = 2.2.3
 OUTPUT = --output type=image,name=$(IMAGE):$(VERSION),push=true
 else ($(TARGET),testresult)
+ifeq ($(shell which buildctl-daemonless.sh),)
 OUTPUT = --output type=local,dest=/output
+else
+OUTPUT = --output type=local,dest=output
 endif
 
 build:
