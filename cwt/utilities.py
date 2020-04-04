@@ -20,6 +20,17 @@ def prepare_data_inputs(process, inputs, domain, **kwargs):
         A dictionary containing the operations, domains and variables
         associated with the process.
     """
+    data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
+
+    variable = json.dumps([x.to_dict() for x in list(data_inputs['variable'])])
+
+    domain = json.dumps([x.to_dict() for x in list(data_inputs['domain'])])
+
+    operation = json.dumps([x.to_dict() for x in list(data_inputs['operation'])])
+
+    return variable, domain, operation
+
+def _prepare_data_inputs(process, inputs, domain, **kwargs):
     temp_process = process.copy()
 
     domains = {}
@@ -39,20 +50,18 @@ def prepare_data_inputs(process, inputs, domain, **kwargs):
 
     temp_process.add_parameters(**kwargs)
 
-    processes, variables = temp_process.collect_input_processes()
+    operation, variable = temp_process.collect_input_processes()
 
     # Collect all the domains from nested processes
-    for item in list(processes.values()):
+    for item in list(operation.values()):
         if item.domain is not None and item.domain.name not in domains:
             domains[item.domain.name] = item.domain
 
-    variable = json.dumps([x.to_dict() for x in list(variables.values())])
-
-    domain = json.dumps([x.to_dict() for x in list(domains.values())])
-
-    operation = json.dumps([x.to_dict() for x in list(processes.values())])
-
-    return variable, domain, operation
+    return {
+        'variable': variable.values(),
+        'domain': domains.values(),
+        'operation': operation.values(),
+    }
 
 def patch_ns(path, ns):
     new_path = []
@@ -65,11 +74,9 @@ def patch_ns(path, ns):
         else:
             new_path.append(p[0])
 
-    print('/'.join(new_path))
-
     return '/'.join(new_path)
 
-def doc_to_data_inputs(doc):
+def document_to_data_inputs(doc):
     ns = Namespaces()
 
     doc = etree.fromstring(doc)
@@ -94,7 +101,7 @@ def doc_to_data_inputs(doc):
 
     return identifier.text, data_inputs
 
-def data_inputs_to_doc(identifier, data_inputs):
+def data_inputs_to_document(identifier, data_inputs):
     variable = json.dumps([x.to_dict() for x in data_inputs.get('variable', [])])
 
     domain = json.dumps([x.to_dict() for x in data_inputs.get('domain', [])])
@@ -113,4 +120,12 @@ def data_inputs_to_doc(identifier, data_inputs):
 
     requestElement = execution.buildRequest(identifier, data_inputs)
 
-    return etree.tostring(requestElement)
+    return etree.tostring(requestElement).decode()
+
+def process_to_document(process, inputs=None, domain=None, **kwargs):
+    if inputs is None:
+        inputs = []
+
+    data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
+
+    return data_inputs_to_document(process.identifier, data_inputs)
