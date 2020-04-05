@@ -40,10 +40,11 @@ def _prepare_data_inputs(process, inputs, domain, **kwargs):
 
         temp_process.domain = domain
 
-    if not isinstance(inputs, (list, tuple)):
-        inputs = [inputs, ]
+    if inputs is not None:
+        if not isinstance(inputs, (list, tuple)):
+            inputs = [inputs, ]
 
-    temp_process.inputs.extend(inputs)
+        temp_process.inputs.extend(inputs)
 
     if 'gridder' in kwargs:
         temp_process.gridder = kwargs.pop('gridder')
@@ -58,9 +59,9 @@ def _prepare_data_inputs(process, inputs, domain, **kwargs):
             domains[item.domain.name] = item.domain
 
     return {
-        'variable': variable.values(),
-        'domain': domains.values(),
-        'operation': operation.values(),
+        'variable': list(variable.values()),
+        'domain': list(domains.values()),
+        'operation': list(operation.values()),
     }
 
 def patch_ns(path, ns):
@@ -76,7 +77,28 @@ def patch_ns(path, ns):
 
     return '/'.join(new_path)
 
-def document_to_data_inputs(doc):
+def data_inputs_to_document(identifier, data_inputs):
+    variable = json.dumps([x.to_dict() for x in data_inputs.get('variable', [])])
+
+    domain = json.dumps([x.to_dict() for x in data_inputs.get('domain', [])])
+
+    operation = json.dumps([x.to_dict() for x in data_inputs.get('operation', [])])
+
+    variable = wps.ComplexDataInput(variable, mimeType='application/json')
+
+    domain = wps.ComplexDataInput(domain, mimeType='application/json')
+
+    operation = wps.ComplexDataInput(operation, mimeType='application/json')
+
+    data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
+
+    execution = owslib.wps.WPSExecution()
+
+    requestElement = execution.buildRequest(identifier, data_inputs)
+
+    return etree.tostring(requestElement).decode()
+
+def _document_to_data_inputs(doc):
     ns = Namespaces()
 
     doc = etree.fromstring(doc)
@@ -101,31 +123,28 @@ def document_to_data_inputs(doc):
 
     return identifier.text, data_inputs
 
-def data_inputs_to_document(identifier, data_inputs):
-    variable = json.dumps([x.to_dict() for x in data_inputs.get('variable', [])])
+def _flatten_data_inputs(data_inputs):
+    output = {}
 
-    domain = json.dumps([x.to_dict() for x in data_inputs.get('domain', [])])
+    output['variable'] = [x.to_dict() for x in data_inputs['variable']]
 
-    operation = json.dumps([x.to_dict() for x in data_inputs.get('operation', [])])
+    output['domain'] = [x.to_dict() for x in data_inputs['domain']]
 
-    variable = wps.ComplexDataInput(variable, mimeType='application/json')
+    output['operation'] = [x.to_dict() for x in data_inputs['operation']]
 
-    domain = wps.ComplexDataInput(domain, mimeType='application/json')
+    return output
 
-    operation = wps.ComplexDataInput(operation, mimeType='application/json')
+def document_to_data_inputs(document):
+    _, data_inputs = _document_to_data_inputs(document)
 
-    data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
+    return json.dumps(_flatten_data_inputs(data_inputs))
 
-    execution = owslib.wps.WPSExecution()
+def process_to_data_inputs(process, inputs=None, domain=None, **kwargs):
+    data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
 
-    requestElement = execution.buildRequest(identifier, data_inputs)
-
-    return etree.tostring(requestElement).decode()
+    return json.dumps(_flatten_data_inputs(data_inputs))
 
 def process_to_document(process, inputs=None, domain=None, **kwargs):
-    if inputs is None:
-        inputs = []
-
     data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
 
     return data_inputs_to_document(process.identifier, data_inputs)
