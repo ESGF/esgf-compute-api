@@ -1,3 +1,4 @@
+import argparse
 import json
 
 import owslib
@@ -138,3 +139,22 @@ def process_to_document(process, inputs=None, domain=None, **kwargs):
     data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
 
     return data_inputs_to_document(process.identifier, data_inputs)
+
+def command_document_to_data_inputs():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('document', type=str)
+
+    args = vars(parser.parse_args())
+
+    print(json.dumps(document_to_data_inputs(args['document'])))
+
+def command_data_inputs_to_document():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('identifier', type=str)
+    parser.add_argument('data-inputs', type=str)
+
+    args = vars(parser.parse_args())
+
+    print(data_inputs_to_document(args['identifier'], json.loads(args['data-inputs'])))
