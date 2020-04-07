@@ -30,7 +30,10 @@ def test_doc_to_data_inputs():
     data_inputs = cwt.utilities.document_to_data_inputs(RAW_DOC)
 
     assert 'variable' in data_inputs
+    assert data_inputs['variable'] == [{'uri': 'file:///test1.nc', 'id': 'tas|170df910-ad06-4420-ad87-7256e0e839b7'}]
 
     assert 'domain' in data_inputs
+    assert data_inputs['domain'] == [{'id': 'd00832c5-9171-4d5f-abfb-334b7987c8d4', 'time': {'start': 10, 'end': 20, 'step': 1, 'crs': 'indices'}}]
 
     assert 'operation' in data_inputs
+    assert data_inputs['operation'] == [{'name': 'CDAT.workflow', 'result': 'f7adec78-503a-4123-bfc2-81e1c62d457e', 'domain': 'd00832c5-9171-4d5f-abfb-334b7987c8d4', 'input': ['170df910-ad06-4420-ad87-7256e0e839b7']}]

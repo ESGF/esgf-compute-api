@@ -283,40 +283,9 @@ class WPSClient(object):
             A dictionary containing the operations, domains and variables
             associated with the process.
         """
-        return utilities.prepare_data_inputs(process, inputs, domain, **kwargs)
-        # temp_process = process.copy()
+        data_inputs = utilities.prepare_data_inputs(process, inputs, domain, **kwargs)
 
-        # domains = {}
-
-        # if domain is not None:
-        #     domains[domain.name] = domain
-
-        #     temp_process.domain = domain
-
-        # if not isinstance(inputs, (list, tuple)):
-        #     inputs = [inputs, ]
-
-        # temp_process.inputs.extend(inputs)
-
-        # if 'gridder' in kwargs:
-        #     temp_process.gridder = kwargs.pop('gridder')
-
-        # temp_process.add_parameters(**kwargs)
-
-        # processes, variables = temp_process.collect_input_processes()
-
-        # # Collect all the domains from nested processes
-        # for item in list(processes.values()):
-        #     if item.domain is not None and item.domain.name not in domains:
-        #         domains[item.domain.name] = item.domain
-
-        # variable = json.dumps([x.to_dict() for x in list(variables.values())])
-
-        # domain = json.dumps([x.to_dict() for x in list(domains.values())])
-
-        # operation = json.dumps([x.to_dict() for x in list(processes.values())])
-
-        # return variable, domain, operation
+        return dict((x, json.dumps(y)) for x, y in data_inputs.items())
 
     def execute(self, process, inputs=None, domain=None, **kwargs):
         """ Executes an Execute request.
@@ -361,13 +330,13 @@ class WPSClient(object):
         method = kwargs.pop('method', 'post').lower()
 
         if method == 'post':
-            variable, domain, operation = self.prepare_data_inputs(process, inputs, domain, **kwargs)
+            data_inputs = self.prepare_data_inputs(process, inputs, domain, **kwargs)
 
-            variable = wps.ComplexDataInput(variable, mimeType='application/json')
+            variable = wps.ComplexDataInput(data_inputs['variable'], mimeType='application/json')
 
-            domain = wps.ComplexDataInput(domain, mimeType='application/json')
+            domain = wps.ComplexDataInput(data_inputs['domain'], mimeType='application/json')
 
-            operation = wps.ComplexDataInput(operation, mimeType='application/json')
+            operation = wps.ComplexDataInput(data_inputs['operation'], mimeType='application/json')
 
             data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
 
@@ -378,15 +347,9 @@ class WPSClient(object):
         elif method == 'get':
             params = self.parse_wps_execute_get_params(kwargs)
 
-            variable, domain, operation = self.prepare_data_inputs(process, inputs, domain, **kwargs)
+            data_inputs = self.prepare_data_inputs(process, inputs, domain, **kwargs)
 
-            variable = 'variable={!s}'.format(variable)
-
-            domain = 'domain={!s}'.format(domain)
-
-            operation = 'operation={!s}'.format(operation)
-
-            data_inputs = ';'.join([variable, domain, operation])
+            data_inputs = ';'.join(['{0!s}={1!s}'.format(x, y) for x, y in data_inputs.items()])
 
             try:
                 params.update({

@@ -22,13 +22,7 @@ def prepare_data_inputs(process, inputs, domain, **kwargs):
     """
     data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
 
-    variable = json.dumps([x.to_dict() for x in list(data_inputs['variable'])])
-
-    domain = json.dumps([x.to_dict() for x in list(data_inputs['domain'])])
-
-    operation = json.dumps([x.to_dict() for x in list(data_inputs['operation'])])
-
-    return variable, domain, operation
+    return _flatten_data_inputs(data_inputs)
 
 def _prepare_data_inputs(process, inputs, domain, **kwargs):
     temp_process = process.copy()
@@ -137,12 +131,12 @@ def _flatten_data_inputs(data_inputs):
 def document_to_data_inputs(document):
     _, data_inputs = _document_to_data_inputs(document)
 
-    return json.dumps(_flatten_data_inputs(data_inputs))
+    return _flatten_data_inputs(data_inputs)
 
 def process_to_data_inputs(process, inputs=None, domain=None, **kwargs):
     data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
 
-    return json.dumps(_flatten_data_inputs(data_inputs))
+    return _flatten_data_inputs(data_inputs)
 
 def process_to_document(process, inputs=None, domain=None, **kwargs):
     data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
