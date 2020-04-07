@@ -72,17 +72,13 @@ def patch_ns(path, ns):
     return '/'.join(new_path)
 
 def data_inputs_to_document(identifier, data_inputs):
-    variable = json.dumps([x.to_dict() for x in data_inputs.get('variable', [])])
+    data_inputs = dict((x, json.dumps(y)) for x, y in data_inputs.items())
 
-    domain = json.dumps([x.to_dict() for x in data_inputs.get('domain', [])])
+    variable = wps.ComplexDataInput(data_inputs['variable'], mimeType='application/json')
 
-    operation = json.dumps([x.to_dict() for x in data_inputs.get('operation', [])])
+    domain = wps.ComplexDataInput(data_inputs['domain'], mimeType='application/json')
 
-    variable = wps.ComplexDataInput(variable, mimeType='application/json')
-
-    domain = wps.ComplexDataInput(domain, mimeType='application/json')
-
-    operation = wps.ComplexDataInput(operation, mimeType='application/json')
+    operation = wps.ComplexDataInput(data_inputs['operation'], mimeType='application/json')
 
     data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
 
