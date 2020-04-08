@@ -138,7 +138,7 @@ def process_to_data_inputs(process, inputs=None, domain=None, **kwargs):
 def process_to_document(process, inputs=None, domain=None, **kwargs):
     data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
 
-    return data_inputs_to_document(process.identifier, data_inputs)
+    return data_inputs_to_document(process.identifier, _flatten_data_inputs(data_inputs))
 
 def command_document_to_data_inputs():
     parser = argparse.ArgumentParser()
