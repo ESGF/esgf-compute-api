@@ -329,7 +329,7 @@ class WPSClient(object):
 
         method = kwargs.pop('method', 'post').lower()
 
-        if isinstance(process, cwt.Process):
+        if isinstance(process, Process):
             if method == 'post':
                 data_inputs = self.prepare_data_inputs(process, inputs, domain, **kwargs)
 
@@ -386,11 +386,11 @@ class WPSClient(object):
                 raise WPSClientError('Unsupported method {!r}', method)
         elif isinstance(process, str):
             try:
-                context = self._client.execute(None, None, requests=process)
+                context = self._client.execute(None, None, request=process)
             except Exception as e:
                 raise WPSClientError('Client error {!r}', str(e))
 
-            process = cwt.Process()
+            process = Process()
 
             process.context = context
 
