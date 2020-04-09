@@ -67,7 +67,7 @@ class StatusTracker(object):
 
 def ensure_list(x):
     if not isinstance(x, (list, tuple)):
-        return [x]
+        return [x,]
 
     return x
 
@@ -488,7 +488,7 @@ class Process(Parameter):
 
         data['input'] = inputs
 
-        gridder = self.parameters.pop('gridder', None)
+        gridder = self.parameters.get('gridder', None)
 
         if gridder is not None:
             data.update({
@@ -496,6 +496,9 @@ class Process(Parameter):
             })
 
         for name, value in list(self.parameters.items()):
+            if name in ('gridder',):
+                continue
+
             data.update(value.to_dict())
 
         return data

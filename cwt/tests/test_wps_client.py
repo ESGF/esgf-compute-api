@@ -114,7 +114,8 @@ class TestWPSClient(unittest.TestCase):
         self.assertEqual(len(processes), 2)
 
     def test_execute_no_domain(self):
-        with mock.patch.object(self.client, 'prepare_data_inputs', return_value=('', '', '')) as mock_prepare:
+        return_value = {'variable': '[]', 'domain': '[]', 'operation': '[]'}
+        with mock.patch.object(self.client, 'prepare_data_inputs', return_value=return_value) as mock_prepare:
             self.client.execute(self.process, [self.variable])
 
             mock_prepare.assert_called_with(
@@ -123,7 +124,8 @@ class TestWPSClient(unittest.TestCase):
         self.assertIsNone(self.process.domain)
 
     def test_execute_no_inputs(self):
-        with mock.patch.object(self.client, 'prepare_data_inputs', return_value=('', '', '')) as mock_prepare:
+        return_value = {'variable': '[]', 'domain': '[]', 'operation': '[]'}
+        with mock.patch.object(self.client, 'prepare_data_inputs', return_value=return_value) as mock_prepare:
             self.client.execute(self.process, domain=self.domain)
 
             mock_prepare.assert_called_with(self.process, [], self.domain)
@@ -137,7 +139,8 @@ class TestWPSClient(unittest.TestCase):
             self.client.execute(self.process)
 
     def test_execute(self):
-        with mock.patch.object(self.client, 'prepare_data_inputs', return_value=('', '', '')) as mock_prepare:
+        return_value = {'variable': '[]', 'domain': '[]', 'operation': '[]'}
+        with mock.patch.object(self.client, 'prepare_data_inputs', return_value=return_value) as mock_prepare:
             self.client.execute(self.process, [self.variable], self.domain)
 
             mock_prepare.assert_called_with(self.process, [self.variable], self.domain)
@@ -167,9 +170,9 @@ class TestWPSClient(unittest.TestCase):
         # Verify the outputs
         self.assertEqual(len(data_inputs), 3)
 
-        self.assertIn(json.dumps(self.variable.to_dict()), data_inputs[0])
+        self.assertIn(json.dumps(self.variable.to_dict()), data_inputs['variable'])
 
-        self.assertIn(json.dumps(self.domain.to_dict()), data_inputs[1])
+        self.assertIn(json.dumps(self.domain.to_dict()), data_inputs['domain'])
 
         # Complete setup that prepare_data_inputs does on temp_process
         self.process.domain = self.domain
@@ -181,7 +184,7 @@ class TestWPSClient(unittest.TestCase):
             'axes': cwt.NamedParameter('axes', 'lats'),
         }
 
-        self.assertIn(json.dumps(self.process.to_dict()), data_inputs[2])
+        self.assertIn(json.dumps(self.process.to_dict()), data_inputs['operation'])
 
     def test_prepare_data_inputs_preserve_process(self):
         v1 = cwt.Variable('file:///test1.nc', 'tas')
@@ -204,9 +207,9 @@ class TestWPSClient(unittest.TestCase):
         # Verify the outputs
         self.assertEqual(len(data_inputs), 3)
 
-        self.assertIn(json.dumps(self.variable.to_dict()), data_inputs[0])
+        self.assertIn(json.dumps(self.variable.to_dict()), data_inputs['variable'])
 
-        self.assertIn(json.dumps(domain.to_dict()), data_inputs[1])
+        self.assertIn(json.dumps(domain.to_dict()), data_inputs['domain'])
 
         # Complete setup that prepare_data_inputs does on temp_process
         self.process.domain = domain
@@ -218,7 +221,7 @@ class TestWPSClient(unittest.TestCase):
             'axes': cwt.NamedParameter('axes', 'lats'),
         }
 
-        self.assertIn(json.dumps(self.process.to_dict()), data_inputs[2])
+        self.assertIn(json.dumps(self.process.to_dict()), data_inputs['operation'])
 
     def test_prepare_data_inputs(self):
         data_inputs = self.client.prepare_data_inputs(self.process, [self.variable, ], self.domain, axes='lats')
@@ -231,9 +234,9 @@ class TestWPSClient(unittest.TestCase):
         # Verify the outputs
         self.assertEqual(len(data_inputs), 3)
 
-        self.assertIn(json.dumps(self.variable.to_dict()), data_inputs[0])
+        self.assertIn(json.dumps(self.variable.to_dict()), data_inputs['variable'])
 
-        self.assertIn(json.dumps(self.domain.to_dict()), data_inputs[1])
+        self.assertIn(json.dumps(self.domain.to_dict()), data_inputs['domain'])
 
         # Complete setup that prepare_data_inputs does on temp_process
         self.process.domain = self.domain
@@ -242,7 +245,7 @@ class TestWPSClient(unittest.TestCase):
 
         self.process.parameters = {'axes': cwt.NamedParameter('axes', 'lats')}
 
-        self.assertIn(json.dumps(self.process.to_dict()), data_inputs[2])
+        self.assertIn(json.dumps(self.process.to_dict()), data_inputs['operation'])
 
     def test_parse_data_inputs(self):
         variable = '{"id": "tas|tas", "uri": "file:///test.nc", "result": "v0"}'

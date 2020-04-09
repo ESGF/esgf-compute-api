@@ -1,3 +1,4 @@
+import argparse
 import json
 
 import owslib
@@ -20,6 +21,11 @@ def prepare_data_inputs(process, inputs, domain, **kwargs):
         A dictionary containing the operations, domains and variables
         associated with the process.
     """
+    data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
+
+    return _flatten_data_inputs(data_inputs)
+
+def _prepare_data_inputs(process, inputs, domain, **kwargs):
     temp_process = process.copy()
 
     domains = {}
@@ -29,30 +35,29 @@ def prepare_data_inputs(process, inputs, domain, **kwargs):
 
         temp_process.domain = domain
 
-    if not isinstance(inputs, (list, tuple)):
-        inputs = [inputs, ]
+    if inputs is not None:
+        if not isinstance(inputs, (list, tuple)):
+            inputs = [inputs, ]
 
-    temp_process.inputs.extend(inputs)
+        temp_process.inputs.extend(inputs)
 
     if 'gridder' in kwargs:
         temp_process.gridder = kwargs.pop('gridder')
 
     temp_process.add_parameters(**kwargs)
 
-    processes, variables = temp_process.collect_input_processes()
+    operation, variable = temp_process.collect_input_processes()
 
     # Collect all the domains from nested processes
-    for item in list(processes.values()):
+    for item in list(operation.values()):
         if item.domain is not None and item.domain.name not in domains:
             domains[item.domain.name] = item.domain
 
-    variable = json.dumps([x.to_dict() for x in list(variables.values())])
-
-    domain = json.dumps([x.to_dict() for x in list(domains.values())])
-
-    operation = json.dumps([x.to_dict() for x in list(processes.values())])
-
-    return variable, domain, operation
+    return {
+        'variable': list(variable.values()),
+        'domain': list(domains.values()),
+        'operation': list(operation.values()),
+    }
 
 def patch_ns(path, ns):
     new_path = []
@@ -65,11 +70,26 @@ def patch_ns(path, ns):
         else:
             new_path.append(p[0])
 
-    print('/'.join(new_path))
-
     return '/'.join(new_path)
 
-def doc_to_data_inputs(doc):
+def data_inputs_to_document(identifier, data_inputs):
+    data_inputs = dict((x, json.dumps(y)) for x, y in data_inputs.items())
+
+    variable = wps.ComplexDataInput(data_inputs['variable'], mimeType='application/json')
+
+    domain = wps.ComplexDataInput(data_inputs['domain'], mimeType='application/json')
+
+    operation = wps.ComplexDataInput(data_inputs['operation'], mimeType='application/json')
+
+    data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
+
+    execution = owslib.wps.WPSExecution()
+
+    requestElement = execution.buildRequest(identifier, data_inputs)
+
+    return etree.tostring(requestElement).decode()
+
+def _document_to_data_inputs(doc):
     ns = Namespaces()
 
     doc = etree.fromstring(doc)
@@ -94,23 +114,47 @@ def doc_to_data_inputs(doc):
 
     return identifier.text, data_inputs
 
-def data_inputs_to_doc(identifier, data_inputs):
-    variable = json.dumps([x.to_dict() for x in data_inputs.get('variable', [])])
+def _flatten_data_inputs(data_inputs):
+    output = {}
 
-    domain = json.dumps([x.to_dict() for x in data_inputs.get('domain', [])])
+    output['variable'] = [x.to_dict() for x in data_inputs['variable']]
 
-    operation = json.dumps([x.to_dict() for x in data_inputs.get('operation', [])])
+    output['domain'] = [x.to_dict() for x in data_inputs['domain']]
 
-    variable = wps.ComplexDataInput(variable, mimeType='application/json')
+    output['operation'] = [x.to_dict() for x in data_inputs['operation']]
 
-    domain = wps.ComplexDataInput(domain, mimeType='application/json')
+    return output
 
-    operation = wps.ComplexDataInput(operation, mimeType='application/json')
+def document_to_data_inputs(document):
+    _, data_inputs = _document_to_data_inputs(document)
 
-    data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
+    return _flatten_data_inputs(data_inputs)
 
-    execution = owslib.wps.WPSExecution()
+def process_to_data_inputs(process, inputs=None, domain=None, **kwargs):
+    data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
 
-    requestElement = execution.buildRequest(identifier, data_inputs)
+    return _flatten_data_inputs(data_inputs)
 
-    return etree.tostring(requestElement)
+def process_to_document(process, inputs=None, domain=None, **kwargs):
+    data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
+
+    return data_inputs_to_document(process.identifier, _flatten_data_inputs(data_inputs))
+
+def command_document_to_data_inputs():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('document', type=str)
+
+    args = vars(parser.parse_args())
+
+    print(json.dumps(document_to_data_inputs(args['document'])))
+
+def command_data_inputs_to_document():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('identifier', type=str)
+    parser.add_argument('data-inputs', type=str)
+
+    args = vars(parser.parse_args())
+
+    print(data_inputs_to_document(args['identifier'], json.loads(args['data-inputs'])))
