@@ -154,8 +154,6 @@ class JobListWrapper(object):
 
         row_data = []
 
-        print(self.current)
-
         for x in self.current['results']:
             data = ''.join(['<td>{}</td>'.format(x[id]) for (id, _) in columns])
 
