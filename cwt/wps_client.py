@@ -218,8 +218,7 @@ class WPSClient(object):
         return items
 
     def process_by_name(self, identifier, version=None):
-        if not self._has_capabilities:
-            self.get_capabilities()
+        self.get_capabilities()
 
         matches = []
 
