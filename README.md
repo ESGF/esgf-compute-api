@@ -20,24 +20,20 @@ python setup.py install
 ```
 ### Quickstart
 
-You can start with the [Getting Started](examples/getting_started.ipynb) which is a [Jupyter](https://jupyter.readthedocs.io/en/latest/install.html) notebook that can be ran in a [JupyterLab](https://jupyter.org/install.html) instance.
-
-or you can jump right into running some code. You can find instructions to retrieve a token [here](docs/source/token.md).
-
 ```python
 import cwt
 
 # Create a variable from an OpenDAP url and the name of the variable.
-tas = cwt.Variable('http://thredds/dap/test.nc', 'tas')
+tas = cwt.Variable('...', var_name='...')
 
 # Initialize the client with the url to the WPS endpoint and the Token/API key.
-wps = cwt.WPSClient('http://localhost:8000/wps', api_key='<TOKEN>')
+wps = cwt.WPSClient('http://.../wps', compute_token='...')
 
 # Select the process to execut.
-process = wps.process_by_name('CDAT.subset')
+process = wps.CDAT.subset(tas)
 
 # Execut the process.
-wps.execute(process, inputs=[tas])
+wps.execute(process)
 
 # Wait for the process to complete, this will print status message to the console.
 process.wait()
@@ -46,28 +42,18 @@ process.wait()
 print(process.output)
 ```
 
-### Docker image
-
-```
-docker pull jasonb87/compute-api:2.2.0
-```
-
-##### Jupyter Lab
-
-```
-docker run -it -p 8888:8888 jasonb87/compute-api:2.2.0
-```
-
-Open a browser to http://0.0.0.0:8888/lab and the password will be "esgf".
-
-#### IPython
-```
-docker run -it jasonb87/compute-api:2.2.0 ipython
-```
-
-### Examples
+### Example
 
 Jupyter Notebook cotnaining examples can be found [here](examples/)
+
+To run the notebooks install and run the following. The password is **esgf**.
+
+```bash
+conda create -n cwt -c conda-forge -c cdat esgf-compute-api cdms2 matplotlib jupyterlab
+conda activate
+
+jupyter lab --ip 0.0.0.0
+```
 
 ### Compatibility
 
