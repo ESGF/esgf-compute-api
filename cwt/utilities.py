@@ -190,11 +190,11 @@ def _build_init(data, vars):
     lines = []
 
     for x in data.values():
-        name = hashlib.sha256(x.name.encode()).hexdigest()[:8]
+        name = '{}_{}'.format(x.__class__.__name__.lower(), hashlib.sha256(x.name.encode()).hexdigest()[:8])
 
         vars[x.name] = name
 
-        lines.append('{} = cwt.{}\n'.format(name, repr(x)))
+        lines.append('{} = {}\n'.format(name, repr(x)))
 
     return lines
 
@@ -205,22 +205,27 @@ def _build_code(data_inputs, **kwargs):
     sections = []
 
     imports = [
-        'import cwt\n',
         'import os\n',
+        'from cwt import Domain\n',
+        'from cwt import Dimension\n',
+        'from cwt import Variable\n',
+        'from cwt import CRS\n',
     ]
 
     if kwargs['llnl_client']:
-        imports.append('from cwt import llnl_client\n')
+        imports.append('from cwt.llnl_client import LLNLClient\n')
+    else:
+        imports.append('from cwt.wps_client import WPSClient\n')
 
     sections.append(imports)
 
     if kwargs['llnl_client']:
         sections.append([
-            'client = llnl_client.LLNLClient({!r})\n'.format(kwargs['wps_url']),
+            'client = LLNLClient({!r})\n'.format(kwargs['wps_url']),
         ])
     else:
         sections.append([
-            'client = cwt.WPSClient({!r})\n'.format(kwargs['wps_url']),
+            'client = WPSClient({!r})\n'.format(kwargs['wps_url']),
         ])
 
     vars = {}
@@ -242,7 +247,7 @@ def _build_code(data_inputs, **kwargs):
     while len(queue) > 0:
         current = queue.pop(0)
 
-        name = hashlib.sha256(current.name.encode()).hexdigest()[:8]
+        name = '{}_{}'.format(current.__class__.__name__.lower(), hashlib.sha256(current.name.encode()).hexdigest()[:8])
 
         vars[current.name] = name
 
@@ -278,7 +283,7 @@ def _build_code(data_inputs, **kwargs):
 def _write_script(data_inputs, **kwargs):
     sections = _build_code(data_inputs, **kwargs)
 
-    with open('test.py', 'w') as f:
+    with open(kwargs['output_path'], 'w') as f:
         for x in sections:
             f.writelines(x)
 
@@ -293,6 +298,7 @@ def command_convert():
     parser.add_argument('input', help='Input can be WPS document or data_inputs.')
     parser.add_argument('--wps-url', help='Url for the WPS server.', default='https://aims2.llnl.gov/wps')
     parser.add_argument('--llnl-client', action='store_true', help='Uses LLNL Client.')
+    parser.add_argument('--output-path', help='Output path for file.', default='compute.py')
 
     kwargs = vars(parser.parse_args())
 
