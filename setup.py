@@ -21,6 +21,7 @@ setup(
         'console_scripts': [
             'cwt-convert-document=cwt.utilities:command_document_to_data_inputs',
             'cwt-convert-data-inputs=cwt.utilities:command_data_inputs_to_document',
+            'cwt-convert=cwt.utilities:command_convert',
         ]
     },
 )

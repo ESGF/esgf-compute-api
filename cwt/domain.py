@@ -26,11 +26,10 @@ class Domain(Parameter):
 
     Domain with a mask.
 
-    >>> domain = Domain([
+    >>> domain = Domain(
             Dimension('lat', 90, -90, Dimension.values, name='lat'),
             Dimension('lon', 0, 90, Dimension.values, name='lon'),
-        ],
-        mask = Mask('http://thredds/clt.nc', 'clt', 'var_data<0.5'))
+            mask=Mask('http://thredds/clt.nc', 'clt', 'var_data<0.5'))
 
     Attributes:
         dimensions: List of Dimensions.
@@ -38,7 +37,7 @@ class Domain(Parameter):
         name: Name of the domain.
     """
 
-    def __init__(self, dimensions=None, mask=None, name=None, **kwargs):
+    def __init__(self, *args, mask=None, name=None, **kwargs):
         """ Domain init. """
         super(Domain, self).__init__(name)
 
@@ -46,9 +45,8 @@ class Domain(Parameter):
 
         self.dimensions = {}
 
-        if dimensions is not None:
-            for dim in dimensions:
-                self.dimensions[dim.name] = dim
+        for x in args:
+            self.dimensions[x.name] = x
 
         for name, value in list(kwargs.items()):
             self.add_dimension(name, value)
@@ -74,7 +72,7 @@ class Domain(Parameter):
         except BaseException:
             mask_data = None
 
-        return cls(dimensions=dimensions, mask=mask_data, name=name)
+        return cls(*dimensions, mask=mask_data, name=name)
 
     def add_dimension(self, name, value):
         if name in self.dimensions:
@@ -137,4 +135,4 @@ class Domain(Parameter):
         return self.to_dict()
 
     def __repr__(self):
-        return 'Domain(dimensions={!r}, mask={!r}, name={!r})'.format(self.dimensions, self.mask, self.name)
+        return 'Domain({!s}, mask={!r}, name={!r})'.format(', '.join([repr(x) for x in self.dimensions.values()]), self.mask, self.name)
