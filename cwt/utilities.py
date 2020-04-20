@@ -194,7 +194,7 @@ def _build_init(data, vars):
 
         vars[x.name] = name
 
-        lines.append('{} = {}\n'.format(name, repr(x)))
+        lines.append('{} = {}'.format(name, repr(x)))
 
     return lines
 
@@ -205,27 +205,27 @@ def _build_code(data_inputs, **kwargs):
     sections = []
 
     imports = [
-        'import os\n',
-        'from cwt import Domain\n',
-        'from cwt import Dimension\n',
-        'from cwt import Variable\n',
-        'from cwt import CRS\n',
+        'import os',
+        'from cwt import Domain',
+        'from cwt import Dimension',
+        'from cwt import Variable',
+        'from cwt import CRS',
     ]
 
     if kwargs['llnl_client']:
-        imports.append('from cwt.llnl_client import LLNLClient\n')
+        imports.append('from cwt.llnl_client import LLNLClient')
     else:
-        imports.append('from cwt.wps_client import WPSClient\n')
+        imports.append('from cwt.wps_client import WPSClient')
 
     sections.append(imports)
 
     if kwargs['llnl_client']:
         sections.append([
-            'client = LLNLClient({!r})\n'.format(kwargs['wps_url']),
+            'client = LLNLClient({!r})'.format(kwargs['wps_url']),
         ])
     else:
         sections.append([
-            'client = WPSClient({!r})\n'.format(kwargs['wps_url']),
+            'client = WPSClient({!r})'.format(kwargs['wps_url']),
         ])
 
     vars = {}
@@ -259,13 +259,13 @@ def _build_code(data_inputs, **kwargs):
 
         params = ', {}'.format(', '.join(params)) if len(params) > 0 else ''
 
-        processes.append('{} = client.{}({}{}{})\n\n'.format(name, current.identifier, inputs, domain, params))
-
         for x in neighbors[current.name]:
             in_deg[x.name] -= 1
 
             if in_deg[x.name] == 0:
                 queue.append(x)
+
+        processes.append('{} = client.{}({}{}{}){}'.format(name, current.identifier, inputs, domain, params, '\n' if len(queue) > 0 else ''))
 
     sections.append(processes)
 
@@ -274,31 +274,53 @@ def _build_code(data_inputs, **kwargs):
     outputs_str = ', '.join(outputs)
 
     sections.append([
-        'client.execute({})\n\n'.format(outputs_str),
-        '{}.wait()\n'.format(outputs[0]),
+        'client.execute({})\n'.format(outputs_str),
+        '{}.wait()'.format(outputs[0]),
     ])
 
     return sections
 
-def _write_script(data_inputs, **kwargs):
+def _write_script(data_inputs, output_path, **kwargs):
     sections = _build_code(data_inputs, **kwargs)
 
-    with open(kwargs['output_path'], 'w') as f:
+    if output_path is None:
+        output_path = 'compute.py'
+
+    with open(output_path, 'w') as f:
         for x in sections:
             f.writelines(x)
 
             f.write('\n')
 
+def _write_notebook(data_inputs, output_path, **kwargs):
+    try:
+        import nbformat as nbf
+    except Exception:
+        raise CWTError('Exporting a notebook requires "nbformat" package to be installed')
+
+    if output_path is None:
+        output_path = 'compute.ipynb'
+
+    sections = _build_code(data_inputs, **kwargs)
+
+    nb = nbf.v4.new_notebook()
+
+    for s in sections:
+        nb['cells'].append(nbf.v4.new_code_cell('\n'.join(s)))
+
+    nbf.write(nb, output_path)
+
+
 def command_convert():
     parser = argparse.ArgumentParser()
 
-    output_choices = ('script',)
+    output_choices = ('script', 'notebook')
 
     parser.add_argument('output', help='Conversion output.', choices=output_choices)
     parser.add_argument('input', help='Input can be WPS document or data_inputs.')
     parser.add_argument('--wps-url', help='Url for the WPS server.', default='https://aims2.llnl.gov/wps')
     parser.add_argument('--llnl-client', action='store_true', help='Uses LLNL Client.')
-    parser.add_argument('--output-path', help='Output path for file.', default='compute.py')
+    parser.add_argument('--output-path', help='Output path for file.')
 
     kwargs = vars(parser.parse_args())
 
@@ -309,3 +331,5 @@ def command_convert():
 
     if kwargs['output'] == 'script':
         _write_script(data_inputs, **kwargs)
+    elif kwargs['output'] == 'notebook':
+        _write_notebook(data_inputs, **kwargs)
