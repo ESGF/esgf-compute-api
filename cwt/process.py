@@ -10,6 +10,7 @@ import time
 import datetime
 import warnings
 
+from cwt import utilities
 from cwt.errors import CWTError
 from cwt.errors import MissingRequiredKeyError
 from cwt.errors import WPSTimeoutError
@@ -443,6 +444,22 @@ class Process(Parameter):
             args: A list of Process/Variable objects.
         """
         self.inputs.extend(args)
+
+    def visualize(self, filename='compute', format='png'):
+        processes, _ = self.collect_input_processes()
+
+        G = utilities._build_graph(processes)
+
+        path = '{}.{}'.format(filename, format)
+
+        G.draw(path, prog='dot')
+
+        try:
+            from IPython.display import Image
+        except ImportError:
+            pass
+        else:
+            return Image(filename=path)
 
     def collect_input_processes(self):
         """ Aggregates the process trees inputs.
