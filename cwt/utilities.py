@@ -296,7 +296,7 @@ def _write_notebook(data_inputs, output_path, **kwargs):
     try:
         import nbformat as nbf
     except Exception:
-        raise CWTError('Exporting a notebook requires "nbformat" package to be installed')
+        raise cwt.CWTError('Exporting a notebook requires "nbformat" package to be installed')
 
     if output_path is None:
         output_path = 'compute.ipynb'
@@ -310,11 +310,47 @@ def _write_notebook(data_inputs, output_path, **kwargs):
 
     nbf.write(nb, output_path)
 
+def _build_graph(operation):
+    try:
+        import pygraphviz as pgv
+    except Exception:
+        raise cwt.CWTError('Exporting a graph requires "pygraphviz" package to be installed')
+
+    edges = {}
+
+    for o in operation.values():
+        for index, i in enumerate(o.inputs):
+            if isinstance(i, cwt.Process):
+                iid = '{}-{}'.format(i.identifier, i.name)
+            elif isinstance(i, cwt.Variable):
+                iid = 'Input{}-{}'.format(index, i.name)
+
+            oid = '{}-{}'.format(o.identifier, o.name)
+
+            try:
+                edges[iid].update({oid: None})
+            except KeyError:
+                edges[iid] = {
+                    oid: None,
+                }
+
+    return pgv.AGraph(edges)
+
+
+def _write_graph(data_inputs, output_path, **kwargs):
+    if output_path is None:
+        output_path = 'compute.png'
+
+    _, _, operation = _load_data_inputs(data_inputs)
+
+    G = _build_graph(operation)
+
+    G.draw(output_path, prog='dot')
 
 def command_convert():
     parser = argparse.ArgumentParser()
 
-    output_choices = ('script', 'notebook')
+    output_choices = ('script', 'notebook', 'graph')
 
     parser.add_argument('output', help='Conversion output.', choices=output_choices)
     parser.add_argument('input', help='Input can be WPS document or data_inputs.')
@@ -333,3 +369,5 @@ def command_convert():
         _write_script(data_inputs, **kwargs)
     elif kwargs['output'] == 'notebook':
         _write_notebook(data_inputs, **kwargs)
+    elif kwargs['output'] == 'graph':
+        _write_graph(data_inputs, **kwargs)
