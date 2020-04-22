@@ -154,8 +154,6 @@ class JobListWrapper(object):
 
         row_data = []
 
-        print(self.current)
-
         for x in self.current['results']:
             data = ''.join(['<td>{}</td>'.format(x[id]) for (id, _) in columns])
 
@@ -262,7 +260,16 @@ class LLNLAuthenticator(object):
             'response': 'json',
         }
 
-        response = requests.post(self.login_url, data=data, headers=headers, verify=self.verify)
+        s = requests.Session()
+
+        response = s.get(self.login_url, headers=headers, verify=self.verify)
+
+        try:
+            headers['X-CSRFToken'] = response.cookies['csrftoken']
+        except KeyError:
+            logger.info('Did not find "csrftoken" in cookies')
+
+        response = s.post(self.login_url, data=data, headers=headers, verify=self.verify)
 
         response.raise_for_status()
 

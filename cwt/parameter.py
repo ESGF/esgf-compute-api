@@ -20,7 +20,7 @@ class Parameter(object):
         self.name = name
 
         if self.name is None:
-            self.name = str(uuid())
+            self.name = str(uuid())[:8]
 
     @classmethod
     def from_dict(cls, data):

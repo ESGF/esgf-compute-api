@@ -10,7 +10,30 @@ import sys
 import collections
 import warnings
 
+logger = logging.getLogger(__name__)
+
 import requests
+from owslib import util
+
+s = requests.Session()
+
+__request = util.requests.request
+
+# Monkey patch owslib to handle CSRF token.
+def _request(method, *args, **kwargs):
+    if method == 'POST':
+        response = s.get(*args, **kwargs)
+
+        if 'headers' in kwargs:
+            try:
+                kwargs['headers'].update({'X-CSRFToken': response.cookies['csrftoken']})
+            except KeyError:
+                logger.info('Did not find "csrftoken" in response coockies')
+
+    return s.request(method, *args, **kwargs)
+
+util.requests.request = _request
+
 from owslib import wps
 
 from cwt import utilities
@@ -19,8 +42,6 @@ from cwt.errors import CWTError
 from cwt.errors import WPSClientError
 from cwt.process import Process
 from cwt.variable import Variable
-
-logger = logging.getLogger('cwt.wps__client')
 
 
 class ProcessCollection(collections.OrderedDict):
@@ -218,8 +239,7 @@ class WPSClient(object):
         return items
 
     def process_by_name(self, identifier, version=None):
-        if not self._has_capabilities:
-            self.get_capabilities()
+        self.get_capabilities()
 
         matches = []
 

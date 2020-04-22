@@ -10,6 +10,7 @@ import time
 import datetime
 import warnings
 
+from cwt import utilities
 from cwt.errors import CWTError
 from cwt.errors import MissingRequiredKeyError
 from cwt.errors import WPSTimeoutError
@@ -104,6 +105,7 @@ class Process(Parameter):
 
     def __repr__(self):
         fmt = ('Process('
+               'name={}, '
                'identifier={}, '
                'inputs={}, '
                'parameters={}, '
@@ -113,13 +115,11 @@ class Process(Parameter):
                'data_inputs={}, '
                'status_supported={}, '
                'store_supported={}, '
-               'process_version={}, '
-               'abstract={}, '
-               'metadata={})')
+               'process_version={})')
 
-        return fmt.format(self.identifier, self.inputs, self.parameters, self.domain,
+        return fmt.format(self.name, self.identifier, self.inputs, self.parameters, self.domain,
                           self.title, self.process_outputs, self.data_inputs, self.status_supported,
-                          self.store_supported, self.process_version, self.abstract, self.metadata)
+                          self.store_supported, self.process_version)
 
     @classmethod
     def from_owslib(cls, client, process):
@@ -315,10 +315,18 @@ class Process(Parameter):
     def describe(self):
         self.process = self._client.describe_process(self.process)
 
-    def __call__(self, *args, domain=None, **kwargs):
+    def __call__(self, *inputs, domain=None, **kwargs):
         new_process = self.copy(True)
 
-        new_process.add_inputs(*args)
+        # Take inputs or override with keyword
+        inputs = inputs or kwargs.pop('inputs', [])
+
+        if not all([isinstance(x, (Process, Variable)) for x in inputs]):
+            invalid = ', '.join([str(type(x)) for x in inputs if not isinstance(x, (Process, Variable))])
+
+            raise CWTError('Positional arguments can only be Variable or Process. The following are invalid {}', invalid)
+
+        new_process.add_inputs(*inputs)
 
         new_process.set_domain(domain)
 
@@ -436,6 +444,22 @@ class Process(Parameter):
             args: A list of Process/Variable objects.
         """
         self.inputs.extend(args)
+
+    def visualize(self, filename='compute', format='png'):
+        processes, _ = self.collect_input_processes()
+
+        G = utilities._build_graph(processes)
+
+        path = '{}.{}'.format(filename, format)
+
+        G.draw(path, prog='dot')
+
+        try:
+            from IPython.display import Image
+        except ImportError:
+            pass
+        else:
+            return Image(filename=path)
 
     def collect_input_processes(self):
         """ Aggregates the process trees inputs.

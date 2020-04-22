@@ -8,7 +8,7 @@ setup(
     packages=['cwt'],
     author='Jason Boutte',
     author_email='boutte3@llnl.gov',
-    version="2.3.1",
+    version="2.3.2",
     url='https://github.com/ESGF/esgf-compute-api',
     install_requires=[
         "owslib>=0.17.1",
@@ -21,6 +21,7 @@ setup(
         'console_scripts': [
             'cwt-convert-document=cwt.utilities:command_document_to_data_inputs',
             'cwt-convert-data-inputs=cwt.utilities:command_data_inputs_to_document',
+            'cwt-convert=cwt.utilities:command_convert',
         ]
     },
 )
