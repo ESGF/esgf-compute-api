@@ -312,11 +312,11 @@ def _write_notebook(data_inputs, output_path, **kwargs):
 
 def _build_graph(operation):
     try:
-        import pygraphviz as pgv
+        import graphviz
     except Exception:
-        raise cwt.CWTError('Exporting a graph requires "pygraphviz" package to be installed')
+        raise cwt.CWTError('Exporting a graph requires "python-graphviz" package to be installed')
 
-    edges = {}
+    g = graphviz.Digraph()
 
     for o in operation.values():
         for index, i in enumerate(o.inputs):
@@ -325,27 +325,27 @@ def _build_graph(operation):
             elif isinstance(i, cwt.Variable):
                 iid = 'Input{}-{}'.format(index, i.name)
 
+                g.attr('node', shape='rectangle')
+
+                g.node(iid)
+
+                g.attr('node', shape='ellipse')
+
             oid = '{}-{}'.format(o.identifier, o.name)
 
-            try:
-                edges[iid].update({oid: None})
-            except KeyError:
-                edges[iid] = {
-                    oid: None,
-                }
+            g.edge(iid, oid)
 
-    return pgv.AGraph(edges)
-
+    return g
 
 def _write_graph(data_inputs, output_path, **kwargs):
     if output_path is None:
-        output_path = 'compute.png'
+        output_path = 'compute'
 
-    _, _, operation = _load_data_inputs(data_inputs)
+    variable, _, operation = _load_data_inputs(data_inputs)
 
-    G = _build_graph(operation)
+    dot = _build_graph(operation)
 
-    G.draw(output_path, prog='dot')
+    dot.render(output_path, format='png', cleanup=True)
 
 def command_convert():
     parser = argparse.ArgumentParser()

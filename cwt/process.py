@@ -448,18 +448,11 @@ class Process(Parameter):
     def visualize(self, filename='compute', format='png'):
         processes, _ = self.collect_input_processes()
 
-        G = utilities._build_graph(processes)
+        dot = utilities._build_graph(processes)
 
-        path = '{}.{}'.format(filename, format)
+        dot.render(filename, format=format, cleanup=True)
 
-        G.draw(path, prog='dot')
-
-        try:
-            from IPython.display import Image
-        except ImportError:
-            pass
-        else:
-            return Image(filename=path)
+        return dot
 
     def collect_input_processes(self):
         """ Aggregates the process trees inputs.
