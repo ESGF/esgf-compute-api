@@ -17,7 +17,7 @@ class TestDomain(unittest.TestCase):
                 'step': 1,
                 'crs': 'values'}}
 
-        dom = cwt.Domain([cwt.Dimension('lat', 0, 90)], name='d0')
+        dom = cwt.Domain(cwt.Dimension('lat', 0, 90), name='d0')
 
         self.assertDictContainsSubset(expected, dom.parameterize())
 
@@ -49,7 +49,7 @@ class TestDomain(unittest.TestCase):
         self.assertEqual(dom.dimensions['lat'].crs, cwt.VALUES)
 
     def test_get_dimension(self):
-        dom = cwt.Domain([cwt.Dimension('lat', 0, 90)])
+        dom = cwt.Domain(cwt.Dimension('lat', 0, 90))
 
         dimension = dom.get_dimension('lat')
 

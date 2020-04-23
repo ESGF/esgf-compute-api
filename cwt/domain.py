@@ -46,6 +46,9 @@ class Domain(Parameter):
         self.dimensions = {}
 
         for x in args:
+            if not isinstance(x, Dimension):
+                raise CWTError('Argument {!r} must be type `Dimension`', x)
+
             self.dimensions[x.name] = x
 
         for name, value in list(kwargs.items()):

@@ -212,25 +212,25 @@ def test_llnl_authenticator_store_token(mocker):
     _json.dump.assert_called_with({'token': 'test'}, open.return_value.__enter__.return_value)
 
 def test_llnl_authenticator_bad_response(mocker):
-    mocker.patch('cwt.llnl_client.requests')
+    session = mocker.patch('cwt.llnl_client.requests.Session')
 
     auth = llnl_client.LLNLAuthenticator('https://wps.io')
 
-    llnl_client.requests.post.return_value.json.return_value = {"data": {}}
+    session.return_value.post.return_value.json.return_value = {"data": {}}
 
     with pytest.raises(llnl_client.AuthenticationError):
         redirect = auth._get_openid_redirect()
 
 def test_llnl_authenticator_redirect(mocker):
-    post = mocker.patch('cwt.llnl_client.requests.post')
+    session = mocker.patch('cwt.llnl_client.requests.Session')
 
     auth = llnl_client.LLNLAuthenticator('https://wps.io')
 
-    post.return_value.json.return_value = {"data": {"redirect": "https://wps.io/redirect"}}
+    session.return_value.post.return_value.json.return_value = {"data": {"redirect": "https://wps.io/redirect"}}
 
     redirect = auth._get_openid_redirect()
 
-    post.assert_called()
+    session.return_value.post.assert_called()
 
     assert redirect == 'https://wps.io/redirect'
 
