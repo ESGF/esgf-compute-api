@@ -312,12 +312,15 @@ class LLNLAuthenticator(object):
         print('{}\n'.format(url))
 
     def _display_rich(self, msg, url):
+        from IPython.display import HTML
+        from IPython.display import display
+
         try:
             if get_ipython().has_trait('kernel'):
                 display(HTML('<pre>{0}</pre><a href="{1}">{1}</a>'.format(msg, url)))
             else:
                 self._display_plain(msg, url)
-        except NameError:
+        except NameError as e:
             self._display_plain(msg, url)
 
     def _get_token(self):
@@ -326,8 +329,7 @@ class LLNLAuthenticator(object):
         msg = 'Navigate to the following url in a browser and copy the "token" field from the response.'
 
         try:
-            from IPython.display import HTML
-            from IPython.display import display
+            import IPython
         except ImportError:
             self._display_plain(msg, url)
         else:
