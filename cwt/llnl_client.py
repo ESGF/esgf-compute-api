@@ -1,10 +1,13 @@
 import json
+import logging
 import requests
 import os
 from urllib import parse
 
 import cwt
 from cwt import CWTError
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_LOGIN_PATH = '/api/openid/login/'
 DEFAULT_JOB_PATH = '/api/jobs/'
@@ -303,15 +306,34 @@ class LLNLAuthenticator(object):
 
         return token
 
+    def _display_plain(self, msg, url):
+        print('{}\n'.format(msg))
+
+        print('{}\n'.format(url))
+
+    def _display_rich(self, msg, url):
+        try:
+            if get_ipython().has_trait('kernel'):
+                display(HTML('<pre>{0}</pre><a href="{1}">{1}</a>'.format(msg, url)))
+            else:
+                self._display_plain(msg, url)
+        except NameError:
+            self._display_plain(msg, url)
+
     def _get_token(self):
         url = self._get_openid_redirect()
 
-        msg = ('Navigate to the following url in a browser and copy the "token" field from the response.\n\n'
-               '{url!s}\n\n')
+        msg = 'Navigate to the following url in a browser and copy the "token" field from the response.'
 
-        print(msg.format(url=url))
+        try:
+            from IPython.display import HTML
+            from IPython.display import display
+        except ImportError:
+            self._display_plain(msg, url)
+        else:
+            self._display_rich(msg, url)
 
-        token = input('Token:')
+        token = input('Token: ')
 
         return token
 
