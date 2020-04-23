@@ -445,6 +445,12 @@ class Process(Parameter):
         """
         self.inputs.extend(args)
 
+    def to_data_inputs(self):
+        return utilities.process_to_data_inputs(self)
+
+    def to_document(self):
+        return utilities.process_to_document(self)
+
     def visualize(self, filename='compute', format='png'):
         processes, _ = self.collect_input_processes()
 
