@@ -147,7 +147,7 @@ def test_llnl_authenticator_get_token_priv(mocker):
 
     assert token == 'abcd'
 
-    input.assert_called_with('Token:')
+    input.assert_called_with('Token: ')
 
 def test_llnl_authenticator_load_token_override_token(mocker):
     auth = llnl_client.LLNLAuthenticator('https://wps.io', override_token=True)
