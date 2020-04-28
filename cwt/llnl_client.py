@@ -79,7 +79,12 @@ class JobWrapper(object):
                 if 'output' in s and s['output'] is not None:
                     x = json.loads(s['output'])
 
-                    data.append('<td style="text-align: left"><a href="{uri}.html" target="_blank">{uri}</a></td>'.format(**x))
+                    if isinstance(x, list):
+                        files = '\n'.join(['<pre><a href="" target="_blank">{uri}</a></pre>'.format(**y) for y in x])
+
+                        data.append('<td style="text-align: left">{files}</td>'.format(files=files))
+                    else:
+                        data.append('<td style="text-align: left"><a href="{uri}.html" target="_blank">{uri}</a></td>'.format(**x))
                 elif 'exception' in s and s['exception'] is not None:
                     data.append('<td style="text-align: left">{}</td>'.format(s['exception']))
                 else:
