@@ -5,6 +5,7 @@ import os
 from urllib import parse
 
 import cwt
+from cwt import auth
 from cwt import CWTError
 
 logger = logging.getLogger(__name__)
@@ -12,6 +13,24 @@ logger = logging.getLogger(__name__)
 DEFAULT_LOGIN_PATH = '/api/openid/login/'
 DEFAULT_JOB_PATH = '/api/jobs/'
 DEFAULT_OPENID_URL = 'https://esgf-node.llnl.gov/esgf-idp/openid'
+
+HTML = """
+<pre>
+Open the link below in a web browser and log into the ESGF OpenID service.
+
+Copy the returned token and paste in the input below.
+
+<a href="{}" target="_blank">Login</a>
+</pre>
+"""
+
+PLAIN = """
+Open the link below in a web browser and log into the ESGF OpenID service.
+
+Copy the returned token and paste in the input below.
+
+{}
+"""
 
 class AuthenticationError(CWTError):
     pass
@@ -231,7 +250,7 @@ class LLNLClient(cwt.WPSClient):
 
         return self._listing
 
-class LLNLAuthenticator(object):
+class LLNLAuthenticator(auth.TokenAuthenticator):
     """ LLNLAuthenticator.
     """
 
@@ -242,18 +261,27 @@ class LLNLAuthenticator(object):
             server_url (str): The base url of the WPS server.
             openid_url (str, optional): A url to the OpenID authentication server.
             verify (bool, optional): Verify SSL certificate.
-            override_token (bool, optional): Will overwrite the currently stored token.
             store_token (bool, optional): Will write token to ~/.cwt.
         """
+        super().__init__(key='COMPUTE_TOKEN', value='{}', **kwargs)
+
+        self.server_url = server_url
         self.login_url = parse.urljoin(server_url, DEFAULT_LOGIN_PATH)
         self.openid_url = kwargs.get('openid_url', DEFAULT_OPENID_URL)
         self.verify = kwargs.get('verify', True)
-        self.override_token = kwargs.get('override_token', False)
-        self.store_token = kwargs.get('store_token', False)
+        self.session = kwargs.get('session', None)
 
-        self.config_path = os.path.expanduser('~/.cwt')
+    def __repr__(self):
+        text = 'LLNLAuthenticator(server_url={!r}, openid_url={!r}, verify={!r}, store_token={!r})'.format(
+            self.server_url,
+            self.openid_url,
+            self.verify,
+            self.store_token,
+        )
 
-    def _get_openid_redirect(self):
+        return text
+
+    def _get_openid_redirect(self, session=None):
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
         }
@@ -263,20 +291,22 @@ class LLNLAuthenticator(object):
             'response': 'json',
         }
 
-        s = requests.Session()
+        if session is None:
+            session = requests.Session()
 
-        response = s.get(self.login_url, headers=headers, verify=self.verify)
+        with session:
+            response = session.get(self.login_url, headers=headers, verify=self.verify)
 
-        try:
-            headers['X-CSRFToken'] = response.cookies['csrftoken']
-        except KeyError:
-            logger.info('Did not find "csrftoken" in cookies')
+            try:
+                headers['X-CSRFToken'] = response.cookies['csrftoken']
+            except KeyError:
+                logger.info('Did not find "csrftoken" in cookies')
 
-        response = s.post(self.login_url, data=data, headers=headers, verify=self.verify)
+            response = session.post(self.login_url, data=data, headers=headers, verify=self.verify)
 
-        response.raise_for_status()
+            response.raise_for_status()
 
-        data = response.json()
+            data = response.json()
 
         try:
             redirect = data['data']['redirect']
@@ -285,78 +315,25 @@ class LLNLAuthenticator(object):
 
         return redirect
 
-    def _store_token(self, token):
-        with open(self.config_path, 'w') as outfile:
-            json.dump({'token': token}, outfile)
+    def retrieve_token(self):
+        url = self._get_openid_redirect(self.session)
 
-    def _load_token(self):
-        if self.override_token:
-            return None
+        html_msg = HTML.format(url)
 
-        try:
-            with open(self.config_path) as infile:
-                data = json.load(infile)
-        except Exception:
-            token = None
-        else:
-            try:
-                token = data['token']
-            except KeyError:
-                token = None
+        plain_msg = PLAIN.format(url)
 
-        return token
-
-    def _display_plain(self, msg, url):
-        print('{}\n'.format(msg))
-
-        print('{}\n'.format(url))
-
-    def _display_rich(self, msg, url):
-        from IPython.display import HTML
+        from IPython.core.interactiveshell import InteractiveShell
         from IPython.display import display
 
-        try:
-            if get_ipython().has_trait('kernel'):
-                display(HTML('<pre>{0}</pre><a href="{1}">{1}</a>'.format(msg, url)))
-            else:
-                self._display_plain(msg, url)
-        except NameError as e:
-            self._display_plain(msg, url)
-
-    def _get_token(self):
-        url = self._get_openid_redirect()
-
-        msg = 'Navigate to the following url in a browser and copy the "token" field from the response.'
-
-        try:
-            import IPython
-        except ImportError:
-            self._display_plain(msg, url)
+        if not InteractiveShell.initialized():
+            print(plain_msg)
         else:
-            self._display_rich(msg, url)
+            data = {'text/plain': plain_msg, 'text/html': html_msg}
+
+            display(data, raw=True)
 
         token = input('Token: ')
 
-        return token
-
-    def remove_stored_token(self):
-        """ Removes stored token.
-        """
-        os.remove(self.config_path)
-
-    def get_token(self):
-        """ Gets a user token.
-
-        If the token has been stored then it will be returned. Otherwise you will be led
-        through the login process and a token will be returned. You'll be prompted to enter
-        the token, which will stored if configured to.
-        """
-        token = self._load_token()
-
-        if token is None:
-            token = self._get_token()
-
-            if self.store_token or self.override_token:
-                self._store_token(token)
+        print(token)
 
         return token

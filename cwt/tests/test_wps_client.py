@@ -20,7 +20,8 @@ def test_compute_token_env_over_kwarg(mocker):
 
     client = cwt.WPSClient('https://127.0.0.1/wps', compute_token='test2')
 
-    assert client.headers['COMPUTE-TOKEN'] == 'test'
+    assert isinstance(client.auth, cwt.auth.TokenAuthenticator)
+    assert client.auth.token == 'test'
 
 
 def test_compute_token_env(mocker):
@@ -31,29 +32,16 @@ def test_compute_token_env(mocker):
 
     client = cwt.WPSClient('https://127.0.0.1/wps')
 
-    assert client.headers['COMPUTE-TOKEN'] == 'test'
+    assert isinstance(client.auth, cwt.auth.TokenAuthenticator)
+    assert client.auth.token == 'test'
 
 
 def test_compute_token(mocker):
     mocker.patch('owslib.wps.WebProcessingService')
     client = cwt.WPSClient('https://127.0.0.1/wps', compute_token='test')
 
-    assert client.headers['COMPUTE-TOKEN'] == 'test'
-
-
-def test_api_key_not_present(mocker):
-    mocker.patch('owslib.wps.WebProcessingService')
-    client = cwt.WPSClient('https://127.0.0.1/wps')
-
-    assert 'COMPUTE-TOKEN' not in client.headers
-
-
-def test_api_key(mocker):
-    mocker.patch('owslib.wps.WebProcessingService')
-    client = cwt.WPSClient('https://127.0.0.1/wps', api_key='test')
-
-    assert client.headers['COMPUTE-TOKEN'] == 'test'
-
+    assert isinstance(client.auth, cwt.auth.TokenAuthenticator)
+    assert client.auth.token == 'test'
 
 class TestWPSClient(unittest.TestCase):
 
