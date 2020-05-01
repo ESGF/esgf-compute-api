@@ -45,13 +45,13 @@ class Authenticator(object):
 
 class TokenAuthenticator(Authenticator):
     def __init__(self, token=None, key=None, value=None, **kwargs):
-        super().__init__(**kwargs)
-
         self.token = token
 
         self.key = key or 'Authorization'
 
         self.value = value or 'Bearer {}'
+
+        super().__init__(**kwargs)
 
     def from_dict(self, value):
         self.token = value['token']

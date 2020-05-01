@@ -5,13 +5,14 @@ import os
 from urllib import parse
 
 import cwt
-from cwt import auth
+from cwt.auth import TokenAuthenticator
 from cwt import CWTError
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_LOGIN_PATH = '/api/openid/login/'
 DEFAULT_JOB_PATH = '/api/jobs/'
+DEFAULT_JOB_DETAIL_PATH = '/api/jobs/{}/'
 DEFAULT_OPENID_URL = 'https://esgf-node.llnl.gov/esgf-idp/openid'
 
 HTML = """
@@ -36,6 +37,9 @@ class AuthenticationError(CWTError):
     pass
 
 class JobStatusError(CWTError):
+    pass
+
+class JobMissingError(CWTError):
     pass
 
 class JobWrapper(object):
@@ -98,7 +102,12 @@ class JobWrapper(object):
                 if 'output' in s and s['output'] is not None:
                     x = json.loads(s['output'])
 
-                    data.append('<td style="text-align: left"><a href="{uri}.html" target="_blank">{uri}</a></td>'.format(**x))
+                    if isinstance(x, list):
+                        outputs = '\n'.join(['<a href="{uri}" target="_blank">{uri}</a>'.format(**y) for y in x])
+                    else:
+                        outputs = '<a href="{uri}" target="_blank">{uri}</a>'.format(**x)
+
+                    data.append('<td style="text-align: left"><pre>{}</pre></td>'.format(outputs))
                 elif 'exception' in s and s['exception'] is not None:
                     data.append('<td style="text-align: left">{}</td>'.format(s['exception']))
                 else:
@@ -116,7 +125,7 @@ class JobListWrapper(object):
     """ Represents a list of jobs.
     """
 
-    def __init__(self, data, headers=None):
+    def __init__(self, url, data, headers=None):
         """ JobListWrapper init.
 
         Args:
@@ -126,44 +135,56 @@ class JobListWrapper(object):
         if headers is None:
             headers = {}
 
-        self.index = 0
-        self.jobs = {}
-        self.pages = [data,]
         self.headers = headers
+
+        self.url = url
+        self.pages = {url: data}
+
+        self.jobs = {}
 
     @property
     def current(self):
         """ Returns current page.
         """
-        return self.pages[self.index]
+        return self.pages[self.url]
 
     def next(self):
-        """ Retrieves the next page of jobs.
+        """ Loads the next page of results
         """
-        next = self.current['next']
 
-        if next is None:
-            raise CWTError('No more pages left')
+        url = self.current.get('next', None)
 
-        response = requests.get(next, headers=self.headers)
+        if url is None:
+            return self
+
+        self.url = url
+
+        if self.url not in self.pages:
+            self.pages[url] = self._get_url(url)
+
+        return self
+
+    def previous(self):
+        """ Returns the previous page of results
+        """
+        url = self.current.get('previous', None)
+
+        if url is None:
+            return self
+
+        self.url = url
+
+        if self.url not in self.pages:
+            self.pages[url] = self._get_url(url)
+
+        return self
+
+    def _get_url(self, url):
+        response = requests.get(url, headers=self.headers)
 
         response.raise_for_status()
 
-        self.pages.append(response.json())
-
-        self.index += 1
-
-        return self.current
-
-    def previous(self):
-        """ Moves to the previous page.
-        """
-        if (self.index - 1) < 0:
-            raise CWTError('No previous page available')
-
-        self.index -= 1
-
-        return self.current
+        return response.json()
 
     def _repr_html_(self):
         columns = (
@@ -183,28 +204,48 @@ class JobListWrapper(object):
 
         rows = ''.join(row_data)
 
-        header = ''.join(['<th>{}</th>'.format(name) for (_, name) in columns])
+        table_header = ''.join(['<th>{}</th>'.format(name) for (_, name) in columns])
 
-        return '<table><tr>{header}</tr>{rows}</table>'.format(header=header, rows=rows)
+        table = '<table><tr>{}</tr>{}</table>'.format(table_header, rows)
 
-    def _find_job_by_id(self, id):
-        for x in self.pages:
-            for y in x['results']:
-                if y['id'] == id:
-                    return y
+        comp = parse.urlparse(self.url)
 
-        return None
+        qs = parse.parse_qs(comp.query)
 
-    def __getitem__(self, id):
-        job = self._find_job_by_id(id)
+        offset = qs['offset'][0] if 'offset' in qs else 0
+        limit = qs['limit'][0] if 'limit' in qs else None
+
+        if limit is not None:
+            offset = int(offset)
+
+            limit = int(limit)
+
+            count = self.current['count']
+
+            footer = '<p>Display {} - {} of {} entries</p>'.format(offset, min(offset+limit, count), count)
+        else:
+            footer = ''
+
+        return '<div><h2>Jobs</h2></div>{}</div><div>{}</div>'.format(table, footer)
+
+    def job(self, id):
+        job = None
+
+        for x in self.current['results']:
+            if x['id'] == id:
+                job = x
 
         if job is None:
-            raise KeyError(id)
+            try:
+                job = self._get_url(parse.urljoin(self.server_url, DEFAULT_JOB_DETAIL_PATH))
+            except Exception:
+                raise JobMissingError('Could not load job {}', id)
 
-        if id not in self.jobs:
-            self.jobs[id] = JobWrapper(job, self.headers)
+        return JobWrapper(job, self.headers)
 
-        return self.jobs[id]
+    def __getitem__(self, id):
+        return self.job(id)
+
 
 class LLNLClient(cwt.WPSClient):
     """ LLNLClient.
@@ -226,31 +267,29 @@ class LLNLClient(cwt.WPSClient):
 
         return parse.urljoin(base_url, DEFAULT_JOB_PATH)
 
-    def job(self, id):
-        """ Retrieves specific job by id.
-
-        Args:
-            id (int): Identifier of the target job.
-        """
-        jobs = self.jobs()
-
-        return jobs[id]
-
-    def jobs(self):
+    def jobs(self, limit=10):
         """ Retrieves listing of jobs.
         """
         if self._listing is None:
             job_url = self._job_url()
 
-            response = requests.get(job_url, headers=self.headers)
+            headers = self.headers.copy()
 
-            data = response.json()
+            params = {
+                'limit': limit or 10,
+            }
 
-            self._listing = JobListWrapper(data, self.headers)
+            self.auth.prepare(headers, params)
+
+            response = requests.get(job_url, headers=headers, params=params)
+
+            response.raise_for_status()
+
+            self._listing = JobListWrapper(response.url, response.json(), headers)
 
         return self._listing
 
-class LLNLAuthenticator(auth.TokenAuthenticator):
+class LLNLAuthenticator(TokenAuthenticator):
     """ LLNLAuthenticator.
     """
 
@@ -272,11 +311,10 @@ class LLNLAuthenticator(auth.TokenAuthenticator):
         self.session = kwargs.get('session', None)
 
     def __repr__(self):
-        text = 'LLNLAuthenticator(server_url={!r}, openid_url={!r}, verify={!r}, store_token={!r})'.format(
+        text = 'LLNLAuthenticator(server_url={!r}, openid_url={!r}, verify={!r})'.format(
             self.server_url,
             self.openid_url,
             self.verify,
-            self.store_token,
         )
 
         return text
@@ -316,6 +354,9 @@ class LLNLAuthenticator(auth.TokenAuthenticator):
         return redirect
 
     def retrieve_token(self):
+        if self.token is not None:
+            return self.token
+
         url = self._get_openid_redirect(self.session)
 
         html_msg = HTML.format(url)
@@ -333,7 +374,5 @@ class LLNLAuthenticator(auth.TokenAuthenticator):
             display(data, raw=True)
 
         token = input('Token: ')
-
-        print(token)
 
         return token
