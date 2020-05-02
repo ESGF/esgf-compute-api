@@ -273,6 +273,40 @@ class WPSClient(object):
 
         return process
 
+    def _repr_html_(self):
+        self._client.getcapabilities()
+
+        headers = ('<tr>'
+                   '<th>Identifier</td>'
+                   '<th>Title</td>'
+                   '<th>Process Version</td>'
+                   '<th>Status Supported</td>'
+                   '<th>Store Supported</td>'
+                   '<th style="text-align: left">Abstract</td>'
+                   '</tr>')
+
+        rows = []
+
+        max_length = 800
+
+        for x in self._client.processes:
+            short_abstract = x.abstract[:max_length] + '...<b>see process for full abstract</b>' if len(x.abstract) > max_length else x.abstract
+
+            r = ('<tr>'
+                 '<td>{identifier}</td>'
+                 '<td>{title}</td>'
+                 '<td>{processVersion}</td>'
+                 '<td>{statusSupported}</td>'
+                 '<td>{storeSupported}</td>'
+                 '<td><pre style="text-align: left">{short_abstract}</pre></td>'
+                 '</tr>').format(**x.__dict__, short_abstract=short_abstract)
+
+            rows.append(r)
+
+        table = '<div><table>{}{}</table></div>'.format(headers, ''.join(rows))
+
+        return table
+
     def get_capabilities(self):
         """ Executes a GetCapabilities request."""
         self._client.getcapabilities()
@@ -311,9 +345,6 @@ class WPSClient(object):
         data_inputs = utilities.prepare_data_inputs(process, inputs, domain, **kwargs)
 
         return dict((x, json.dumps(y)) for x, y in data_inputs.items())
-
-    def set_token(self, token):
-        self.headers['COMPUTE-TOKEN'] = token
 
     def _execute_post(self, process, data_inputs, headers):
         variable = wps.ComplexDataInput(data_inputs['variable'], mimeType='application/json')

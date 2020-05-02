@@ -24,7 +24,7 @@ logger = logging.getLogger('cwt.process')
 
 
 def input_output_to_dict(value):
-    data = value.__dict__
+    data = value.__dict__.copy()
 
     data['metadata'] = [x.__dict__ for x in data['metadata']]
 
@@ -102,6 +102,27 @@ class Process(Parameter):
         self.processed = False
 
         self.status_tracker = None
+
+    def _repr_html_(self):
+        header = '<div><h1>{} ({})</h1></div><hr/>'.format(self.title, self.identifier)
+
+        inputs = '\n'.join(['<li>{!r}</li>'.format(x) for x in self.inputs])
+
+        if self.domain is not None:
+            domain = '<li>{!r}</li>'.format(self.domain)
+        else:
+            domain = ''
+
+        body = ('<div>'
+                '<h3>Abstract</h3>'
+                '<pre>{}</pre>'
+                '<h3>Inputs</h3>'
+                '<ul>{}</ul>'
+                '<h3>Domain</h3>'
+                '<ul>{}</ul>'
+                '</div>').format(self.abstract, inputs, domain)
+
+        return '{}{}'.format(header, body)
 
     def __repr__(self):
         fmt = ('Process('
@@ -181,7 +202,7 @@ class Process(Parameter):
     def data_inputs(self):
         try:
             return [input_output_to_dict(x) for x in self.process.dataInputs]
-        except AttributeError:
+        except AttributeError as e:
             return None
 
     @property
@@ -313,7 +334,7 @@ class Process(Parameter):
         return msg
 
     def describe(self):
-        self.process = self._client.describe_process(self.process)
+        self.process = self._client._client.describeprocess(self.identifier)
 
     def __call__(self, *inputs, domain=None, **kwargs):
         new_process = self.copy(True)
