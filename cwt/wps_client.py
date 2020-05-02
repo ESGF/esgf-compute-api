@@ -36,12 +36,17 @@ util.requests.request = _request
 
 from owslib import wps
 
+from cwt import auth
 from cwt import utilities
 from cwt.domain import Domain
 from cwt.errors import CWTError
 from cwt.errors import WPSClientError
 from cwt.process import Process
 from cwt.variable import Variable
+
+
+class TokenAuthentication():
+    pass
 
 
 class ProcessCollection(collections.OrderedDict):
@@ -61,7 +66,6 @@ class WPSClient(object):
 
         Attributes:
             url: A string url path for the WPS server.
-            api_key: A string that will be passed as the value to COMPUTE-TOKEN HTTP header.
             version: A string version of the WPS server.
             log: A boolean flag to enable logging.
             log_level: A string log level (default: INFO).
@@ -70,6 +74,60 @@ class WPSClient(object):
             cert: A str path to an SSL _client cert or a tuple as ('cert', 'key').
             headers: A dict that will be passed as HTTP headers.
         """
+        self.set_logging(kwargs)
+
+        self.headers = kwargs.get('headers', {})
+
+        self.cert = kwargs.get('cert', None)
+
+        self.verify = kwargs.pop('verify', True)
+
+        self.auth = kwargs.get('auth', None)
+
+        owslib_auth_kwargs = {
+            'username': kwargs.pop('username', None),
+            'password': kwargs.pop('password', None),
+            'verify': self.verify,
+            'cert': self.cert,
+        }
+
+        owslib_auth = util.Authentication(**owslib_auth_kwargs)
+
+        if self.auth is None:
+            token = kwargs.get('compute_token', None)
+
+            token = os.environ.get('COMPUTE_TOKEN', token)
+
+            if token is None:
+                self.auth = owslib_auth
+            else:
+                self.auth = auth.TokenAuthenticator(token=token)
+
+        self.version = kwargs.get('version', '1.0.0')
+
+        _client_kwargs = {
+            'skip_caps': True,
+            'headers': self.headers,
+            'verbose': True if self.log else False,
+            'auth': owslib_auth,
+            'version': self.version,
+        }
+
+        logger.info('Initialize OWSLib with %r', _client_kwargs)
+
+        self.url = url
+
+        self._client = wps.WebProcessingService(self.url, **_client_kwargs)
+
+        self._build_process_collection()
+
+    def __repr__(self):
+        return ('WPSClient(url={!r}, log={!r}, log_file={!r}, '
+                'verify={!r}, version={!r}, cert={!r}, headers={!r})').format(
+                    self.url, self.log, self.log_file, self.verify,
+                    self.cert, self.version, self.headers)
+
+    def set_logging(self, kwargs):
         self.log = kwargs.get('log', False)
 
         self.log_file = None
@@ -92,59 +150,6 @@ class WPSClient(object):
                 root_logger.addHandler(file_handler)
 
                 logger.info('Added file handle %s', self.log_file)
-
-        self.headers = kwargs.get('headers', {})
-
-        # Deprecating in favor of COMPUTE_TOKEN
-        api_key = kwargs.get('api_key', None)
-
-        if api_key is not None:
-            warnings.warn('api_key is deprecated, use compute_token or environment variable COMPUTE_TOKEN', DeprecationWarning)
-
-        compute_token = kwargs.get('compute_token', api_key)
-
-        compute_token = os.environ.get('COMPUTE_TOKEN', compute_token)
-
-        auth = kwargs.get('auth', None)
-
-        if auth is not None:
-            compute_token = auth.get_token()
-
-        if compute_token is not None:
-            self.headers['COMPUTE-TOKEN'] = compute_token
-
-        self.verify = kwargs.get('verify', True)
-
-        _client_kwargs = {
-            'skip_caps': True,
-            'headers': self.headers,
-            'verify': self.verify,
-            'verbose': True if self.log else False,
-        }
-
-        self.version = kwargs.get('version', None)
-
-        if self.version is not None:
-            _client_kwargs['version'] = self.version
-
-        self.cert = kwargs.get('cert', None)
-
-        if self.cert is not None:
-            _client_kwargs['cert'] = self.cert
-
-        logger.info('Initialize OWSLib with %r', _client_kwargs)
-
-        self.url = url
-
-        self._client = wps.WebProcessingService(self.url, **_client_kwargs)
-
-        self._build_process_collection()
-
-    def __repr__(self):
-        return ('WPSClient(url={!r}, log={!r}, log_file={!r}, '
-                'verify={!r}, version={!r}, cert={!r}, headers={!r})').format(
-                    self.url, self.log, self.log_file, self.verify,
-                    self.cert, self.version, self.headers)
 
     @staticmethod
     def parse_data_inputs(data_inputs):
@@ -268,6 +273,40 @@ class WPSClient(object):
 
         return process
 
+    def _repr_html_(self):
+        self._client.getcapabilities()
+
+        headers = ('<tr>'
+                   '<th>Identifier</td>'
+                   '<th>Title</td>'
+                   '<th>Process Version</td>'
+                   '<th>Status Supported</td>'
+                   '<th>Store Supported</td>'
+                   '<th style="text-align: left">Abstract</td>'
+                   '</tr>')
+
+        rows = []
+
+        max_length = 800
+
+        for x in self._client.processes:
+            short_abstract = x.abstract[:max_length] + '...<b>see process for full abstract</b>' if len(x.abstract) > max_length else x.abstract
+
+            r = ('<tr>'
+                 '<td>{identifier}</td>'
+                 '<td>{title}</td>'
+                 '<td>{processVersion}</td>'
+                 '<td>{statusSupported}</td>'
+                 '<td>{storeSupported}</td>'
+                 '<td><pre style="text-align: left">{short_abstract}</pre></td>'
+                 '</tr>').format(**x.__dict__, short_abstract=short_abstract)
+
+            rows.append(r)
+
+        table = '<div><table>{}{}</table></div>'.format(headers, ''.join(rows))
+
+        return table
+
     def get_capabilities(self):
         """ Executes a GetCapabilities request."""
         self._client.getcapabilities()
@@ -307,6 +346,44 @@ class WPSClient(object):
 
         return dict((x, json.dumps(y)) for x, y in data_inputs.items())
 
+    def _execute_post(self, process, data_inputs, headers):
+        variable = wps.ComplexDataInput(data_inputs['variable'], mimeType='application/json')
+
+        domain = wps.ComplexDataInput(data_inputs['domain'], mimeType='application/json')
+
+        operation = wps.ComplexDataInput(data_inputs['operation'], mimeType='application/json')
+
+        data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
+
+        self._client.headers.update(headers)
+
+        process.context = self._client.execute(process.identifier, data_inputs)
+
+        return process
+
+    def _execute_get(self, process, data_inputs, headers, params):
+        data_inputs = ';'.join(['{0!s}={1!s}'.format(x, y) for x, y in data_inputs.items()])
+
+        params.update({
+            'service': 'WPS',
+            'request': 'Execute',
+            'version': self.version,
+            'Identifier': process.identifier,
+            'DataInputs': data_inputs.replace(' ', ''),
+        })
+
+        # Update using same arguments as owslib
+        extras = self._client.urlopen_kwargs
+
+        response = requests.get(self.url, params=params, headers=headers, **extras)
+
+        response_text = response.text.encode('utf-8')
+
+        # Let owslib handle the parse of the result
+        process.context = self._client.execute(process.identifier, None, request=response.url, response=response_text)
+
+        return process
+
     def execute(self, process, inputs=None, domain=None, **kwargs):
         """ Executes an Execute request.
 
@@ -342,76 +419,46 @@ class WPSClient(object):
             method: A str HTTP method (GET or POST).
             **kwargs: See above description.
         """
+        params = {}
+        headers = self.headers.copy()
+        method = kwargs.pop('method', 'post').lower()
+
+        if inputs is not None or domain is not None or len(kwargs) > 0:
+            warnings.warn('Use of "inputs", "domain" and setting parameters is deprecated.'
+                    'Set theses values on their respective process objects.', DeprecationWarning)
+
         if inputs is None:
             inputs = []
         elif not isinstance(inputs, (list, tuple)):
             inputs = [inputs, ]
 
-        method = kwargs.pop('method', 'post').lower()
+        # Prepare headers and GET params
+        if self.auth is not None and isinstance(self.auth, auth.Authenticator):
+            self.auth.prepare(headers, params)
 
-        if isinstance(process, Process):
-            if method == 'post':
-                data_inputs = self.prepare_data_inputs(process, inputs, domain, **kwargs)
+        try:
+            if isinstance(process, Process):
+                if method == 'post':
+                    data_inputs = self.prepare_data_inputs(process, inputs, domain, **kwargs)
 
-                variable = wps.ComplexDataInput(data_inputs['variable'], mimeType='application/json')
+                    process = self._execute_post(process, data_inputs, headers)
+                elif method == 'get':
+                    extra_params = self.parse_wps_execute_get_params(kwargs)
 
-                domain = wps.ComplexDataInput(data_inputs['domain'], mimeType='application/json')
+                    params.update(extra_params)
 
-                operation = wps.ComplexDataInput(data_inputs['operation'], mimeType='application/json')
+                    data_inputs = self.prepare_data_inputs(process, inputs, domain, **kwargs)
 
-                data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
-
-                try:
-                    process.context = self._client.execute(process.identifier, data_inputs)
-                except Exception as e:
-                    raise WPSClientError('Client error {!r}', str(e))
-            elif method == 'get':
-                params = self.parse_wps_execute_get_params(kwargs)
-
-                data_inputs = self.prepare_data_inputs(process, inputs, domain, **kwargs)
-
-                data_inputs = ';'.join(['{0!s}={1!s}'.format(x, y) for x, y in data_inputs.items()])
-
-                try:
-                    params.update({
-                        'service': 'WPS',
-                        'request': 'Execute',
-                        'version': '1.0.0',
-                        'Identifier': process.identifier,
-                        'DataInputs': data_inputs.replace(' ', ''),
-                    })
-
-                    extras = {
-                        'verify': self.verify,
-                    }
-
-                    if self.cert is not None:
-                        extras['cert'] = self.cert
-
-                    logger.debug('params %r extras %r', params, extras)
-
-                    response = requests.get(self.url, params=params, headers=self.headers, **extras)
-
-                    logger.debug('Request url %r', response.url)
-
-                    response_text = response.text.encode('utf-8')
-
-                    logger.debug('Response %r', response_text)
-
-                    process.context = self._client.execute(process.identifier, None, request=response.url,
-                                                          response=response_text)
-                except Exception as e:
-                    raise WPSClientError('Client error {!r}', str(e))
-            else:
-                raise WPSClientError('Unsupported method {!r}', method)
-        elif isinstance(process, str):
-            try:
+                    process = self._execute_get(process, data_inputs, headers, params)
+                else:
+                    raise WPSClientError('Unsupported method {!r}', method)
+            elif isinstance(process, str):
                 context = self._client.execute(None, None, request=process)
-            except Exception as e:
-                raise WPSClientError('Client error {!r}', str(e))
 
-            process = Process()
+                process = Process()
 
-            process.context = context
+                process.context = context
+        except Exception as e:
+            raise WPSClientError(str(e))
 
         return process

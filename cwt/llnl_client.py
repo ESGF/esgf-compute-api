@@ -5,18 +5,41 @@ import os
 from urllib import parse
 
 import cwt
+from cwt.auth import TokenAuthenticator
 from cwt import CWTError
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_LOGIN_PATH = '/api/openid/login/'
 DEFAULT_JOB_PATH = '/api/jobs/'
+DEFAULT_JOB_DETAIL_PATH = '/api/jobs/{}/'
 DEFAULT_OPENID_URL = 'https://esgf-node.llnl.gov/esgf-idp/openid'
+
+HTML = """
+<pre>
+Open the link below in a web browser and log into the ESGF OpenID service.
+
+Copy the returned token and paste in the input below.
+
+<a href="{}" target="_blank">Login</a>
+</pre>
+"""
+
+PLAIN = """
+Open the link below in a web browser and log into the ESGF OpenID service.
+
+Copy the returned token and paste in the input below.
+
+{}
+"""
 
 class AuthenticationError(CWTError):
     pass
 
 class JobStatusError(CWTError):
+    pass
+
+class JobMissingError(CWTError):
     pass
 
 class JobWrapper(object):
@@ -80,11 +103,11 @@ class JobWrapper(object):
                     x = json.loads(s['output'])
 
                     if isinstance(x, list):
-                        files = '\n'.join(['<pre><a href="" target="_blank">{uri}</a></pre>'.format(**y) for y in x])
-
-                        data.append('<td style="text-align: left">{files}</td>'.format(files=files))
+                        outputs = '\n'.join(['<a href="{uri}" target="_blank">{uri}</a>'.format(**y) for y in x])
                     else:
-                        data.append('<td style="text-align: left"><a href="{uri}.html" target="_blank">{uri}</a></td>'.format(**x))
+                        outputs = '<a href="{uri}" target="_blank">{uri}</a>'.format(**x)
+
+                    data.append('<td style="text-align: left"><pre>{}</pre></td>'.format(outputs))
                 elif 'exception' in s and s['exception'] is not None:
                     data.append('<td style="text-align: left">{}</td>'.format(s['exception']))
                 else:
@@ -102,7 +125,7 @@ class JobListWrapper(object):
     """ Represents a list of jobs.
     """
 
-    def __init__(self, data, headers=None):
+    def __init__(self, url, data, headers=None):
         """ JobListWrapper init.
 
         Args:
@@ -112,44 +135,56 @@ class JobListWrapper(object):
         if headers is None:
             headers = {}
 
-        self.index = 0
-        self.jobs = {}
-        self.pages = [data,]
         self.headers = headers
+
+        self.url = url
+        self.pages = {url: data}
+
+        self.jobs = {}
 
     @property
     def current(self):
         """ Returns current page.
         """
-        return self.pages[self.index]
+        return self.pages[self.url]
 
     def next(self):
-        """ Retrieves the next page of jobs.
+        """ Loads the next page of results
         """
-        next = self.current['next']
 
-        if next is None:
-            raise CWTError('No more pages left')
+        url = self.current.get('next', None)
 
-        response = requests.get(next, headers=self.headers)
+        if url is None:
+            return self
+
+        self.url = url
+
+        if self.url not in self.pages:
+            self.pages[url] = self._get_url(url)
+
+        return self
+
+    def previous(self):
+        """ Returns the previous page of results
+        """
+        url = self.current.get('previous', None)
+
+        if url is None:
+            return self
+
+        self.url = url
+
+        if self.url not in self.pages:
+            self.pages[url] = self._get_url(url)
+
+        return self
+
+    def _get_url(self, url):
+        response = requests.get(url, headers=self.headers)
 
         response.raise_for_status()
 
-        self.pages.append(response.json())
-
-        self.index += 1
-
-        return self.current
-
-    def previous(self):
-        """ Moves to the previous page.
-        """
-        if (self.index - 1) < 0:
-            raise CWTError('No previous page available')
-
-        self.index -= 1
-
-        return self.current
+        return response.json()
 
     def _repr_html_(self):
         columns = (
@@ -169,28 +204,48 @@ class JobListWrapper(object):
 
         rows = ''.join(row_data)
 
-        header = ''.join(['<th>{}</th>'.format(name) for (_, name) in columns])
+        table_header = ''.join(['<th>{}</th>'.format(name) for (_, name) in columns])
 
-        return '<table><tr>{header}</tr>{rows}</table>'.format(header=header, rows=rows)
+        table = '<table><tr>{}</tr>{}</table>'.format(table_header, rows)
 
-    def _find_job_by_id(self, id):
-        for x in self.pages:
-            for y in x['results']:
-                if y['id'] == id:
-                    return y
+        comp = parse.urlparse(self.url)
 
-        return None
+        qs = parse.parse_qs(comp.query)
 
-    def __getitem__(self, id):
-        job = self._find_job_by_id(id)
+        offset = qs['offset'][0] if 'offset' in qs else 0
+        limit = qs['limit'][0] if 'limit' in qs else None
+
+        if limit is not None:
+            offset = int(offset)
+
+            limit = int(limit)
+
+            count = self.current['count']
+
+            footer = '<p>Display {} - {} of {} entries</p>'.format(offset, min(offset+limit, count), count)
+        else:
+            footer = ''
+
+        return '<div><h2>Jobs</h2></div>{}</div><div>{}</div>'.format(table, footer)
+
+    def job(self, id):
+        job = None
+
+        for x in self.current['results']:
+            if x['id'] == id:
+                job = x
 
         if job is None:
-            raise KeyError(id)
+            try:
+                job = self._get_url(parse.urljoin(self.server_url, DEFAULT_JOB_DETAIL_PATH))
+            except Exception:
+                raise JobMissingError('Could not load job {}', id)
 
-        if id not in self.jobs:
-            self.jobs[id] = JobWrapper(job, self.headers)
+        return JobWrapper(job, self.headers)
 
-        return self.jobs[id]
+    def __getitem__(self, id):
+        return self.job(id)
+
 
 class LLNLClient(cwt.WPSClient):
     """ LLNLClient.
@@ -212,31 +267,29 @@ class LLNLClient(cwt.WPSClient):
 
         return parse.urljoin(base_url, DEFAULT_JOB_PATH)
 
-    def job(self, id):
-        """ Retrieves specific job by id.
-
-        Args:
-            id (int): Identifier of the target job.
-        """
-        jobs = self.jobs()
-
-        return jobs[id]
-
-    def jobs(self):
+    def jobs(self, limit=10):
         """ Retrieves listing of jobs.
         """
         if self._listing is None:
             job_url = self._job_url()
 
-            response = requests.get(job_url, headers=self.headers)
+            headers = self.headers.copy()
 
-            data = response.json()
+            params = {
+                'limit': limit or 10,
+            }
 
-            self._listing = JobListWrapper(data, self.headers)
+            self.auth.prepare(headers, params)
+
+            response = requests.get(job_url, headers=headers, params=params)
+
+            response.raise_for_status()
+
+            self._listing = JobListWrapper(response.url, response.json(), headers)
 
         return self._listing
 
-class LLNLAuthenticator(object):
+class LLNLAuthenticator(TokenAuthenticator):
     """ LLNLAuthenticator.
     """
 
@@ -247,18 +300,26 @@ class LLNLAuthenticator(object):
             server_url (str): The base url of the WPS server.
             openid_url (str, optional): A url to the OpenID authentication server.
             verify (bool, optional): Verify SSL certificate.
-            override_token (bool, optional): Will overwrite the currently stored token.
             store_token (bool, optional): Will write token to ~/.cwt.
         """
+        super().__init__(key='COMPUTE_TOKEN', value='{}', **kwargs)
+
+        self.server_url = server_url
         self.login_url = parse.urljoin(server_url, DEFAULT_LOGIN_PATH)
         self.openid_url = kwargs.get('openid_url', DEFAULT_OPENID_URL)
         self.verify = kwargs.get('verify', True)
-        self.override_token = kwargs.get('override_token', False)
-        self.store_token = kwargs.get('store_token', False)
+        self.session = kwargs.get('session', None)
 
-        self.config_path = os.path.expanduser('~/.cwt')
+    def __repr__(self):
+        text = 'LLNLAuthenticator(server_url={!r}, openid_url={!r}, verify={!r})'.format(
+            self.server_url,
+            self.openid_url,
+            self.verify,
+        )
 
-    def _get_openid_redirect(self):
+        return text
+
+    def _get_openid_redirect(self, session=None):
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
         }
@@ -268,20 +329,22 @@ class LLNLAuthenticator(object):
             'response': 'json',
         }
 
-        s = requests.Session()
+        if session is None:
+            session = requests.Session()
 
-        response = s.get(self.login_url, headers=headers, verify=self.verify)
+        with session:
+            response = session.get(self.login_url, headers=headers, verify=self.verify)
 
-        try:
-            headers['X-CSRFToken'] = response.cookies['csrftoken']
-        except KeyError:
-            logger.info('Did not find "csrftoken" in cookies')
+            try:
+                headers['X-CSRFToken'] = response.cookies['csrftoken']
+            except KeyError:
+                logger.info('Did not find "csrftoken" in cookies')
 
-        response = s.post(self.login_url, data=data, headers=headers, verify=self.verify)
+            response = session.post(self.login_url, data=data, headers=headers, verify=self.verify)
 
-        response.raise_for_status()
+            response.raise_for_status()
 
-        data = response.json()
+            data = response.json()
 
         try:
             redirect = data['data']['redirect']
@@ -290,78 +353,26 @@ class LLNLAuthenticator(object):
 
         return redirect
 
-    def _store_token(self, token):
-        with open(self.config_path, 'w') as outfile:
-            json.dump({'token': token}, outfile)
+    def retrieve_token(self):
+        if self.token is not None:
+            return self.token
 
-    def _load_token(self):
-        if self.override_token:
-            return None
+        url = self._get_openid_redirect(self.session)
 
-        try:
-            with open(self.config_path) as infile:
-                data = json.load(infile)
-        except Exception:
-            token = None
-        else:
-            try:
-                token = data['token']
-            except KeyError:
-                token = None
+        html_msg = HTML.format(url)
 
-        return token
+        plain_msg = PLAIN.format(url)
 
-    def _display_plain(self, msg, url):
-        print('{}\n'.format(msg))
-
-        print('{}\n'.format(url))
-
-    def _display_rich(self, msg, url):
-        from IPython.display import HTML
+        from IPython.core.interactiveshell import InteractiveShell
         from IPython.display import display
 
-        try:
-            if get_ipython().has_trait('kernel'):
-                display(HTML('<pre>{0}</pre><a href="{1}">{1}</a>'.format(msg, url)))
-            else:
-                self._display_plain(msg, url)
-        except NameError as e:
-            self._display_plain(msg, url)
-
-    def _get_token(self):
-        url = self._get_openid_redirect()
-
-        msg = 'Navigate to the following url in a browser and copy the "token" field from the response.'
-
-        try:
-            import IPython
-        except ImportError:
-            self._display_plain(msg, url)
+        if not InteractiveShell.initialized():
+            print(plain_msg)
         else:
-            self._display_rich(msg, url)
+            data = {'text/plain': plain_msg, 'text/html': html_msg}
+
+            display(data, raw=True)
 
         token = input('Token: ')
-
-        return token
-
-    def remove_stored_token(self):
-        """ Removes stored token.
-        """
-        os.remove(self.config_path)
-
-    def get_token(self):
-        """ Gets a user token.
-
-        If the token has been stored then it will be returned. Otherwise you will be led
-        through the login process and a token will be returned. You'll be prompted to enter
-        the token, which will stored if configured to.
-        """
-        token = self._load_token()
-
-        if token is None:
-            token = self._get_token()
-
-            if self.store_token or self.override_token:
-                self._store_token(token)
 
         return token
