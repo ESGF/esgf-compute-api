@@ -54,20 +54,9 @@ EXCEPTION_STATUS = {
     'exception': 'Exception Text',
 }
 
-DOC = '<table><tr><th>Status</th><th>Created</th><th>Output</th></tr><tr><td>ProcessAccepted</td><td>1990-01-01</td><td style="text-align: left">1990-01-01 Completed 100</td></tr><tr><td></td><td></td><td style="text-align: left">1990-01-01 Running 50</td></tr><tr><td>ProcessAccepted</td><td>1990-01-01</td><td style="text-align: left"><a href="file:///test1.nc.html" target="_blank">file:///test1.nc</a></td></tr><tr><td>ProcessAccepted</td><td>1990-01-01</td><td style="text-align: left">Exception Text</td></tr></table>'
+DOC = '<table><tr><th>Status</th><th>Created</th><th>Output</th></tr><tr><td>ProcessAccepted</td><td>1990-01-01</td><td style="text-align: left">1990-01-01 Completed 100</td></tr><tr><td></td><td></td><td style="text-align: left">1990-01-01 Running 50</td></tr><tr><td>ProcessAccepted</td><td>1990-01-01</td><td style="text-align: left"><pre><a href="file:///test1.nc" target="_blank">file:///test1.nc</a></pre></td></tr><tr><td>ProcessAccepted</td><td>1990-01-01</td><td style="text-align: left">Exception Text</td></tr></table>'
 
-DOC_LIST = '<table><tr><th>ID</th><th>Operation</th><th>Elapsed</th><th>Status</th><th>Accepted</th></tr><tr><td>1</td><td>CDAT.workflow</td><td>3.11234</td><td>ProcessCompleted</td><td>1990-01-01</td></tr></table>'
-
-def test_llnl_client_job(mocker):
-    mocker.patch('cwt.wps_client.WPSClient._build_process_collection')
-
-    client = llnl_client.LLNLClient('https://wps.io/wps')
-
-    mocker.patch.object(client, 'jobs')
-
-    jobs = client.job(0)
-
-    client.jobs.return_value.__getitem__.assert_called_with(0)
+DOC_LIST = '<div><h2>Jobs</h2></div><table><tr><th>ID</th><th>Operation</th><th>Elapsed</th><th>Status</th><th>Accepted</th></tr><tr><td>1</td><td>CDAT.workflow</td><td>3.11234</td><td>ProcessCompleted</td><td>1990-01-01</td></tr></table></div><div></div>'
 
 def test_llnl_client_jobs(mocker):
     get = mocker.patch('cwt.llnl_client.requests.get')
@@ -77,7 +66,7 @@ def test_llnl_client_jobs(mocker):
 
     jobs = client.jobs()
 
-    get.assert_called_with('https://wps.io/api/jobs/', headers={})
+    get.assert_called_with('https://wps.io/api/jobs/', headers={}, params={'limit': 10})
 
     assert isinstance(jobs, llnl_client.JobListWrapper)
 
@@ -119,46 +108,17 @@ def test_llnl_authenticator():
     assert auth.login_url == 'https://wps.io/api/openid/login/'
     assert auth.openid_url == 'https://esgf-node.llnl.gov/esgf-idp/openid'
 
-def test_job_list_previous_no_previous(mocker):
-    job = llnl_client.JobListWrapper(JOB_LIST)
-
-    with pytest.raises(cwt.CWTError):
-        job.previous()
-
-def test_job_list_previous(mocker):
-    job = llnl_client.JobListWrapper(JOB_LIST)
-
-    job.index = 1
-
-    job.pages.append(mocker.MagicMock())
-
-    prev = job.previous()
-
-    assert isinstance(prev, dict)
-    assert job.index == 0
-
-def test_job_list_next_no_next(mocker):
-    mocker.patch('cwt.llnl_client.requests')
-
-    mocker.patch.dict(JOB_LIST, {'next': None})
-
-    job = llnl_client.JobListWrapper(JOB_LIST)
-
-    with pytest.raises(cwt.CWTError):
-        job.next()
-
 def test_job_list_next(mocker):
     mocker.patch('cwt.llnl_client.requests')
 
-    job = llnl_client.JobListWrapper(JOB_LIST)
+    job = llnl_client.JobListWrapper('https://wps.io/api/jobs', JOB_LIST)
 
     job.next()
 
-    assert job.index == 1
     assert len(job.pages) == 2
 
 def test_job_list_repr_html():
-    job = llnl_client.JobListWrapper(JOB_LIST)
+    job = llnl_client.JobListWrapper('https://wps.io/api/jobs', JOB_LIST)
 
     data = job._repr_html_()
 

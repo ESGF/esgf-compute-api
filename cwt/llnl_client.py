@@ -5,6 +5,7 @@ import os
 from urllib import parse
 
 import cwt
+from cwt.auth import Authenticator
 from cwt.auth import TokenAuthenticator
 from cwt import CWTError
 
@@ -279,7 +280,8 @@ class LLNLClient(cwt.WPSClient):
                 'limit': limit or 10,
             }
 
-            self.auth.prepare(headers, params)
+            if self.auth is not None and isinstance(self.auth, Authenticator):
+                self.auth.prepare(headers, params)
 
             response = requests.get(job_url, headers=headers, params=params)
 
