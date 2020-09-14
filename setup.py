@@ -8,7 +8,7 @@ setup(
     packages=['cwt'],
     author='Jason Boutte',
     author_email='boutte3@llnl.gov',
-    version="2.3.4",
+    version="2.3.5",
     url='https://github.com/ESGF/esgf-compute-api',
     install_requires=[
         "owslib>=0.17.1",
