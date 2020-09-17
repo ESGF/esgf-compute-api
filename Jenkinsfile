@@ -37,8 +37,9 @@ make TARGET=testresult'''
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
           sh '''#! /bin/sh
-
-make TARGET=publish'''
+echo "Disabled"
+# make TARGET=publish
+          '''
         }
 
       }
