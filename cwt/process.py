@@ -9,6 +9,7 @@ import logging
 import time
 import datetime
 import warnings
+from owslib import wps
 
 from cwt import utilities
 from cwt.errors import CWTError
@@ -250,6 +251,20 @@ class Process(Parameter):
         Returns:
             A boolean denoting whether the process is still working.
         """
+        if getattr(self, "_old_parse_response", None) is None:
+            setattr(self, "_old_parse_response", self.context.parseResponse)
+
+            def _new_parse_response(response):
+                self._old_parse_response(response)
+
+                wpsns = wps.getNamespace(response)
+
+                status_element = response.find(wps.nspath('Status/*', ns=wpsns))
+
+                self.context.percentCompleted = float(status_element.attrib.get('percentCompleted', 0.0))
+
+            self.context.parseResponse = _new_parse_response
+
         self.context.checkStatus(sleepSecs=0)
 
         return self.accepted or self.started
@@ -323,7 +338,7 @@ class Process(Parameter):
         elif self.failed:
             msg = 'ProcessFailed {!s}'.format(self.context.statusMessage)
         elif self.succeeded:
-            msg = 'ProcessSucceeded {!s}'.format(self.context.statusMessage)
+            msg = 'ProcessSucceeded'
         elif self.errored:
             exception_msg = '->'.join([x['text'] for x in self.exception_dict])
 
