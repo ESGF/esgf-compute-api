@@ -6,42 +6,45 @@ class Authenticator(object):
         self.loaded = False
         self.store = kwargs.pop('store', False)
         self.config_path = os.path.expanduser('~/.cwt.json')
+        self.data = {}
 
         self.read()
 
     def write(self):
         with open(self.config_path, 'w') as fp:
-            fp.write(json.dumps(self.to_dict()))
+            fp.write(json.dumps(self.data))
 
     def read(self):
         if os.path.exists(self.config_path):
             with open(self.config_path) as fp:
                 data = fp.read()
 
-            data = json.loads(data)
+            self.data = json.loads(data)
 
-            try:
-                self.from_dict(data)
-            except Exception:
-                pass
-            else:
-                self.loaded = True
+            self.loaded = True
 
     def clear(self):
         if os.path.exists(self.config_path):
             os.remove(self.config_path)
 
-    def prepare(self, headers, query):
-        if self.store and not self.loaded:
+    def prepare(self, key, headers, query):
+        if key in self.data:
+            stored_headers = self.data[key]["headers"]
+
+            stored_query = self.data[key]["query"]
+        else:
+            stored_headers, stored_query = self._pre_prepare()
+
+            self.data[key] = {
+                "headers": stored_headers,
+                "query": stored_query,
+            }
+
             self.write()
 
-            self.loaded = True
+        headers.update(stored_headers)
 
-    def from_dict(self, data):
-        raise NotImplemented()
-
-    def to_dict(self):
-        raise NotImplemented()
+        query.update(stored_query)
 
 class TokenAuthenticator(Authenticator):
     def __init__(self, token=None, key=None, value=None, **kwargs):
@@ -53,18 +56,14 @@ class TokenAuthenticator(Authenticator):
 
         super().__init__(**kwargs)
 
-    def from_dict(self, value):
-        self.token = value['token']
-
-    def to_dict(self):
-        return {'token': self.token}
-
     def retrieve_token(self):
         return self.token
 
-    def prepare(self, headers, query):
-        self.token = self.retrieve_token()
+    def _pre_prepare(self):
+        token = self.retrieve_token()
 
-        headers[self.key] = self.value.format(self.token)
+        headers = {
+            self.key: self.value.format(token)
+        }
 
-        super().prepare(headers, query)
+        return headers, {}

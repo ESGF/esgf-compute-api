@@ -280,7 +280,7 @@ class LLNLClient(cwt.WPSClient):
         }
 
         if self.auth is not None and isinstance(self.auth, Authenticator):
-            self.auth.prepare(headers, params)
+            self.auth.prepare(self.url, headers, params)
 
         response = requests.get(job_url, headers=headers, params=params)
 

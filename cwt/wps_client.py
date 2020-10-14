@@ -433,7 +433,7 @@ class WPSClient(object):
 
         # Prepare headers and GET params
         if self.auth is not None and isinstance(self.auth, auth.Authenticator):
-            self.auth.prepare(headers, params)
+            self.auth.prepare(self.url, headers, params)
 
         try:
             if isinstance(process, Process):
