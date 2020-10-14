@@ -44,7 +44,6 @@ from cwt.errors import WPSClientError
 from cwt.process import Process
 from cwt.variable import Variable
 
-
 class TokenAuthentication():
     pass
 

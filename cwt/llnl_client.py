@@ -271,23 +271,22 @@ class LLNLClient(cwt.WPSClient):
     def jobs(self, limit=10):
         """ Retrieves listing of jobs.
         """
-        if self._listing is None:
-            job_url = self._job_url()
+        job_url = self._job_url()
 
-            headers = self.headers.copy()
+        headers = self.headers.copy()
 
-            params = {
-                'limit': limit or 10,
-            }
+        params = {
+            'limit': limit or 10,
+        }
 
-            if self.auth is not None and isinstance(self.auth, Authenticator):
-                self.auth.prepare(headers, params)
+        if self.auth is not None and isinstance(self.auth, Authenticator):
+            self.auth.prepare(headers, params)
 
-            response = requests.get(job_url, headers=headers, params=params)
+        response = requests.get(job_url, headers=headers, params=params)
 
-            response.raise_for_status()
+        response.raise_for_status()
 
-            self._listing = JobListWrapper(response.url, response.json(), headers)
+        self._listing = JobListWrapper(response.url, response.json(), headers)
 
         return self._listing
 
