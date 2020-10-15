@@ -30,9 +30,13 @@ endif
 
 EXTRA_ARG += --opt target=$(TARGET)
 
+ifeq ($(OUTPUT_TYPE),docker)
 OUTPUT_ARG := --output type=docker,name=dev-api,dest=$(OUTPUT_PATH)/image.tar
 
 POST_CMD := cat $(OUTPUT_PATH)/image.tar | docker load
+else
+OUTPUT_ARG := --output type=local,dest=$(OUTPUT_PATH)
+endif
 
 dev-env:
 	conda create -n api-dev -c conda-forge pytest pytest-cov pytest-mock mock
