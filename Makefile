@@ -1,7 +1,7 @@
 .PHONY: build
 
-CACHE_PATH := $(PWD)/cache
-OUTPUT_PATH := $(PWD)/output
+CACHE_PATH ?= $(PWD)/cache
+OUTPUT_PATH ?= $(PWD)/output
 
 ifeq ($(shell which buildctl-daemonless.sh),)
 BUILD := docker run \
