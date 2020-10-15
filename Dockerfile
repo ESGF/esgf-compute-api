@@ -12,7 +12,8 @@ COPY meta.yaml recipe/
 COPY cwt/ recipe/cwt
 COPY setup.py recipe/
 
-RUN conda smithy rerender && \
+RUN conda config --set ssl_verify false && \
+      conda smithy rerender && \
       conda build recipe/ -m .ci_support/linux_64_.yaml -c conda-forge --output-folder channel/ && \
       conda index channel/
 
