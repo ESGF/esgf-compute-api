@@ -7,6 +7,9 @@ pipeline {
   }
   stages {
     stage('Unittest') {
+      environment {
+        CACHE_PATH = "${env.CACHE_PATH}"
+      }
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
           sh 'make build TARGET=testresult'
@@ -22,7 +25,7 @@ pipeline {
     }
     stage('Publish') {
       environment {
-        CONDA_TOKEN=credentials('conda-token')
+        CONDA_TOKEN = credentials('conda-token')
       }
       when {
         branch pattern: 'v\\d+\\.\\d+\\.\\d+', comparator: 'REGEXP'
