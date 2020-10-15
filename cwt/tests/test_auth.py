@@ -1,89 +1,50 @@
+import pytest
+import tempfile
 import json
 import os
 
 from cwt import auth
 
-def test_token_authenticator(mocker):
-    token = auth.TokenAuthenticator('test_token')
+@pytest.fixture
+def temp_file():
+    yield "cwt.json"
 
-    if os.path.exists(token.config_path):
-        os.remove(token.config_path)
+    if os.path.exists("cwt.json"):
+        os.remove("cwt.json")
+
+def test_token_authenticator(mocker, temp_file):
+    token = auth.TokenAuthenticator('test_token', config_path=temp_file)
 
     headers = {}
     params = {}
 
     dumps = mocker.spy(json, 'dumps')
 
-    token.prepare(headers, params)
+    token.prepare("key1", headers, params)
 
     assert 'Authorization' not in params
     assert 'Authorization' in headers
-
     assert headers['Authorization'] == 'Bearer test_token'
 
-    dumps.assert_not_called()
+    token.prepare("key1", headers, params)
 
-def test_authenticator(mocker):
-    class CustomAuthenticator(auth.Authenticator):
-        def prepare(self, headers, query):
-            headers['TEST'] = 'token'
+    token = auth.TokenAuthenticator('test_token', config_path=temp_file)
 
-            query['TEST'] = 'token'
+    token.clear()
 
-            super().prepare(headers, query)
+    assert token.data == {}
 
-        def to_dict(self):
-            return {'data': 'token'}
+def test_authenticator(mocker, temp_file):
+    class CustomAuth(auth.Authenticator):
+        def _pre_prepare(self):
+            return {"key1": "value1"}, {"key2": "value2"}
 
-        def from_dict(self, data):
-            self.data = data
-
-    custom = CustomAuthenticator()
-
-    expected_path = os.path.expanduser('~/.cwt.json')
-
-    assert custom.config_path == expected_path
-    assert custom.store is False
-
-    dump = mocker.spy(json, 'dumps')
-
-    custom.write()
-
-    dump.assert_called_with({'data': 'token'})
-
-    load = mocker.spy(json, 'loads')
-
-    custom.read()
-
-    load.assert_called_with('{"data": "token"}')
-
-    remove = mocker.spy(os, 'remove')
-
-    custom.clear()
-
-    remove.assert_called_with(expected_path)
+    custom = CustomAuth(config_path=temp_file)
 
     headers = {}
-    params = {}
+    query = {}
 
-    if os.path.exists(expected_path):
-        os.path.remove(expected_path)
+    custom.prepare("key1", headers, query)
 
-    custom = CustomAuthenticator(store=True)
-
-    assert custom.store
-    assert not custom.loaded
-
-    write = mocker.spy(custom, 'write')
-
-    custom.prepare(headers, params)
-
-    write.assert_called()
-
-    assert 'TEST' in headers
-    assert 'TEST' in params
-
-    custom.prepare(headers, params)
-
-    # Shouldn't call write twice
-    assert dump.call_count == 2
+    assert headers == {"key1": "value1"}
+    assert query == {"key2": "value2"}

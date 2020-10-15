@@ -1,23 +1,29 @@
-FROM continuumio/miniconda3:4.6.14 as builder
+ARG BASE_IMAGE
+FROM $BASE_IMAGE as builder
 
 RUN conda update -n base -c defaults conda && \
-      conda install conda-build anaconda-client
+      conda install -c conda-forge conda-smithy conda-build anaconda-client
 
 WORKDIR /build
 
-COPY meta.yaml meta.yaml
-COPY cwt/ cwt/
-COPY setup.py setup.py
+RUN conda smithy ci-skeleton esgf-compute-api
 
-RUN conda build -c conda-forge .
+COPY meta.yaml recipe/
+COPY cwt/ recipe/cwt
+COPY setup.py recipe/
 
-FROM continuumio/miniconda3:4.6.14 as production
+RUN conda smithy rerender && \
+      conda build recipe/ -m .ci_support/linux_64_.yaml -c conda-forge --output-folder channel/ && \
+      conda index channel/
+
+FROM $BASE_IMAGE as jupyterlab
 
 WORKDIR /
 
-RUN conda install -c conda-forge -c cdat jupyterlab esgf-compute-api
-
 COPY jupyter_notebook_config.json .
+COPY --from=builder /build/channel /channel 
+
+RUN conda install -c conda-forge -c file:///channel jupyterlab esgf-compute-api
 
 EXPOSE 8080
 
@@ -35,5 +41,7 @@ FROM builder as publish
 ARG CONDA_TOKEN
 ENV CONDA_TOKEN $CONDA_TOKEN
 
+COPY --from=builder /build/channel/noarch/*.tar.bz2 .
+
 RUN anaconda config --set ssl_verify false && \
-      anaconda -t ${CONDA_TOKEN} upload -u cdat --skip-existing $(conda build -c conda-forge . --output)
+      anaconda -t ${CONDA_TOKEN} upload -u cdat --skip-existing *.tar.bz2

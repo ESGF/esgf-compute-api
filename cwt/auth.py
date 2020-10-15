@@ -2,10 +2,9 @@ import json
 import os
 
 class Authenticator(object):
-    def __init__(self, **kwargs):
-        self.loaded = False
-        self.store = kwargs.pop('store', False)
-        self.config_path = os.path.expanduser('~/.cwt.json')
+    def __init__(self, config_path=None, store=False):
+        self.store = store
+        self.config_path = config_path or os.path.expanduser("~/.cwt.json")
         self.data = {}
 
         self.read()
@@ -21,11 +20,10 @@ class Authenticator(object):
 
             self.data = json.loads(data)
 
-            self.loaded = True
-
     def clear(self):
-        if os.path.exists(self.config_path):
-            os.remove(self.config_path)
+        self.data = {}
+
+        self.write()
 
     def prepare(self, key, headers, query):
         if key in self.data:

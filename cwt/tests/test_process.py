@@ -104,7 +104,7 @@ class TestProcess(unittest.TestCase):
             ('ProcessStarted', 'ProcessStarted Hello 20'),
             ('ProcessPaused', 'ProcessPaused Hello 20'),
             ('ProcessFailed', 'ProcessFailed Hello'),
-            ('ProcessSucceeded', 'ProcessSucceeded Hello'),
+            ('ProcessSucceeded', 'ProcessSucceeded'),
             ('Exception', 'Exception '),
         ]
 
