@@ -34,7 +34,7 @@ ifeq ($(OUTPUT_TYPE),docker)
 OUTPUT_ARG := --output type=docker,name=dev-api,dest=$(OUTPUT_PATH)/image.tar
 
 POST_CMD := cat $(OUTPUT_PATH)/image.tar | docker load
-else
+else ifeq ($(TARGET),testresult)
 OUTPUT_ARG := --output type=local,dest=$(OUTPUT_PATH)
 endif
 
