@@ -17,6 +17,8 @@ pipeline {
           sh 'chmod -R 755 output/'
 
           sh 'chown -R 1000:1000 output/'
+      
+          sh '''sed -i"" 's/timestamp="[^"]*"//' output/unittest.xml''' 
         }
 
         sh 'touch output/*'
