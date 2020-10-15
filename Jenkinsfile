@@ -11,7 +11,7 @@ pipeline {
         container(name: 'buildkit', shell: '/bin/sh') {
           sh 'make build TARGET=testresult'
 
-          sh 'chown -R 1000:1000 output/'
+          sh 'chown -R 1000:1000 output'
         }
 
         archiveArtifacts 'output/'
