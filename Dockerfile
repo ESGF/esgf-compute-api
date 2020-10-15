@@ -36,6 +36,7 @@ FROM scratch as testresult
 
 COPY --from=builder /output/coverage.xml .
 COPY --from=builder /output/unittest.xml .
+COPY --from=builder /build/channel/noarch/*.tar.bz2 .
 
 FROM builder as publish
 
