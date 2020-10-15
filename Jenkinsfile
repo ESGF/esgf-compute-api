@@ -24,7 +24,7 @@ pipeline {
         CONDA_TOKEN=credentials('conda-token')
       }
       when {
-        branch pattern: 'v\\d+\.\\d+\.\\d+', comparator: 'REGEXP'
+        branch pattern: 'v\\d+\\.\\d+\\.\\d+', comparator: 'REGEXP'
       }
       steps {
         container(name: 'buildkit', shell: '/bin/sh') {
