@@ -5,9 +5,7 @@ import os
 from urllib import parse
 
 import cwt
-from cwt.auth import Authenticator
-from cwt.auth import TokenAuthenticator
-from cwt import CWTError
+from cwt import auth
 
 logger = logging.getLogger(__name__)
 
@@ -34,13 +32,13 @@ Copy the returned token and paste in the input below.
 {}
 """
 
-class AuthenticationError(CWTError):
+class AuthenticationError(cwt.CWTError):
     pass
 
-class JobStatusError(CWTError):
+class JobStatusError(cwt.CWTError):
     pass
 
-class JobMissingError(CWTError):
+class JobMissingError(cwt.CWTError):
     pass
 
 class JobWrapper(object):
@@ -279,7 +277,7 @@ class LLNLClient(cwt.WPSClient):
             'limit': limit or 10,
         }
 
-        if self.auth is not None and isinstance(self.auth, Authenticator):
+        if self.auth is not None and isinstance(self.auth, auth.Authenticator):
             self.auth.prepare(self.url, headers, params)
 
         response = requests.get(job_url, headers=headers, params=params)
@@ -290,7 +288,7 @@ class LLNLClient(cwt.WPSClient):
 
         return self._listing
 
-class LLNLAuthenticator(TokenAuthenticator):
+class LLNLAuthenticator(auth.TokenAuthenticator):
     """ LLNLAuthenticator.
     """
 
@@ -303,7 +301,7 @@ class LLNLAuthenticator(TokenAuthenticator):
             verify (bool, optional): Verify SSL certificate.
             store_token (bool, optional): Will write token to ~/.cwt.
         """
-        super().__init__(key='COMPUTE_TOKEN', value='{}', **kwargs)
+        super().__init__(**kwargs)
 
         self.server_url = server_url
         self.login_url = parse.urljoin(server_url, DEFAULT_LOGIN_PATH)

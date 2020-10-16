@@ -30,14 +30,14 @@ def test_token_authenticator(mocker, temp_file):
 
     token = auth.TokenAuthenticator('test_token', config_path=temp_file)
 
-    token.clear()
-
-    assert token.data == {}
+    token.clear("key1")
 
 def test_authenticator(mocker, temp_file):
     class CustomAuth(auth.Authenticator):
-        def _pre_prepare(self):
-            return {"key1": "value1"}, {"key2": "value2"}
+        def _pre_prepare(self, headers, query, store):
+            headers.update({"key1": "value1"})
+
+            query.update({"key2": "value2"})
 
     custom = CustomAuth(config_path=temp_file)
 
