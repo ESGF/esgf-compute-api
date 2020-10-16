@@ -288,6 +288,10 @@ class LLNLClient(cwt.WPSClient):
 
         return self._listing
 
+class LLNLKeyCloakAuthenticator(auth.KeyCloakAuthenticator):
+    """LLNL KeyCloak authenticator.
+    """
+
 class LLNLAuthenticator(auth.TokenAuthenticator):
     """ LLNLAuthenticator.
     """
