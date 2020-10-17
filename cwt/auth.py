@@ -233,7 +233,11 @@ class KeyCloakAuthenticator(Authenticator):
 
         response.raise_for_status()
 
-        return response.json()
+        data = response.json()
+
+        data["acquired"] = datetime.datetime.now().isoformat()
+
+        return data
 
     def _authorization_code_pkce(self, known, client):
         """Performs authorization code flow with PKCE.
@@ -329,7 +333,11 @@ class KeyCloakAuthenticator(Authenticator):
 
         response.raise_for_status()
 
-        return response.json()
+        data = response.json()
+
+        data["acquired"] = datetime.datetime.now().isoformat()
+
+        return data
 
     def _pre_prepare(self, headers, query, store):
         """Prepares authorization headers.
@@ -346,8 +354,12 @@ class KeyCloakAuthenticator(Authenticator):
 
         client = oauth2.WebApplicationClient(self._client_id)
 
-        refresh_expires_in = None if "refresh_expires_in" not in store else \
-            datetime.datetime.fromisoformat(store["refresh_expires_in"])
+        refresh_expires_in = None
+
+        if "refresh_expires_in" in store:
+            acquired = datetime.datetime.fromisoformat(store["acquired"])
+
+            refresh_expires_in = acquired + datetime.timedelta(seconds=store["refresh_expires_in"])
 
         now = datetime.datetime.now()
 
