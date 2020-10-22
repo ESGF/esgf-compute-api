@@ -6,31 +6,12 @@ from urllib import parse
 
 import cwt
 from cwt import auth
+from cwt import errors
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_LOGIN_PATH = '/api/openid/login/'
 DEFAULT_JOB_PATH = '/api/jobs/'
 DEFAULT_JOB_DETAIL_PATH = '/api/jobs/{}/'
-DEFAULT_OPENID_URL = 'https://esgf-node.llnl.gov/esgf-idp/openid'
-
-HTML = """
-<pre>
-Open the link below in a web browser and log into the ESGF OpenID service.
-
-Copy the returned token and paste in the input below.
-
-<a href="{}" target="_blank">Login</a>
-</pre>
-"""
-
-PLAIN = """
-Open the link below in a web browser and log into the ESGF OpenID service.
-
-Copy the returned token and paste in the input below.
-
-{}
-"""
 
 class AuthenticationError(cwt.CWTError):
     pass
@@ -291,91 +272,44 @@ class LLNLClient(cwt.WPSClient):
 class LLNLKeyCloakAuthenticator(auth.KeyCloakAuthenticator):
     """LLNL KeyCloak authenticator.
     """
+    def __init__(self, wps_url, *args, **kwargs):
+        if wps_url[-1] == "/":
+            wps_url = wps_url[:-1]
 
-class LLNLAuthenticator(auth.TokenAuthenticator):
-    """ LLNLAuthenticator.
-    """
+        self._wps_url = wps_url
 
-    def __init__(self, server_url, **kwargs):
-        """ LLNLAuthenticator __init__.
+        super(LLNLKeyCloakAuthenticator, self).__init__(*args, **kwargs)
 
-        Args:
-            server_url (str): The base url of the WPS server.
-            openid_url (str, optional): A url to the OpenID authentication server.
-            verify (bool, optional): Verify SSL certificate.
-            store_token (bool, optional): Will write token to ~/.cwt.
-        """
-        super().__init__(**kwargs)
+    def register_client(self):
+        logger.info("Registering client for client credentials flow")
 
-        self.server_url = server_url
-        self.login_url = parse.urljoin(server_url, DEFAULT_LOGIN_PATH)
-        self.openid_url = kwargs.get('openid_url', DEFAULT_OPENID_URL)
-        self.verify = kwargs.get('verify', True)
-        self.session = kwargs.get('session', None)
+        client_reg_url = f"{self._wps_url}/auth/client_registration/"
 
-    def __repr__(self):
-        text = 'LLNLAuthenticator(server_url={!r}, openid_url={!r}, verify={!r})'.format(
-            self.server_url,
-            self.openid_url,
-            self.verify,
-        )
+        response = requests.get(client_reg_url, allow_redirects=False)
 
-        return text
+        if response.status_code != 302:
+            raise errors.WPSAuthError("Error registering client, contact server admin.")
 
-    def _get_openid_redirect(self, session=None):
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
+        print(f"Open {response.next.url!r} in a browser")
 
-        data = {
-            'openid_url': self.openid_url,
-            'response': 'json',
-        }
+        client_id = input("Client ID: ")
 
-        if session is None:
-            session = requests.Session()
+        client_secret = input("Client Secret: ")
 
-        with session:
-            response = session.get(self.login_url, headers=headers, verify=self.verify)
+        return client_id, client_secret
 
-            try:
-                headers['X-CSRFToken'] = response.cookies['csrftoken']
-            except KeyError:
-                logger.info('Did not find "csrftoken" in cookies')
+    def _pre_prepare(self, headers, query, store):
+        client_id = store.get("client_id", self._client_id)
 
-            response = session.post(self.login_url, data=data, headers=headers, verify=self.verify)
+        client_secret = store.get("client_secret", self._client_secret)
 
-            response.raise_for_status()
+        if client_id is None and client_secret is None:
+            client_id, client_secret = self.register_client()
 
-            data = response.json()
+            store["client_id"] = client_id
 
-        try:
-            redirect = data['data']['redirect']
-        except KeyError as e:
-            raise AuthenticationError('Server response missing key {!s}', e)
+            store["client_secret"] = client_secret
 
-        return redirect
+        store = super(LLNLKeyCloakAuthenticator, self)._pre_prepare(headers, query, store)
 
-    def retrieve_token(self):
-        if self.token is not None:
-            return self.token
-
-        url = self._get_openid_redirect(self.session)
-
-        html_msg = HTML.format(url)
-
-        plain_msg = PLAIN.format(url)
-
-        from IPython.core.interactiveshell import InteractiveShell
-        from IPython.display import display
-
-        if not InteractiveShell.initialized():
-            print(plain_msg)
-        else:
-            data = {'text/plain': plain_msg, 'text/html': html_msg}
-
-            display(data, raw=True)
-
-        token = input('Token: ')
-
-        return token
+        return store

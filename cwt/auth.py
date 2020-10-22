@@ -1,3 +1,4 @@
+import sys
 import re
 import hashlib
 import base64
@@ -6,20 +7,28 @@ import os
 import random
 import datetime
 from http import server
+import logging
 
 import requests
 from oauthlib import oauth2
 
+from cwt import errors
+
+logger = logging.getLogger("cwt.auth")
+
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
+
 class Authenticator(object):
     """Base authenticator.
     """
-    def __init__(self, config_path=None, store=True):
+    def __init__(self, key=None, config_path=None, store=True):
         """Authenticator __init__.
 
         Args:
             config_path: File to store credentials.
             store: Store credentials in config_path
         """
+        self.key = key or "default"
         self.store = store
         self.config_path = config_path or os.path.expanduser("~/.cwt.json")
 
@@ -29,6 +38,8 @@ class Authenticator(object):
         Args:
             data: Dict mapping keys to credential store.
         """
+        logger.info("Writing credential store")
+
         with open(self.config_path, 'w') as fp:
             fp.write(json.dumps(data))
 
@@ -40,6 +51,8 @@ class Authenticator(object):
         """
         data = {}
 
+        logger.info("Reading credential store")
+
         if os.path.exists(self.config_path):
             with open(self.config_path) as fp:
                 data = fp.read()
@@ -48,7 +61,7 @@ class Authenticator(object):
 
         return data
 
-    def clear(self, key):
+    def clear(self):
         """Removes a stored credential.
 
         Args:
@@ -56,12 +69,12 @@ class Authenticator(object):
         """
         data = self.read()
 
-        if key in data:
-            del data[key]
+        if self.key in data:
+            del data[self.key]
 
         self.write(data)
 
-    def prepare(self, key, headers, query):
+    def prepare(self, headers, query):
         """Retrieves credentials.
 
         Args:
@@ -71,37 +84,32 @@ class Authenticator(object):
         """
         data = self.read()
 
-        state = self._pre_prepare(headers, query, data.get(key, {}))
+        state = self._pre_prepare(headers, query, data.get(self.key, {}))
 
-        data[key] = state
+        if self.store:
+            logger.info("Storing credentials")
 
-        self.write(data)
+            data[self.key] = state
+
+            self.write(data)
 
         del data
 
-class TokenAuthenticator(Authenticator):
-    """Simple token authenticator.
+class BearerToken(Authenticator):
+    """Bearer token authenticator.
     """
+
     def __init__(self, token=None, **kwargs):
-        """TokenAuthenticator __init__.
+        self._token = token
 
-        Args:
-            token: Token to place in headers.
-            **kwargs: Arguments for base authenticator.
-        """
-        self.token = token
-
-        super().__init__(**kwargs)
+        super(BearerToken, self).__init__(**kwargs)
 
     def _pre_prepare(self, headers, query, store):
-        """Prepares headers or query.
+        store["token"] = self._token
 
-        Args:
-            headers: dict to append authorization headers.
-            query: dict to append authorization parameters.
-            store: dict containing store credentials.
-        """
-        headers.update({"Authorization": f"Bearer {self.token}"})
+        headers["Authorization"] = "Bearer {}".format(self._token)
+
+        return store
 
 class ResponseListener(server.BaseHTTPRequestHandler):
     """Callback server for authorization request.
@@ -117,7 +125,7 @@ class ResponseListener(server.BaseHTTPRequestHandler):
 class KeyCloakAuthenticator(Authenticator):
     """KeyCloak authenticator.
     """
-    def __init__(self, url, realm, client_id, client_secret=None, pkce=False, **kwargs):
+    def __init__(self, url, realm, client_id=None, client_secret=None, pkce=False, redirect_port=None, **kwargs):
         """KeyCloakAuthenticator __init__.
 
         Args:
@@ -133,6 +141,7 @@ class KeyCloakAuthenticator(Authenticator):
         self._client_id = client_id
         self._client_secret = client_secret
         self._pkce = pkce
+        self._redirect_port = redirect_port or 8888
         self._well_known = None
 
         super().__init__(**kwargs)
@@ -147,6 +156,8 @@ class KeyCloakAuthenticator(Authenticator):
             response = requests.get(f"{self._url}/realms/{self._realm}/.well-known/openid-configuration")
 
             response.raise_for_status()
+
+            logger.info("Retrieved well known document")
 
             self._well_known = response.json()
 
@@ -192,7 +203,7 @@ class KeyCloakAuthenticator(Authenticator):
 
         auth_url = client.prepare_request_uri(
             url,
-            redirect_uri="http://127.0.0.1:8888",
+            redirect_uri=f"http://127.0.0.1:{self._redirect_port}",
             state=state,
             **kwargs)
 
@@ -200,7 +211,20 @@ class KeyCloakAuthenticator(Authenticator):
         print("")
         print(f"{auth_url}")
 
-        listen = server.HTTPServer(("", 8888), ResponseListener)
+        try:
+            listen = server.HTTPServer(("", self._redirect_port), ResponseListener)
+        except PermissionError:
+            print(f"""
+Failed to bind redirect port {self._redirect_port}.
+
+Try changing the redirect port.
+<<< auth = LLNLKeyCloakAuthenticator(..., redirect_port=9000)
+
+Or use client credentials method.
+            """)
+
+            sys.exit(1)
+
         listen.handle_request()
         listen.server_close()
 
@@ -224,7 +248,7 @@ class KeyCloakAuthenticator(Authenticator):
         """
         request = client.prepare_request_body(
             code,
-            redirect_uri="http://127.0.0.1:8888",
+            redirect_uri=f"http://127.0.0.1:{self._redirect_port}",
             **kwargs)
 
         headers = {"Content-type": "application/x-www-form-urlencoded"}
@@ -312,7 +336,7 @@ class KeyCloakAuthenticator(Authenticator):
 
         return kwargs
 
-    def _refresh_token(self, known, client, refresh_token):
+    def _refresh_token(self, known, client, refresh_token, client_secret=None):
         """Refresh access token.
 
         Args:
@@ -324,16 +348,67 @@ class KeyCloakAuthenticator(Authenticator):
             A dict containing a token response generated by using
             a refresh token.
         """
+        logger.info("Refreshing access token")
+
+        kwargs = {
+            "client_id": self._client_id,
+        }
+
+        if client_secret is not None:
+            kwargs["client_secret"] = client_secret
+
         url, headers, body = client.prepare_refresh_token_request(
             known["token_endpoint"],
             refresh_token=refresh_token,
-            client_id=self._client_id)
+            **kwargs)
 
         response = requests.post(url, data=body, headers=headers)
 
         response.raise_for_status()
 
         data = response.json()
+
+        data["acquired"] = datetime.datetime.now().isoformat()
+
+        return data
+
+    def _check_refresh_expired(self, store):
+        refresh_expires_in = None
+
+        if "refresh_expires_in" in store:
+            aquired = datetime.datetime.fromisoformat(store["acquired"])
+
+            refresh_expires_in = aquired + datetime.timedelta(seconds=store["refresh_expires_in"])
+
+        now = datetime.datetime.now()
+
+        logger.info(f"Refresh token expires at {refresh_expires_in} {now}")
+
+        if refresh_expires_in is not None and now <= refresh_expires_in:
+            return False
+
+        return True
+
+    def _get_client_credentials_token(self, known, client, client_secret):
+        logger.info("Getting client credentials")
+
+        request_body = client.prepare_request_body(
+            include_client_id=True,
+            client_secret=client_secret)
+
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+
+        response = requests.post(
+            known["token_endpoint"],
+            headers = headers,
+            data = request_body)
+
+        data = response.json()
+
+        if "error" in data:
+            raise errors.WPSAuthError(data["error_description"])
 
         data["acquired"] = datetime.datetime.now().isoformat()
 
@@ -352,21 +427,29 @@ class KeyCloakAuthenticator(Authenticator):
         """
         known = self._get_well_known()
 
-        client = oauth2.WebApplicationClient(self._client_id)
+        if self._client_id is not None and self._pkce:
+            logger.info(f"Using authorization code flow")
 
-        refresh_expires_in = None
+            client = oauth2.WebApplicationClient(self._client_id)
 
-        if "refresh_expires_in" in store:
-            acquired = datetime.datetime.fromisoformat(store["acquired"])
-
-            refresh_expires_in = acquired + datetime.timedelta(seconds=store["refresh_expires_in"])
-
-        now = datetime.datetime.now()
-
-        if refresh_expires_in is not None and now <= refresh_expires_in:
-            store = self._refresh_token(known, client, store["refresh_token"])
+            if self._check_refresh_expired(store):
+                store = self._get_access_token(known, client)
+            else:
+                store = self._refresh_token(known, client, store["refresh_token"])
         else:
-            store = self._get_access_token(known, client)
+            logger.info(f"Using client credentials flow")
+
+            client_id = store.get("client_id", self._client_id)
+
+            client_secret = store.get("client_secret", self._client_secret)
+
+            client = oauth2.BackendApplicationClient(client_id)
+
+            store = self._get_client_credentials_token(known, client, client_secret)
+
+            store["client_id"] = client_id
+
+            store["client_secret"] = client_secret
 
         headers.update({
             "Authorization": f"Bearer {store['access_token']}",

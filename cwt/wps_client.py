@@ -92,16 +92,6 @@ class WPSClient(object):
 
         owslib_auth = util.Authentication(**owslib_auth_kwargs)
 
-        if self.auth is None:
-            token = kwargs.get('compute_token', None)
-
-            token = os.environ.get('COMPUTE_TOKEN', token)
-
-            if token is None:
-                self.auth = owslib_auth
-            else:
-                self.auth = auth.TokenAuthenticator(token=token)
-
         self.version = kwargs.get('version', '1.0.0')
 
         _client_kwargs = {
@@ -127,28 +117,16 @@ class WPSClient(object):
                     self.cert, self.version, self.headers)
 
     def set_logging(self, kwargs):
-        self.log = kwargs.get('log', False)
+        env_log = os.environ.get('log', False)
 
-        self.log_file = None
+        env_log_level = os.environ.get('log_level', 'info')
+
+        self.log = kwargs.get('log', env_log)
+
+        log_level = kwargs.get('log_level', env_log_level).upper()
 
         if self.log:
-            log_level = kwargs.get('log_level', 'info').upper()
-
-            logging.basicConfig(level=log_level,
-                    format='[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
-
-            self.log_file = kwargs.get('log_file', None)
-
-            if self.log_file is not None:
-                file_handler = logging.FileHandler(self.log_file)
-
-                file_handler.setFormatter(formatter)
-
-                file_handler.setLevel(log_level)
-
-                root_logger.addHandler(file_handler)
-
-                logger.info('Added file handle %s', self.log_file)
+            logging.basicConfig(level=log_level)
 
     @staticmethod
     def parse_data_inputs(data_inputs):
@@ -433,7 +411,7 @@ class WPSClient(object):
 
         # Prepare headers and GET params
         if self.auth is not None and isinstance(self.auth, auth.Authenticator):
-            self.auth.prepare(self.url, headers, params)
+            self.auth.prepare(headers, params)
 
         try:
             if isinstance(process, Process):

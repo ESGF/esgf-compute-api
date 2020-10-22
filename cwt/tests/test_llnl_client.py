@@ -79,35 +79,6 @@ def test_llnl_client_job_url(mocker):
 
     assert url == 'https://wps.io/api/jobs/'
 
-def test_llnl_authenticator_bad_response(mocker):
-    session = mocker.patch('cwt.llnl_client.requests.Session')
-
-    auth = llnl_client.LLNLAuthenticator('https://wps.io')
-
-    session.return_value.post.return_value.json.return_value = {"data": {}}
-
-    with pytest.raises(llnl_client.AuthenticationError):
-        redirect = auth._get_openid_redirect()
-
-def test_llnl_authenticator_redirect(mocker):
-    session = mocker.patch('cwt.llnl_client.requests.Session')
-
-    auth = llnl_client.LLNLAuthenticator('https://wps.io')
-
-    session.return_value.post.return_value.json.return_value = {"data": {"redirect": "https://wps.io/redirect"}}
-
-    redirect = auth._get_openid_redirect()
-
-    session.return_value.post.assert_called()
-
-    assert redirect == 'https://wps.io/redirect'
-
-def test_llnl_authenticator():
-    auth = llnl_client.LLNLAuthenticator('https://wps.io')
-
-    assert auth.login_url == 'https://wps.io/api/openid/login/'
-    assert auth.openid_url == 'https://esgf-node.llnl.gov/esgf-idp/openid'
-
 def test_job_list_next(mocker):
     mocker.patch('cwt.llnl_client.requests')
 
