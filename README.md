@@ -5,6 +5,10 @@ Service interface standard.
 
 Supported WPS version: 1.0.0
 
+### Documentation
+
+Documentation can be found on [here](https://esgf.github.com/esgf-compute-api).
+
 ### Installation
 [Conda](https://docs.conda.io/en/latest/miniconda.html) is the preferred method of install.
 ```
