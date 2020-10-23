@@ -117,7 +117,7 @@ class WPSClient(object):
                     self.cert, self.version, self.headers)
 
     def set_logging(self, kwargs):
-        env_log = os.environ.get('log', False)
+        env_log = bool(os.environ.get('log', False))
 
         env_log_level = os.environ.get('log_level', 'info')
 
@@ -334,6 +334,8 @@ class WPSClient(object):
 
         self._client.headers.update(headers)
 
+        logger.info("Sending execute request")
+
         process.context = self._client.execute(process.identifier, data_inputs)
 
         return process
@@ -400,6 +402,8 @@ class WPSClient(object):
         headers = self.headers.copy()
         method = kwargs.pop('method', 'post').lower()
 
+        logger.info(f"Executing {process.identifier} with {len(process.inputs)}")
+
         if inputs is not None or domain is not None or len(kwargs) > 0:
             warnings.warn('Use of "inputs", "domain" and setting parameters is deprecated.'
                     'Set theses values on their respective process objects.', DeprecationWarning)
@@ -411,6 +415,8 @@ class WPSClient(object):
 
         # Prepare headers and GET params
         if self.auth is not None and isinstance(self.auth, auth.Authenticator):
+            logger.info("Getting authentication")
+
             self.auth.prepare(headers, params)
 
         try:

@@ -59,7 +59,7 @@ class Authenticator(object):
 
             data = json.loads(data)
 
-        return data
+        return data or {}
 
     def clear(self):
         """Removes a stored credential.
@@ -84,7 +84,9 @@ class Authenticator(object):
         """
         data = self.read()
 
-        state = self._pre_prepare(headers, query, data.get(self.key, {}))
+        state = data.get(self.key, None)
+
+        state = self._pre_prepare(headers, query, state or {})
 
         if self.store:
             logger.info("Storing credentials")
@@ -169,6 +171,8 @@ class KeyCloakAuthenticator(Authenticator):
         Returns:
             A str containing code verififer.
         """
+        logger.info("Generating code verifier")
+
         verifier = base64.urlsafe_b64encode(os.urandom(40)).decode("utf-8")
 
         return re.sub("[^a-zA-Z0-9]+", "", verifier)
@@ -182,13 +186,15 @@ class KeyCloakAuthenticator(Authenticator):
         Returns:
             A str containing the code challenge.
         """
+        logger.info("Generating code challenge")
+
         challenge = hashlib.sha256(code_verififer.encode("utf-8")).digest()
 
         challenge = base64.urlsafe_b64encode(challenge).decode("utf-8")
 
         return challenge.replace("=", "")
 
-    def _get_auth_response(self, client, url, **kwargs):
+    def _get_authorization_response(self, client, url, **kwargs):
         """Gets authorization response.
 
         Args:
@@ -200,6 +206,8 @@ class KeyCloakAuthenticator(Authenticator):
             A dict containing the authorization response.
         """
         state = ''.join([str(random.randint(0, 9)) for i in range(16)])
+
+        logger.info(f"Getting authorization code using state {state}")
 
         auth_url = client.prepare_request_uri(
             url,
@@ -224,13 +232,15 @@ Or use client credentials method.
             """)
 
             sys.exit(1)
-
-        listen.handle_request()
-        listen.server_close()
+        finally:
+            listen.handle_request()
+            listen.server_close()
 
         auth_response = client.parse_request_uri_response(
             ResponseListener.uri,
             state=state)
+
+        logger.info("Got authorization response")
 
         return auth_response
 
@@ -246,6 +256,8 @@ Or use client credentials method.
         Returns:
             A dict containing the token response.
         """
+        logger.info("Getting access token")
+
         request = client.prepare_request_body(
             code,
             redirect_uri=f"http://127.0.0.1:{self._redirect_port}",
@@ -258,6 +270,8 @@ Or use client credentials method.
         response.raise_for_status()
 
         data = response.json()
+
+        logger.info(f"Got token response {data}")
 
         data["acquired"] = datetime.datetime.now().isoformat()
 
@@ -276,48 +290,21 @@ Or use client credentials method.
         if self._client_secret is not None:
             logger.warning("Ignoring 'client_secret', preferring PKCE.")
 
+        logger.info("Getting authorization code using PKCE")
+
         verifier = self._code_verifier()
 
         challenge = self._code_challenge(verifier)
 
-        auth_response = self._get_auth_response(
+        auth_response = self._get_authorization_response(
             client,
             known["authorization_endpoint"],
             code_challenge=challenge,
             code_challenge_method="S256")
 
-        token_response = self._get_token_response(
-            client,
-            auth_response["code"],
-            known["token_endpoint"],
-            code_verifier=verifier)
+        logger.info("Got Authorization response")
 
-        return token_response
-
-    def _authorization_code(self, known, client):
-        """Peforms authorization code flow.
-
-        Args:
-            known: Dict containing well known document.
-            client: A WebApplicationClient instance.
-
-        Returns:
-            A dict containing a token response.
-        """
-        if self._client_secret is None:
-            raise WPSAuthenticationError("Must pass 'client_secret' if not using PKCE.")
-
-        auth_response = self._get_auth_response(
-            client,
-            known["authorization_endpoint"],
-            client_secret=self._client_secret)
-
-        token_response = self._get_token_response(
-            client,
-            auth_response["code"],
-            known["token_endpoint"])
-
-        return token_response
+        return auth_response, verifier
 
     def _get_access_token(self, known, client):
         """Performs specific authorization code flow.
@@ -329,12 +316,17 @@ Or use client credentials method.
         Returns:
             A dict containing a token response.
         """
-        if self._pkce:
-            kwargs = self._authorization_code_pkce(known, client)
-        else:
-            kwargs = self._authorization_code(known, client)
+        auth_token, verifier = self._authorization_code_pkce(known, client)
 
-        return kwargs
+        logger.info(f"Authorization token: {auth_token}")
+
+        token_response = self._get_token_response(
+            client,
+            auth_token["code"],
+            known["token_endpoint"],
+            code_verifier=verifier)
+
+        return token_response
 
     def _refresh_token(self, known, client, refresh_token, client_secret=None):
         """Refresh access token.
@@ -348,7 +340,7 @@ Or use client credentials method.
             A dict containing a token response generated by using
             a refresh token.
         """
-        logger.info("Refreshing access token")
+        logger.info("Getting access token using refresh token")
 
         kwargs = {
             "client_id": self._client_id,
@@ -367,6 +359,8 @@ Or use client credentials method.
         response.raise_for_status()
 
         data = response.json()
+
+        logger.info(f"Refreshing token response {data}")
 
         data["acquired"] = datetime.datetime.now().isoformat()
 
