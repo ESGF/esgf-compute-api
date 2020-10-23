@@ -1,0 +1,674 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cwt.tests package &#8212; esgf-compute-api 2.3.6 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="cwt package" href="cwt.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="cwt-tests-package">
+<h1>cwt.tests package<a class="headerlink" href="#cwt-tests-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-cwt.tests.test_auth">
+<span id="cwt-tests-test-auth-module"></span><h2>cwt.tests.test_auth module<a class="headerlink" href="#module-cwt.tests.test_auth" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="cwt.tests.test_auth.temp_file">
+<code class="sig-prename descclassname">cwt.tests.test_auth.</code><code class="sig-name descname">temp_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_auth.temp_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_auth.test_authenticator">
+<code class="sig-prename descclassname">cwt.tests.test_auth.</code><code class="sig-name descname">test_authenticator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mocker</span></em>, <em class="sig-param"><span class="n">temp_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_auth.test_authenticator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_auth.test_custom_authenticator">
+<code class="sig-prename descclassname">cwt.tests.test_auth.</code><code class="sig-name descname">test_custom_authenticator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mocker</span></em>, <em class="sig-param"><span class="n">temp_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_auth.test_custom_authenticator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_dimension">
+<span id="cwt-tests-test-dimension-module"></span><h2>cwt.tests.test_dimension module<a class="headerlink" href="#module-cwt.tests.test_dimension" title="Permalink to this headline">¶</a></h2>
+<p>Unittest for Dimension class.</p>
+<dl class="py class">
+<dt id="cwt.tests.test_dimension.TestCRS">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_dimension.</code><code class="sig-name descname">TestCRS</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestCRS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestCRS.test_equal">
+<code class="sig-name descname">test_equal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestCRS.test_equal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestCRS.test_not_equal">
+<code class="sig-name descname">test_not_equal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestCRS.test_not_equal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cwt.tests.test_dimension.TestDimension">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_dimension.</code><code class="sig-name descname">TestDimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.setUp">
+<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_from_dict">
+<code class="sig-name descname">test_from_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_from_dict_invalid_step_format">
+<code class="sig-name descname">test_from_dict_invalid_step_format</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_from_dict_invalid_step_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_from_dict_missing_req">
+<code class="sig-name descname">test_from_dict_missing_req</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_from_dict_missing_req" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_from_dict_missing_step">
+<code class="sig-name descname">test_from_dict_missing_step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_from_dict_missing_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_from_single_index">
+<code class="sig-name descname">test_from_single_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_from_single_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_from_single_value">
+<code class="sig-name descname">test_from_single_value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_from_single_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_get_crs_value">
+<code class="sig-name descname">test_get_crs_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mock_conv</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_get_crs_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_get_crs_value_unknown">
+<code class="sig-name descname">test_get_crs_value_unknown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_get_crs_value_unknown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_int_or_float_correct_format">
+<code class="sig-name descname">test_int_or_float_correct_format</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_int_or_float_correct_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_int_or_float_float">
+<code class="sig-name descname">test_int_or_float_float</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_int_or_float_float" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_int_or_float_int">
+<code class="sig-name descname">test_int_or_float_int</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_int_or_float_int" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_int_or_float_not_supported">
+<code class="sig-name descname">test_int_or_float_not_supported</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_int_or_float_not_supported" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_dimension.TestDimension.test_to_dict">
+<code class="sig-name descname">test_to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_dimension.TestDimension.test_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_domain">
+<span id="cwt-tests-test-domain-module"></span><h2>cwt.tests.test_domain module<a class="headerlink" href="#module-cwt.tests.test_domain" title="Permalink to this headline">¶</a></h2>
+<p>Domain Unittest</p>
+<dl class="py class">
+<dt id="cwt.tests.test_domain.TestDomain">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_domain.</code><code class="sig-name descname">TestDomain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_domain.TestDomain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Domain Test Case</p>
+<dl class="py method">
+<dt id="cwt.tests.test_domain.TestDomain.test_add_dimension_indices">
+<code class="sig-name descname">test_add_dimension_indices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_domain.TestDomain.test_add_dimension_indices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_domain.TestDomain.test_add_dimension_timestamps">
+<code class="sig-name descname">test_add_dimension_timestamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_domain.TestDomain.test_add_dimension_timestamps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_domain.TestDomain.test_add_dimension_values">
+<code class="sig-name descname">test_add_dimension_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_domain.TestDomain.test_add_dimension_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_domain.TestDomain.test_empty_domain">
+<code class="sig-name descname">test_empty_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_domain.TestDomain.test_empty_domain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_domain.TestDomain.test_from_dict">
+<code class="sig-name descname">test_from_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_domain.TestDomain.test_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_domain.TestDomain.test_get_dimension">
+<code class="sig-name descname">test_get_dimension</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_domain.TestDomain.test_get_dimension" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_domain.TestDomain.test_parameterize">
+<code class="sig-name descname">test_parameterize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_domain.TestDomain.test_parameterize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_gridder">
+<span id="cwt-tests-test-gridder-module"></span><h2>cwt.tests.test_gridder module<a class="headerlink" href="#module-cwt.tests.test_gridder" title="Permalink to this headline">¶</a></h2>
+<p>Gridder Unittest</p>
+<dl class="py class">
+<dt id="cwt.tests.test_gridder.TestGridder">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_gridder.</code><code class="sig-name descname">TestGridder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_gridder.TestGridder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Gridder Test Case.</p>
+<dl class="py method">
+<dt id="cwt.tests.test_gridder.TestGridder.test_from_dict">
+<code class="sig-name descname">test_from_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_gridder.TestGridder.test_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_gridder.TestGridder.test_parameterize">
+<code class="sig-name descname">test_parameterize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_gridder.TestGridder.test_parameterize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_llnl_authenticator">
+<span id="cwt-tests-test-llnl-authenticator-module"></span><h2>cwt.tests.test_llnl_authenticator module<a class="headerlink" href="#module-cwt.tests.test_llnl_authenticator" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-cwt.tests.test_llnl_client">
+<span id="cwt-tests-test-llnl-client-module"></span><h2>cwt.tests.test_llnl_client module<a class="headerlink" href="#module-cwt.tests.test_llnl_client" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="cwt.tests.test_llnl_client.test_job_list_next">
+<code class="sig-prename descclassname">cwt.tests.test_llnl_client.</code><code class="sig-name descname">test_job_list_next</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mocker</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_llnl_client.test_job_list_next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_llnl_client.test_job_list_repr_html">
+<code class="sig-prename descclassname">cwt.tests.test_llnl_client.</code><code class="sig-name descname">test_job_list_repr_html</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_llnl_client.test_job_list_repr_html" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_llnl_client.test_job_repr_html">
+<code class="sig-prename descclassname">cwt.tests.test_llnl_client.</code><code class="sig-name descname">test_job_repr_html</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_llnl_client.test_job_repr_html" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_llnl_client.test_job_wrapper_format_message">
+<code class="sig-prename descclassname">cwt.tests.test_llnl_client.</code><code class="sig-name descname">test_job_wrapper_format_message</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_llnl_client.test_job_wrapper_format_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_llnl_client.test_job_wrapper_get_statuses">
+<code class="sig-prename descclassname">cwt.tests.test_llnl_client.</code><code class="sig-name descname">test_job_wrapper_get_statuses</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mocker</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_llnl_client.test_job_wrapper_get_statuses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_llnl_client.test_llnl_client_job_url">
+<code class="sig-prename descclassname">cwt.tests.test_llnl_client.</code><code class="sig-name descname">test_llnl_client_job_url</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mocker</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_llnl_client.test_llnl_client_job_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_llnl_client.test_llnl_client_jobs">
+<code class="sig-prename descclassname">cwt.tests.test_llnl_client.</code><code class="sig-name descname">test_llnl_client_jobs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mocker</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_llnl_client.test_llnl_client_jobs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_mask">
+<span id="cwt-tests-test-mask-module"></span><h2>cwt.tests.test_mask module<a class="headerlink" href="#module-cwt.tests.test_mask" title="Permalink to this headline">¶</a></h2>
+<p>Mask Unittest.</p>
+<dl class="py class">
+<dt id="cwt.tests.test_mask.TestMask">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_mask.</code><code class="sig-name descname">TestMask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_mask.TestMask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Mask Test Case.</p>
+<dl class="py method">
+<dt id="cwt.tests.test_mask.TestMask.parameterize">
+<code class="sig-name descname">parameterize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_mask.TestMask.parameterize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_mask.TestMask.test_from_dict">
+<code class="sig-name descname">test_from_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_mask.TestMask.test_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_named_parameter">
+<span id="cwt-tests-test-named-parameter-module"></span><h2>cwt.tests.test_named_parameter module<a class="headerlink" href="#module-cwt.tests.test_named_parameter" title="Permalink to this headline">¶</a></h2>
+<p>NamedParameter Unittest.</p>
+<dl class="py function">
+<dt id="cwt.tests.test_named_parameter.test_from_string">
+<code class="sig-prename descclassname">cwt.tests.test_named_parameter.</code><code class="sig-name descname">test_from_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_named_parameter.test_from_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_named_parameter.test_values">
+<code class="sig-prename descclassname">cwt.tests.test_named_parameter.</code><code class="sig-name descname">test_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_named_parameter.test_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_parameter">
+<span id="cwt-tests-test-parameter-module"></span><h2>cwt.tests.test_parameter module<a class="headerlink" href="#module-cwt.tests.test_parameter" title="Permalink to this headline">¶</a></h2>
+<p>Unittest for parameter class.</p>
+<dl class="py class">
+<dt id="cwt.tests.test_parameter.HelloWorld">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_parameter.</code><code class="sig-name descname">HelloWorld</code><a class="headerlink" href="#cwt.tests.test_parameter.HelloWorld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="cwt.html#cwt.parameter.Parameter" title="cwt.parameter.Parameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">cwt.parameter.Parameter</span></code></a></p>
+<p>Test class for overriding method.</p>
+<dl class="py method">
+<dt id="cwt.tests.test_parameter.HelloWorld.parameterize">
+<code class="sig-name descname">parameterize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_parameter.HelloWorld.parameterize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overridden parameterize method.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cwt.tests.test_parameter.TestParameter">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_parameter.</code><code class="sig-name descname">TestParameter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_parameter.TestParameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Test Case for Parameter class.</p>
+<dl class="py method">
+<dt id="cwt.tests.test_parameter.TestParameter.test_from_dict">
+<code class="sig-name descname">test_from_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_parameter.TestParameter.test_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test from dict.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_parameter.TestParameter.test_parameterize">
+<code class="sig-name descname">test_parameterize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_parameter.TestParameter.test_parameterize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Testing overriding parameterize method.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_process">
+<span id="cwt-tests-test-process-module"></span><h2>cwt.tests.test_process module<a class="headerlink" href="#module-cwt.tests.test_process" title="Permalink to this headline">¶</a></h2>
+<p>Process Unittest.</p>
+<dl class="py class">
+<dt id="cwt.tests.test_process.TestProcess">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_process.</code><code class="sig-name descname">TestProcess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Process Test Case.</p>
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.setUp">
+<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_add_parameters">
+<code class="sig-name descname">test_add_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_add_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_add_parameters_kwargs">
+<code class="sig-name descname">test_add_parameters_kwargs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_add_parameters_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_add_parameters_kwargs_list">
+<code class="sig-name descname">test_add_parameters_kwargs_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_add_parameters_kwargs_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_add_parameters_wrong_type_arg">
+<code class="sig-name descname">test_add_parameters_wrong_type_arg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_add_parameters_wrong_type_arg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_collect_ip_multipe_process">
+<code class="sig-name descname">test_collect_ip_multipe_process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_collect_ip_multipe_process" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_collect_ip_share_inputs">
+<code class="sig-name descname">test_collect_ip_share_inputs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_collect_ip_share_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_collect_ip_simple">
+<code class="sig-name descname">test_collect_ip_simple</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_collect_ip_simple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_get_parameter">
+<code class="sig-name descname">test_get_parameter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_get_parameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_get_parameter_missing_required">
+<code class="sig-name descname">test_get_parameter_missing_required</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_get_parameter_missing_required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_output">
+<code class="sig-name descname">test_output</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_output_not_succeeded">
+<code class="sig-name descname">test_output_not_succeeded</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_output_not_succeeded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_processing">
+<code class="sig-name descname">test_processing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_processing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_processing_accepted">
+<code class="sig-name descname">test_processing_accepted</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_processing_accepted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_processing_started">
+<code class="sig-name descname">test_processing_started</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_processing_started" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_status">
+<code class="sig-name descname">test_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_to_dict">
+<code class="sig-name descname">test_to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_wait">
+<code class="sig-name descname">test_wait</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mock_tracker</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_wait" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_process.TestProcess.test_wait_timeout">
+<code class="sig-name descname">test_wait_timeout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mock_tracker</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_process.TestProcess.test_wait_timeout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_utilities">
+<span id="cwt-tests-test-utilities-module"></span><h2>cwt.tests.test_utilities module<a class="headerlink" href="#module-cwt.tests.test_utilities" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="cwt.tests.test_utilities.test_data_inputs_to_doc">
+<code class="sig-prename descclassname">cwt.tests.test_utilities.</code><code class="sig-name descname">test_data_inputs_to_doc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_utilities.test_data_inputs_to_doc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.tests.test_utilities.test_doc_to_data_inputs">
+<code class="sig-prename descclassname">cwt.tests.test_utilities.</code><code class="sig-name descname">test_doc_to_data_inputs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_utilities.test_doc_to_data_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_variable">
+<span id="cwt-tests-test-variable-module"></span><h2>cwt.tests.test_variable module<a class="headerlink" href="#module-cwt.tests.test_variable" title="Permalink to this headline">¶</a></h2>
+<p>Variable Unittest.</p>
+<dl class="py class">
+<dt id="cwt.tests.test_variable.TestVariable">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_variable.</code><code class="sig-name descname">TestVariable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_variable.TestVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Variable Test Case.</p>
+<dl class="py method">
+<dt id="cwt.tests.test_variable.TestVariable.setUp">
+<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_variable.TestVariable.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_variable.TestVariable.test_from_dict">
+<code class="sig-name descname">test_from_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_variable.TestVariable.test_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_variable.TestVariable.test_to_dict">
+<code class="sig-name descname">test_to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_variable.TestVariable.test_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests.test_wps_client">
+<span id="cwt-tests-test-wps-client-module"></span><h2>cwt.tests.test_wps_client module<a class="headerlink" href="#module-cwt.tests.test_wps_client" title="Permalink to this headline">¶</a></h2>
+<p>WPS client unit tests</p>
+<dl class="py class">
+<dt id="cwt.tests.test_wps_client.TestWPSClient">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.tests.test_wps_client.</code><code class="sig-name descname">TestWPSClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.setUp">
+<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_describe_process">
+<code class="sig-name descname">test_describe_process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_describe_process" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_execute">
+<code class="sig-name descname">test_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_execute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_execute_exception">
+<code class="sig-name descname">test_execute_exception</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_execute_exception" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_execute_no_domain">
+<code class="sig-name descname">test_execute_no_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_execute_no_domain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_execute_no_inputs">
+<code class="sig-name descname">test_execute_no_inputs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_execute_no_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_get_capabilities">
+<code class="sig-name descname">test_get_capabilities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_get_capabilities" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_parse_data_inputs">
+<code class="sig-name descname">test_parse_data_inputs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_parse_data_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_prepare_data_inputs">
+<code class="sig-name descname">test_prepare_data_inputs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_prepare_data_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_prepare_data_inputs_override_domain">
+<code class="sig-name descname">test_prepare_data_inputs_override_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_prepare_data_inputs_override_domain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_prepare_data_inputs_preserve_process">
+<code class="sig-name descname">test_prepare_data_inputs_preserve_process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_prepare_data_inputs_preserve_process" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_processes">
+<code class="sig-name descname">test_processes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_processes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_processes_filter">
+<code class="sig-name descname">test_processes_filter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_processes_filter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cwt.tests.test_wps_client.TestWPSClient.test_processes_filter_error">
+<code class="sig-name descname">test_processes_filter_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.tests.test_wps_client.TestWPSClient.test_processes_filter_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cwt.tests">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-cwt.tests" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">esgf-compute-api</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="cwt.html">cwt package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="cwt.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">cwt.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_auth">cwt.tests.test_auth module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_dimension">cwt.tests.test_dimension module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_domain">cwt.tests.test_domain module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_gridder">cwt.tests.test_gridder module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_llnl_authenticator">cwt.tests.test_llnl_authenticator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_llnl_client">cwt.tests.test_llnl_client module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_mask">cwt.tests.test_mask module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_named_parameter">cwt.tests.test_named_parameter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_parameter">cwt.tests.test_parameter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_process">cwt.tests.test_process module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_utilities">cwt.tests.test_utilities module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_variable">cwt.tests.test_variable module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests.test_wps_client">cwt.tests.test_wps_client module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cwt.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.auth">cwt.auth module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.dimension">cwt.dimension module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.domain">cwt.domain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.errors">cwt.errors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.gridder">cwt.gridder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.llnl_client">cwt.llnl_client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.mask">cwt.mask module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.named_parameter">cwt.named_parameter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.parameter">cwt.parameter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.process">cwt.process module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.utilities">cwt.utilities module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.variable">cwt.variable module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt.wps_client">cwt.wps_client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.html#module-cwt">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="cwt.html">cwt package</a><ul>
+      <li>Previous: <a href="cwt.html" title="previous chapter">cwt package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Jason Boutte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/cwt.tests.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

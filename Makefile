@@ -38,6 +38,11 @@ else ifeq ($(TARGET),testresult)
 OUTPUT_ARG := --output type=local,dest=$(OUTPUT_PATH)
 endif
 
+build-docs:
+	@make -C docsrc/ html
+
+	@cp -a docsrc/build/html/. docs/
+
 dev-env:
 	conda create -n api-dev -c conda-forge pytest pytest-cov pytest-mock mock
 	conda activate api-dev
