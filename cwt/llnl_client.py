@@ -217,7 +217,7 @@ class JobListWrapper(object):
 
         if job is None:
             try:
-                job = self._get_url(parse.urljoin(self.server_url, DEFAULT_JOB_DETAIL_PATH))
+                job = self._get_url(parse.urljoin(self.url, DEFAULT_JOB_DETAIL_PATH).format(id))
             except Exception:
                 raise JobMissingError('Could not load job {}', id)
 
@@ -258,8 +258,7 @@ class LLNLClient(cwt.WPSClient):
             'limit': limit or 10,
         }
 
-        if self.auth is not None and isinstance(self.auth, auth.Authenticator):
-            self.auth.prepare(self.url, headers, params)
+        self._patch_authentication(headers, params)
 
         response = requests.get(job_url, headers=headers, params=params)
 

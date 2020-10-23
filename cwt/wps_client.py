@@ -68,7 +68,6 @@ class WPSClient(object):
             version: A string version of the WPS server.
             log: A boolean flag to enable logging.
             log_level: A string log level (default: INFO).
-            log_file: A string path for a log file.
             verify: A bool to enable/disable verifying a server's TLS certificate.
             cert: A str path to an SSL _client cert or a tuple as ('cert', 'key').
             headers: A dict that will be passed as HTTP headers.
@@ -117,11 +116,11 @@ class WPSClient(object):
                     self.cert, self.version, self.headers)
 
     def set_logging(self, kwargs):
-        env_log = bool(os.environ.get('log', False))
+        env_log = bool(os.environ.get('WPS_LOG', False))
 
-        env_log_level = os.environ.get('log_level', 'info')
+        env_log_level = os.environ.get('WPS_LOG_LEVEL', 'info')
 
-        self.log = kwargs.get('log', env_log)
+        self.log = bool(kwargs.get('log', env_log))
 
         log_level = kwargs.get('log_level', env_log_level).upper()
 
@@ -323,6 +322,13 @@ class WPSClient(object):
 
         return dict((x, json.dumps(y)) for x, y in data_inputs.items())
 
+    def _patch_authentication(self, headers, params):
+        # Prepare headers and GET params
+        if self.auth is not None and isinstance(self.auth, auth.Authenticator):
+            logger.info("Getting authentication")
+
+            self.auth.prepare(headers, params)
+
     def _execute_post(self, process, data_inputs, headers):
         variable = wps.ComplexDataInput(data_inputs['variable'], mimeType='application/json')
 
@@ -413,11 +419,7 @@ class WPSClient(object):
         elif not isinstance(inputs, (list, tuple)):
             inputs = [inputs, ]
 
-        # Prepare headers and GET params
-        if self.auth is not None and isinstance(self.auth, auth.Authenticator):
-            logger.info("Getting authentication")
-
-            self.auth.prepare(headers, params)
+        self._patch_authentication(headers, params)
 
         try:
             if isinstance(process, Process):
