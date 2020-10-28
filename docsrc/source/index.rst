@@ -1,18 +1,19 @@
-.. esgf-compute-api documentation master file, created by
-   sphinx-quickstart on Fri Oct 23 10:08:47 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. mdinclude:: ../../README.md
 
-Welcome to esgf-compute-api's documentation!
-============================================
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: User Guide
+
+   authentication
+   examples
 
 .. toctree::
    :maxdepth: 2
    :hidden:
+   :caption: Reference
 
-   cwt.rst
-
-.. mdinclude:: ../../README.md
+   api
 
 Indices and tables
 ==================

@@ -15,6 +15,9 @@ class MissingRequiredKeyError(CWTError):
 class WPSAuthError(CWTError):
     pass
 
+class JobMissingError(CWTError):
+    pass
+
 class WPSClientError(CWTError):
     def __init__(self, fmt, *args, **kwargs):
         super(WPSClientError, self).__init__(fmt, *args, **kwargs)

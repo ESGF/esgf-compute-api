@@ -13,14 +13,9 @@ logger = logging.getLogger(__name__)
 DEFAULT_JOB_PATH = '/api/jobs/'
 DEFAULT_JOB_DETAIL_PATH = '/api/jobs/{}/'
 
-class AuthenticationError(cwt.CWTError):
-    pass
-
-class JobStatusError(cwt.CWTError):
-    pass
-
-class JobMissingError(cwt.CWTError):
-    pass
+DEFAULT_BASE_URL = "https://aims2.llnl.gov"
+DEFAULT_KEYCLOAK_URL = "https://nimbus16.llnl.gov:8443/keycloak"
+DEFAULT_KEYCLOAK_REALM = "Nimbus"
 
 class JobWrapper(object):
     """ Represents a job.
@@ -219,7 +214,7 @@ class JobListWrapper(object):
             try:
                 job = self._get_url(parse.urljoin(self.url, DEFAULT_JOB_DETAIL_PATH).format(id))
             except Exception:
-                raise JobMissingError('Could not load job {}', id)
+                raise errors.JobMissingError('Could not load job {}', id)
 
         return JobWrapper(job, self.headers)
 
@@ -271,18 +266,28 @@ class LLNLClient(cwt.WPSClient):
 class LLNLKeyCloakAuthenticator(auth.KeyCloakAuthenticator):
     """LLNL KeyCloak authenticator.
     """
-    def __init__(self, wps_url, *args, **kwargs):
-        if wps_url[-1] == "/":
-            wps_url = wps_url[:-1]
+    def __init__(self, base_url=None, keycloak_url=None, realm=None, *args, **kwargs):
+        if base_url is None:
+            base_url = DEFAULT_BASE_URL
 
-        self._wps_url = wps_url
+        if keycloak_url is None:
+            keycloak_url = DEFAULT_KEYCLOAK_URL
 
-        super(LLNLKeyCloakAuthenticator, self).__init__(*args, **kwargs)
+        if realm is None:
+            realm = DEFAULT_KEYCLOAK_REALM
+
+        self._base_url = base_url.strip("/")
+
+        super(LLNLKeyCloakAuthenticator, self).__init__(
+            keycloak_url.strip("/"),
+            realm,
+            *args,
+            **kwargs)
 
     def register_client(self):
         logger.info("Registering client for client credentials flow")
 
-        client_reg_url = f"{self._wps_url}/auth/client_registration/"
+        client_reg_url = f"{self._base_url}/auth/client_registration/"
 
         response = requests.get(client_reg_url, allow_redirects=False)
 

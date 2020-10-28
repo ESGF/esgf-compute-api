@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cwt.auth module &#8212; esgf-compute-api 2.3.6 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="cwt.dimension module" href="cwt.dimension.html" />
+    <link rel="prev" title="cwt" href="cwt.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-cwt.auth">
+<span id="cwt-auth-module"></span><h1>cwt.auth module<a class="headerlink" href="#module-cwt.auth" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="cwt.auth.Authenticator">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.auth.</code><code class="sig-name descname">Authenticator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">config_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">store</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base authenticator.</p>
+<dl class="py method">
+<dt id="cwt.auth.Authenticator.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes a stored credential.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>key</strong> – Identifier of credentials to remove.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cwt.auth.Authenticator.prepare">
+<code class="sig-name descname">prepare</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">headers</span></em>, <em class="sig-param"><span class="n">query</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves credentials.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – Identifier of credentials.</p></li>
+<li><p><strong>headers</strong> – Dict to append authorization headers.</p></li>
+<li><p><strong>query</strong> – Dict to append authorization parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cwt.auth.Authenticator.read">
+<code class="sig-name descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads credentials.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dict storing credentials.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cwt.auth.Authenticator.write">
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes credentials.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – Dict mapping keys to credential store.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cwt.auth.BearerToken">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.auth.</code><code class="sig-name descname">BearerToken</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">token</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.BearerToken" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cwt.auth.Authenticator" title="cwt.auth.Authenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">cwt.auth.Authenticator</span></code></a></p>
+<p>Bearer token authenticator.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="cwt.auth.KeyCloakAuthenticator">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.auth.</code><code class="sig-name descname">KeyCloakAuthenticator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span></em>, <em class="sig-param"><span class="n">realm</span></em>, <em class="sig-param"><span class="n">client_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">client_secret</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pkce</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">redirect_port</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.KeyCloakAuthenticator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cwt.auth.Authenticator" title="cwt.auth.Authenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">cwt.auth.Authenticator</span></code></a></p>
+<p>KeyCloak authenticator.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="cwt.auth.ResponseListener">
+<em class="property">class </em><code class="sig-prename descclassname">cwt.auth.</code><code class="sig-name descname">ResponseListener</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">request</span></em>, <em class="sig-param"><span class="n">client_address</span></em>, <em class="sig-param"><span class="n">server</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.ResponseListener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">http.server.BaseHTTPRequestHandler</span></code></p>
+<p>Callback server for authorization request.</p>
+<dl class="py method">
+<dt id="cwt.auth.ResponseListener.do_GET">
+<code class="sig-name descname">do_GET</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.ResponseListener.do_GET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">esgf-compute-api</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="cwt.html">cwt</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cwt.auth module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.dimension.html">cwt.dimension module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.domain.html">cwt.domain module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.errors.html">cwt.errors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.process.html">cwt.process module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.variable.html">cwt.variable module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.wps_client.html">cwt.wps_client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cwt.llnl_client.html">cwt.llnl_client module</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="cwt.html">cwt</a><ul>
+      <li>Previous: <a href="cwt.html" title="previous chapter">cwt</a></li>
+      <li>Next: <a href="cwt.dimension.html" title="next chapter">cwt.dimension module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Jason Boutte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/cwt.auth.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -21,7 +21,6 @@ FROM $BASE_IMAGE as jupyterlab
 
 WORKDIR /
 
-COPY jupyter_notebook_config.json .
 COPY --from=builder /build/channel /channel 
 
 RUN conda install -c conda-forge -c file:///channel jupyterlab esgf-compute-api
@@ -30,7 +29,7 @@ EXPOSE 8080
 
 ENTRYPOINT ["/tini", "--"]
 
-CMD ["jupyter", "lab", "--ip", "0.0.0.0", "--port", "8080", "--allow-root", "--config", "./jupyter_notebook_config.json"]
+CMD ["jupyter", "lab", "--ip", "0.0.0.0", "--port", "8080", "--allow-root"]
 
 FROM scratch as testresult
 

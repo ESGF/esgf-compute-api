@@ -29,7 +29,7 @@ def test_custom_authenticator(mocker, temp_file):
 
             return store
 
-    client = CustomAuth()
+    client = CustomAuth(config_path=temp_file)
 
     headers = {}
     query = {}

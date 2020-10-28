@@ -97,14 +97,14 @@ class Authenticator(object):
 
         del data
 
-class BearerToken(Authenticator):
+class BearerTokenAuthenticator(Authenticator):
     """Bearer token authenticator.
     """
 
     def __init__(self, token=None, **kwargs):
         self._token = token
 
-        super(BearerToken, self).__init__(**kwargs)
+        super(BearerTokenAuthenticator, self).__init__(**kwargs)
 
     def _pre_prepare(self, headers, query, store):
         store["token"] = self._token

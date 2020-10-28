@@ -50,15 +50,6 @@ print(process.output)
 
 Jupyter Notebook cotnaining examples can be found [here](examples/)
 
-To run the notebooks install and run the following. The password is **esgf**.
-
-```bash
-conda create -n cwt -c conda-forge -c cdat esgf-compute-api cdms2 matplotlib jupyterlab
-conda activate
-
-jupyter lab --ip 0.0.0.0
-```
-
 ### Compatibility
 
 Compatibility document can be found on [here](docs/source/cwt.compat.rst)
