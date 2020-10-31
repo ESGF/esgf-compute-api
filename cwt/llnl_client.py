@@ -10,8 +10,8 @@ from cwt import errors
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_JOB_PATH = '/api/jobs/'
-DEFAULT_JOB_DETAIL_PATH = '/api/jobs/{}/'
+DEFAULT_JOB_PATH = '/api/job/'
+DEFAULT_JOB_DETAIL_PATH = '/api/job/{}/'
 
 DEFAULT_BASE_URL = "https://aims2.llnl.gov"
 DEFAULT_KEYCLOAK_URL = "https://nimbus16.llnl.gov:8443/keycloak"
