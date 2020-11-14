@@ -10,8 +10,8 @@ from cwt import errors
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_JOB_PATH = '/api/job/'
-DEFAULT_JOB_DETAIL_PATH = '/api/job/{}/'
+DEFAULT_JOB_PATH = '/wps/api/job/'
+DEFAULT_JOB_DETAIL_PATH = '/wps/api/job/{}/'
 
 DEFAULT_BASE_URL = "https://aims2.llnl.gov"
 DEFAULT_KEYCLOAK_URL = "https://nimbus16.llnl.gov:8443/keycloak"
@@ -287,7 +287,7 @@ class LLNLKeyCloakAuthenticator(auth.KeyCloakAuthenticator):
     def register_client(self):
         logger.info("Registering client for client credentials flow")
 
-        client_reg_url = f"{self._base_url}/auth/client_registration/"
+        client_reg_url = f"{self._base_url}/wps/auth/client_registration/"
 
         response = requests.get(client_reg_url, allow_redirects=False)
 
