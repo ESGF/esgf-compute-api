@@ -66,7 +66,7 @@ def test_llnl_client_jobs(mocker):
 
     jobs = client.jobs()
 
-    get.assert_called_with('https://wps.io/api/jobs/', headers={}, params={'limit': 10})
+    get.assert_called_with('https://wps.io/wps/api/job/', headers={}, params={'limit': 10})
 
     assert isinstance(jobs, llnl_client.JobListWrapper)
 
@@ -77,7 +77,7 @@ def test_llnl_client_job_url(mocker):
 
     url = client._job_url()
 
-    assert url == 'https://wps.io/api/jobs/'
+    assert url == 'https://wps.io/wps/api/job/'
 
 def test_job_list_next(mocker):
     mocker.patch('cwt.llnl_client.requests')

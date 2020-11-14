@@ -2,26 +2,19 @@ ARG BASE_IMAGE
 FROM $BASE_IMAGE as builder
 
 RUN conda update -n base -c defaults conda && \
-      conda install -c conda-forge conda-smithy conda-build anaconda-client
+      conda install -c conda-forge conda-build anaconda-client
 
 WORKDIR /build
 
-RUN conda smithy ci-skeleton esgf-compute-api
+COPY feedstock/ feedstock/
+COPY cwt/ feedstock/recipe/cwt/
+COPY setup.py feedstock/recipe/setup.py
 
-COPY meta.yaml recipe/
-COPY cwt/ recipe/cwt
-COPY setup.py recipe/
-
-RUN conda config --set ssl_verify false && \
-      conda smithy rerender && \
-      conda build recipe/ -m .ci_support/linux_64_.yaml -c conda-forge --output-folder channel/ && \
+RUN conda build feedstock/recipe \
+      -m feedstock/.ci_support/linux_64_.yaml \
+      -c conda-forge \
+      --output-folder channel/ && \
       conda index channel/
-
-FROM $BASE_IMAGE as docs
-
-RUN conda create -y -c conda-forge m2r2 sphinx recommonmark && \
-      make -C dodsrc/ html && \
-      cp -a dodsrc/build/html/. docs/
 
 FROM scratch as testresult
 

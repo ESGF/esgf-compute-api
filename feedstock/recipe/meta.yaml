@@ -1,0 +1,46 @@
+{% set name = "esgf-compute-api" %}
+{% set version = "2.3.6" %}
+{% set build_number = environ.get('GIT_DESCRIBE_NUMBER', '0') %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: {{ environ.get('FEEDSTOCK_ROOT', '.') }}
+
+build:
+  noarch: python
+  number: {{ build_number }}
+  string: {{ [build_number, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', '')]|join('_') }}
+  script: "{{ PYTHON }} -m pip install . -vv"
+
+requirements:
+  host:
+    - python
+    - pip
+  run:
+    - python
+    - owslib
+    - oauthlib
+
+test:
+  imports:
+    - cwt
+
+  requires:
+    - mock
+    - pytest
+    - pytest-cov
+    - pytest-mock
+
+  files:
+    - cwt/tests
+
+  commands:
+    - ls -la
+    - pytest -vvv --cov=cwt --cov-report=xml:/output/coverage.xml --junit-xml=/output/unittest.xml 
+
+about:
+  home: https://github.com/ESGF/esgf-compute-api
+  summary: End-user API for ESGF compute services

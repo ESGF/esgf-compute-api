@@ -15,15 +15,6 @@ BUILDKIT_ARGS = /usr/bin/buildctl-daemonless.sh \
 								$(CACHE_ARG) $(OUTPUT_ARG) $(EXTRA_ARG)
 
 ifeq ($(shell which buildctl-daemonless.sh),)
-BUILD = docker run \
-				-it --rm \
-				--privileged \
-				-v $(PWD):/build -w /build \
-				-v $(CACHE_PATH):$(CACHE_PATH) \
-				-v $(OUTPUT_PATH):$(OUTPUT_PATH) \
-				--entrypoint=/bin/sh \
-				moby/buildkit:master \
-				$(BUILDKIT_ARGS)
 else
 BUILD = $(SHELL) $(BUILDKIT_ARGS)
 endif
@@ -68,8 +59,20 @@ build-docs:
 
 	@cp -a docsrc/build/html/. docs/
 
-.PHONY: build
-build:
-	$(BUILD)
+.PHONY: docker-build
+docker-build:
+	docker run \
+		-it --rm \
+		--privileged \
+		-v $(PWD):/build -w /build \
+		-v $(CACHE_PATH):$(CACHE_PATH) \
+		-v $(OUTPUT_PATH):$(OUTPUT_PATH) \
+		--entrypoint=/bin/sh \
+		moby/buildkit:master \
+		-c "apk add make && make build"
 
 	$(POST_CMD)
+
+.PHONY: build
+build:
+	$(BUILDKIT_ARGS)
