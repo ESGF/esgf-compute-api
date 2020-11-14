@@ -17,19 +17,11 @@ RUN conda config --set ssl_verify false && \
       conda build recipe/ -m .ci_support/linux_64_.yaml -c conda-forge --output-folder channel/ && \
       conda index channel/
 
-FROM $BASE_IMAGE as jupyterlab
+FROM $BASE_IMAGE as docs
 
-WORKDIR /
-
-COPY --from=builder /build/channel /channel 
-
-RUN conda install -c conda-forge -c file:///channel jupyterlab esgf-compute-api
-
-EXPOSE 8080
-
-ENTRYPOINT ["/tini", "--"]
-
-CMD ["jupyter", "lab", "--ip", "0.0.0.0", "--port", "8080", "--allow-root"]
+RUN conda create -y -c conda-forge m2r2 sphinx recommonmark && \
+      make -C dodsrc/ html && \
+      cp -a dodsrc/build/html/. docs/
 
 FROM scratch as testresult
 
