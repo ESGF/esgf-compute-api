@@ -22,7 +22,7 @@ copyright = '2020, Jason Boutte'
 author = 'Jason Boutte'
 
 # The full version, including alpha/beta/rc tags
-release = '2.3.8'
+release = '2.3.7'
 
 
 # -- General configuration ---------------------------------------------------
