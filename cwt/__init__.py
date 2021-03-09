@@ -16,6 +16,8 @@ from cwt.dimension import INDICES  # noqa
 from cwt.dimension import VALUES  # noqa
 from cwt.dimension import CRS  # noqa
 from cwt._version import __version__
+from cwt.llnl_client import LLNLClient # noqa
+from cwt.llnl_client import LLNLKeyCloakAuthenticator # noqa
 
 import warnings
 
