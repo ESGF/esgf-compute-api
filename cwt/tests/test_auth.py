@@ -5,46 +5,58 @@ import os
 
 from cwt import auth
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def temp_file():
-    yield "cwt.json"
+    if os.path.exists("cwt.txt"):
+        os.remove("cwt.txt")
 
-    if os.path.exists("cwt.json"):
-        os.remove("cwt.json")
+    try:
+        yield "cwt.txt"
+    finally:
+        if os.path.exists("cwt.txt"):
+            os.remove("cwt.txt")
 
-def test_token_authenticator(mocker, temp_file):
-    token = auth.TokenAuthenticator('test_token', config_path=temp_file)
-
-    headers = {}
-    params = {}
-
-    dumps = mocker.spy(json, 'dumps')
-
-    token.prepare("key1", headers, params)
-
-    assert 'Authorization' not in params
-    assert 'Authorization' in headers
-    assert headers['Authorization'] == 'Bearer test_token'
-
-    token.prepare("key1", headers, params)
-
-    token = auth.TokenAuthenticator('test_token', config_path=temp_file)
-
-    token.clear()
-
-    assert token.data == {}
-
-def test_authenticator(mocker, temp_file):
+def test_custom_authenticator(mocker, temp_file):
     class CustomAuth(auth.Authenticator):
-        def _pre_prepare(self):
-            return {"key1": "value1"}, {"key2": "value2"}
+        def _pre_prepare(self, headers, query, store):
+            headers["test"] = "header"
 
-    custom = CustomAuth(config_path=temp_file)
+            query["test"] = "query"
+
+            store["test"] = {
+                "data": "test",
+            }
+
+            return store
+
+    client = CustomAuth(config_path=temp_file)
 
     headers = {}
     query = {}
 
-    custom.prepare("key1", headers, query)
+    client.prepare(headers, query)
 
-    assert headers == {"key1": "value1"}
-    assert query == {"key2": "value2"}
+    assert headers == {"test": "header"}
+    assert query == {"test": "query"}
+
+    data = client.read()
+
+    assert data == {"default": {"test": { "data": "test"}}}
+
+
+def test_authenticator(mocker, temp_file):
+    client = auth.Authenticator(key="test", config_path=temp_file)
+
+    assert client.config_path == "cwt.txt"
+
+    client.write({"test": "data1"})
+
+    data = client.read()
+
+    assert data == {"test": "data1"}
+
+    client.clear()
+
+    data = client.read()
+
+    assert data == {}

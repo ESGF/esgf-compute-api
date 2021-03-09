@@ -11,38 +11,6 @@ import mock
 import cwt
 
 
-def test_compute_token_env_over_kwarg(mocker):
-    mocker.patch('owslib.wps.WebProcessingService')
-
-    mocker.patch.dict(os.environ, {
-        'COMPUTE_TOKEN': 'test'
-    })
-
-    client = cwt.WPSClient('https://127.0.0.1/wps', compute_token='test2')
-
-    assert isinstance(client.auth, cwt.auth.TokenAuthenticator)
-    assert client.auth.token == 'test'
-
-
-def test_compute_token_env(mocker):
-    mocker.patch('owslib.wps.WebProcessingService')
-    mocker.patch.dict(os.environ, {
-        'COMPUTE_TOKEN': 'test'
-    })
-
-    client = cwt.WPSClient('https://127.0.0.1/wps')
-
-    assert isinstance(client.auth, cwt.auth.TokenAuthenticator)
-    assert client.auth.token == 'test'
-
-
-def test_compute_token(mocker):
-    mocker.patch('owslib.wps.WebProcessingService')
-    client = cwt.WPSClient('https://127.0.0.1/wps', compute_token='test')
-
-    assert isinstance(client.auth, cwt.auth.TokenAuthenticator)
-    assert client.auth.token == 'test'
-
 class TestWPSClient(unittest.TestCase):
 
     def setUp(self):

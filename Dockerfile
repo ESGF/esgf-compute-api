@@ -2,35 +2,19 @@ ARG BASE_IMAGE
 FROM $BASE_IMAGE as builder
 
 RUN conda update -n base -c defaults conda && \
-      conda install -c conda-forge conda-smithy conda-build anaconda-client
+      conda install -c conda-forge conda-build anaconda-client
 
 WORKDIR /build
 
-RUN conda smithy ci-skeleton esgf-compute-api
+COPY feedstock/ feedstock/
+COPY cwt/ feedstock/recipe/cwt/
+COPY setup.py feedstock/recipe/setup.py
 
-COPY meta.yaml recipe/
-COPY cwt/ recipe/cwt
-COPY setup.py recipe/
-
-RUN conda config --set ssl_verify false && \
-      conda smithy rerender && \
-      conda build recipe/ -m .ci_support/linux_64_.yaml -c conda-forge --output-folder channel/ && \
+RUN conda build feedstock/recipe \
+      -m feedstock/.ci_support/linux_64_.yaml \
+      -c conda-forge \
+      --output-folder channel/ && \
       conda index channel/
-
-FROM $BASE_IMAGE as jupyterlab
-
-WORKDIR /
-
-COPY jupyter_notebook_config.json .
-COPY --from=builder /build/channel /channel 
-
-RUN conda install -c conda-forge -c file:///channel jupyterlab esgf-compute-api
-
-EXPOSE 8080
-
-ENTRYPOINT ["/tini", "--"]
-
-CMD ["jupyter", "lab", "--ip", "0.0.0.0", "--port", "8080", "--allow-root", "--config", "./jupyter_notebook_config.json"]
 
 FROM scratch as testresult
 

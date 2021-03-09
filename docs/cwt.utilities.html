@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cwt.utilities module &#8212; esgf-compute-api 2.3.6 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-cwt.utilities">
+<span id="cwt-utilities-module"></span><h1>cwt.utilities module<a class="headerlink" href="#module-cwt.utilities" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="cwt.utilities.command_convert">
+<code class="sig-prename descclassname">cwt.utilities.</code><code class="sig-name descname">command_convert</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.utilities.command_convert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.utilities.command_data_inputs_to_document">
+<code class="sig-prename descclassname">cwt.utilities.</code><code class="sig-name descname">command_data_inputs_to_document</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.utilities.command_data_inputs_to_document" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.utilities.command_document_to_data_inputs">
+<code class="sig-prename descclassname">cwt.utilities.</code><code class="sig-name descname">command_document_to_data_inputs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.utilities.command_document_to_data_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.utilities.data_inputs_to_document">
+<code class="sig-prename descclassname">cwt.utilities.</code><code class="sig-name descname">data_inputs_to_document</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">identifier</span></em>, <em class="sig-param"><span class="n">data_inputs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.utilities.data_inputs_to_document" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.utilities.document_to_data_inputs">
+<code class="sig-prename descclassname">cwt.utilities.</code><code class="sig-name descname">document_to_data_inputs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">document</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.utilities.document_to_data_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.utilities.patch_ns">
+<code class="sig-prename descclassname">cwt.utilities.</code><code class="sig-name descname">patch_ns</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">ns</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.utilities.patch_ns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.utilities.prepare_data_inputs">
+<code class="sig-prename descclassname">cwt.utilities.</code><code class="sig-name descname">prepare_data_inputs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">process</span></em>, <em class="sig-param"><span class="n">inputs</span></em>, <em class="sig-param"><span class="n">domain</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.utilities.prepare_data_inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preparse a process inputs for the data_inputs string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>process</strong> – A object of type Process to be executed.</p></li>
+<li><p><strong>inputs</strong> – A list of Variables/Operations.</p></li>
+<li><p><strong>domain</strong> – A Domain object.</p></li>
+<li><p><strong>kwargs</strong> – A dict of addiontal named_parameters or k=v pairs.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary containing the operations, domains and variables
+associated with the process.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cwt.utilities.process_to_data_inputs">
+<code class="sig-prename descclassname">cwt.utilities.</code><code class="sig-name descname">process_to_data_inputs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">process</span></em>, <em class="sig-param"><span class="n">inputs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">domain</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.utilities.process_to_data_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cwt.utilities.process_to_document">
+<code class="sig-prename descclassname">cwt.utilities.</code><code class="sig-name descname">process_to_document</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">process</span></em>, <em class="sig-param"><span class="n">inputs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">domain</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.utilities.process_to_document" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">esgf-compute-api</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cwt.html">cwt</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Jason Boutte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/cwt.utilities.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

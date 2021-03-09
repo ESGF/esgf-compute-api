@@ -1,0 +1,778 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>API Reference &#8212; esgf-compute-api 2.3.6 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Examples" href="examples.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="cwt-auth">
+<h2>cwt.auth<a class="headerlink" href="#cwt-auth" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.auth.Authenticator" title="cwt.auth.Authenticator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auth.Authenticator</span></code></a>([key,&nbsp;config_path,&nbsp;store])</td>
+<td>Base authenticator.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cwt.auth.BearerTokenAuthenticator" title="cwt.auth.BearerTokenAuthenticator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auth.BearerTokenAuthenticator</span></code></a>([token])</td>
+<td>Bearer token authenticator.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.auth.KeyCloakAuthenticator" title="cwt.auth.KeyCloakAuthenticator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auth.KeyCloakAuthenticator</span></code></a>(url,&nbsp;realm[,&nbsp;…])</td>
+<td>KeyCloak authenticator.</td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-cwt.auth"></span><dl class="class">
+<dt id="cwt.auth.Authenticator">
+<em class="property">class </em><code class="descclassname">cwt.auth.</code><code class="descname">Authenticator</code><span class="sig-paren">(</span><em>key=None</em>, <em>config_path=None</em>, <em>store=True</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base authenticator.</p>
+<dl class="method">
+<dt id="cwt.auth.Authenticator.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes a stored credential.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> – Identifier of credentials to remove.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.auth.Authenticator.prepare">
+<code class="descname">prepare</code><span class="sig-paren">(</span><em>headers</em>, <em>query</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves credentials.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key</strong> – Identifier of credentials.</li>
+<li><strong>headers</strong> – Dict to append authorization headers.</li>
+<li><strong>query</strong> – Dict to append authorization parameters.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.auth.Authenticator.read">
+<code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads credentials.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A dict storing credentials.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.auth.Authenticator.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.Authenticator.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes credentials.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> – Dict mapping keys to credential store.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cwt.auth.BearerTokenAuthenticator">
+<em class="property">class </em><code class="descclassname">cwt.auth.</code><code class="descname">BearerTokenAuthenticator</code><span class="sig-paren">(</span><em>token=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.BearerTokenAuthenticator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bearer token authenticator.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cwt.auth.KeyCloakAuthenticator">
+<em class="property">class </em><code class="descclassname">cwt.auth.</code><code class="descname">KeyCloakAuthenticator</code><span class="sig-paren">(</span><em>url</em>, <em>realm</em>, <em>client_id=None</em>, <em>client_secret=None</em>, <em>pkce=False</em>, <em>redirect_port=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.auth.KeyCloakAuthenticator" title="Permalink to this definition">¶</a></dt>
+<dd><p>KeyCloak authenticator.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="cwt-dimension">
+<h2>cwt.dimension<a class="headerlink" href="#cwt-dimension" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.dimension.CRS" title="cwt.dimension.CRS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dimension.CRS</span></code></a>(name)</td>
+<td>Coordinate Reference System (CRS).</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cwt.dimension.Dimension" title="cwt.dimension.Dimension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dimension.Dimension</span></code></a>(name,&nbsp;start,&nbsp;end[,&nbsp;crs,&nbsp;…])</td>
+<td>Dimension.</td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-cwt.dimension"></span><p>Dimension module.</p>
+<dl class="class">
+<dt id="cwt.dimension.CRS">
+<em class="property">class </em><code class="descclassname">cwt.dimension.</code><code class="descname">CRS</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.dimension.CRS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coordinate Reference System (CRS).</p>
+<p>Provides information about the CRS of a dimensions values.</p>
+<dl class="attribute">
+<dt id="cwt.dimension.CRS.name">
+<code class="descname">name</code><a class="headerlink" href="#cwt.dimension.CRS.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A String name of the CRS.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.dimension.CRS.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.dimension.CRS.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary representation.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cwt.dimension.Dimension">
+<em class="property">class </em><code class="descclassname">cwt.dimension.</code><code class="descname">Dimension</code><span class="sig-paren">(</span><em>name</em>, <em>start</em>, <em>end</em>, <em>crs=CRS(name='values')</em>, <em>step=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.dimension.Dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dimension.</p>
+<p>Describes a dimension of a plane. This dimension can be constrained
+between two points and the length between each step can be specified or
+it will default to 1.</p>
+<p>There are three pre-defined CRS’s; INDICES, VALUES and TIMESTAMPS.</p>
+<p>A dimension starting at 90, ending at -90 with step width of 0.5 degrees.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lat</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">Dimension</span><span class="o">.</span><span class="n">VALUES</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A dimension representing a single point at 90.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lat</span> <span class="o">=</span> <span class="n">Dimension</span><span class="o">.</span><span class="n">from_single_value</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A dimension with a custom name.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lat</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">Dimension</span><span class="o">.</span><span class="n">VALUES</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="cwt.dimension.Dimension.start">
+<code class="descname">start</code><a class="headerlink" href="#cwt.dimension.Dimension.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>A (str, int, float) of the starting point.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.dimension.Dimension.end">
+<code class="descname">end</code><a class="headerlink" href="#cwt.dimension.Dimension.end" title="Permalink to this definition">¶</a></dt>
+<dd><p>A (str, int, float) of the ending point.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.dimension.Dimension.crs">
+<code class="descname">crs</code><a class="headerlink" href="#cwt.dimension.Dimension.crs" title="Permalink to this definition">¶</a></dt>
+<dd><p>The CRS of the start and end points.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.dimension.Dimension.step">
+<code class="descname">step</code><a class="headerlink" href="#cwt.dimension.Dimension.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>The distance between each step between the start and end points.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cwt.dimension.Dimension.from_dict">
+<em class="property">classmethod </em><code class="descname">from_dict</code><span class="sig-paren">(</span><em>data</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.dimension.Dimension.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create dimension from dict representation.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cwt.dimension.Dimension.from_single_index">
+<em class="property">classmethod </em><code class="descname">from_single_index</code><span class="sig-paren">(</span><em>name</em>, <em>value</em>, <em>step=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.dimension.Dimension.from_single_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates dimension from single index.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cwt.dimension.Dimension.from_single_value">
+<em class="property">classmethod </em><code class="descname">from_single_value</code><span class="sig-paren">(</span><em>name</em>, <em>value</em>, <em>step=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.dimension.Dimension.from_single_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates dimension from single value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.dimension.Dimension.parameterize">
+<code class="descname">parameterize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.dimension.Dimension.parameterize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameterizes object for get queries.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="cwt-domain">
+<h2>cwt.domain<a class="headerlink" href="#cwt-domain" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.domain.Domain" title="cwt.domain.Domain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">domain.Domain</span></code></a>(*args[,&nbsp;mask,&nbsp;name])</td>
+<td>Domain.</td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-cwt.domain"></span><p>Domain Module.</p>
+<dl class="class">
+<dt id="cwt.domain.Domain">
+<em class="property">class </em><code class="descclassname">cwt.domain.</code><code class="descname">Domain</code><span class="sig-paren">(</span><em>*args</em>, <em>mask=None</em>, <em>name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.domain.Domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Domain.</p>
+<p>A domain consist of one or more dimensions. A mask can be associated with
+a domain, further construing the domain being represented.</p>
+<p>Simple domain.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">domain</span> <span class="o">=</span> <span class="n">Domain</span><span class="p">([</span><span class="n">Dimesnion</span><span class="p">(</span><span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">Dimension</span><span class="o">.</span><span class="n">values</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>Domain with a mask.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">domain</span> <span class="o">=</span> <span class="n">Domain</span><span class="p">(</span>
+<span class="go">        Dimension(&#39;lat&#39;, 90, -90, Dimension.values, name=&#39;lat&#39;),</span>
+<span class="go">        Dimension(&#39;lon&#39;, 0, 90, Dimension.values, name=&#39;lon&#39;),</span>
+<span class="go">        mask=Mask(&#39;http://thredds/clt.nc&#39;, &#39;clt&#39;, &#39;var_data&lt;0.5&#39;))</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="cwt.domain.Domain.dimensions">
+<code class="descname">dimensions</code><a class="headerlink" href="#cwt.domain.Domain.dimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of Dimensions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.domain.Domain.mask">
+<code class="descname">mask</code><a class="headerlink" href="#cwt.domain.Domain.mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mask to be applied to the domain.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.domain.Domain.name">
+<code class="descname">name</code><a class="headerlink" href="#cwt.domain.Domain.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the domain.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cwt.domain.Domain.from_dict">
+<em class="property">classmethod </em><code class="descname">from_dict</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.domain.Domain.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates domain from dict reperesentation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.domain.Domain.parameterize">
+<code class="descname">parameterize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.domain.Domain.parameterize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns parameter for GET request.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.domain.Domain.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.domain.Domain.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary representation.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="cwt-errors">
+<h2>cwt.errors<a class="headerlink" href="#cwt-errors" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.errors.CWTError" title="cwt.errors.CWTError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">errors.CWTError</span></code></a>(fmt,&nbsp;*args,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cwt.errors.MissingRequiredKeyError" title="cwt.errors.MissingRequiredKeyError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">errors.MissingRequiredKeyError</span></code></a>(key)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.errors.WPSAuthError" title="cwt.errors.WPSAuthError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">errors.WPSAuthError</span></code></a>(fmt,&nbsp;*args,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cwt.errors.WPSClientError" title="cwt.errors.WPSClientError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">errors.WPSClientError</span></code></a>(fmt,&nbsp;*args,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.errors.WPSServerError" title="cwt.errors.WPSServerError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">errors.WPSServerError</span></code></a>(fmt,&nbsp;*args,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cwt.errors.WPSTimeoutError" title="cwt.errors.WPSTimeoutError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">errors.WPSTimeoutError</span></code></a>(elapsed)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-cwt.errors"></span><dl class="exception">
+<dt id="cwt.errors.CWTError">
+<em class="property">exception </em><code class="descclassname">cwt.errors.</code><code class="descname">CWTError</code><span class="sig-paren">(</span><em>fmt</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.errors.CWTError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="cwt.errors.JobMissingError">
+<em class="property">exception </em><code class="descclassname">cwt.errors.</code><code class="descname">JobMissingError</code><span class="sig-paren">(</span><em>fmt</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.errors.JobMissingError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="cwt.errors.MissingRequiredKeyError">
+<em class="property">exception </em><code class="descclassname">cwt.errors.</code><code class="descname">MissingRequiredKeyError</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.errors.MissingRequiredKeyError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="cwt.errors.WPSAuthError">
+<em class="property">exception </em><code class="descclassname">cwt.errors.</code><code class="descname">WPSAuthError</code><span class="sig-paren">(</span><em>fmt</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.errors.WPSAuthError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="cwt.errors.WPSClientError">
+<em class="property">exception </em><code class="descclassname">cwt.errors.</code><code class="descname">WPSClientError</code><span class="sig-paren">(</span><em>fmt</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.errors.WPSClientError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="cwt.errors.WPSServerError">
+<em class="property">exception </em><code class="descclassname">cwt.errors.</code><code class="descname">WPSServerError</code><span class="sig-paren">(</span><em>fmt</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.errors.WPSServerError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="cwt.errors.WPSTimeoutError">
+<em class="property">exception </em><code class="descclassname">cwt.errors.</code><code class="descname">WPSTimeoutError</code><span class="sig-paren">(</span><em>elapsed</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.errors.WPSTimeoutError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="cwt-process">
+<h2>cwt.process<a class="headerlink" href="#cwt-process" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.process.Process" title="cwt.process.Process"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process.Process</span></code></a>(**kwargs)</td>
+<td>A WPS Process</td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-cwt.process"></span><p>Process Module.</p>
+<dl class="class">
+<dt id="cwt.process.Process">
+<em class="property">class </em><code class="descclassname">cwt.process.</code><code class="descname">Process</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.process.Process" title="Permalink to this definition">¶</a></dt>
+<dd><p>A WPS Process</p>
+<p>Wraps a WPS Process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>process</strong> – A DescribeProcessResponse object.</li>
+<li><strong>name</strong> – A string name for the process to be used as the input of another process.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cwt.process.Process.add_inputs">
+<code class="descname">add_inputs</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.process.Process.add_inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the inputs of the Process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> – A list of Process/Variable objects.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.process.Process.add_parameters">
+<code class="descname">add_parameters</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.process.Process.add_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a parameter.</p>
+<p>kwargs can contain two formats.</p>
+<p>k=v where v is a NamedParameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>args</strong> – A list of NamedParameter objects.</li>
+<li><strong>kwargs</strong> – A dict of NamedParameter objects or k=v where k is the name and v is string.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.process.Process.collect_input_processes">
+<code class="descname">collect_input_processes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.process.Process.collect_input_processes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Aggregates the process trees inputs.</p>
+<p>A DFS to collect the trees inputs into two lists, Operations and Variables.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A two lists, one of Processes and the other of Variables.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cwt.process.Process.from_dict">
+<em class="property">classmethod </em><code class="descname">from_dict</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.process.Process.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempts to load a process from a dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.process.Process.get_parameter">
+<code class="descname">get_parameter</code><span class="sig-paren">(</span><em>name</em>, <em>required=False</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.process.Process.get_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves a parameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> – A string name of the parameter.</li>
+<li><strong>required</strong> – A boolean flag denoting whether the parameter is required.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A NamedParameter object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – The parameter is required and not present.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.process.Process.output">
+<code class="descname">output</code><a class="headerlink" href="#cwt.process.Process.output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the output of the process if done.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.process.Process.parameterize">
+<code class="descname">parameterize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.process.Process.parameterize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a dictionary representation of the Process.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.process.Process.processing">
+<code class="descname">processing</code><a class="headerlink" href="#cwt.process.Process.processing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the process is still working.</p>
+<p>This will update the wrapper with the latest status and return
+True if the process is waiting or running.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A boolean denoting whether the process is still working.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.process.Process.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.process.Process.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary representation.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="cwt-variable">
+<h2>cwt.variable<a class="headerlink" href="#cwt-variable" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.variable.Variable" title="cwt.variable.Variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">variable.Variable</span></code></a>(uri,&nbsp;var_name,&nbsp;**kwargs)</td>
+<td>Variable.</td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-cwt.variable"></span><p>Variable module.</p>
+<dl class="class">
+<dt id="cwt.variable.Variable">
+<em class="property">class </em><code class="descclassname">cwt.variable.</code><code class="descname">Variable</code><span class="sig-paren">(</span><em>uri</em>, <em>var_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.variable.Variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable.</p>
+<p>Describes a variable to be used by an Operation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tas</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="s1">&#39;http://thredds/tas.nc&#39;</span><span class="p">,</span> <span class="s1">&#39;tas&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;tas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="cwt.variable.Variable.uri">
+<code class="descname">uri</code><a class="headerlink" href="#cwt.variable.Variable.uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>A String URI for the file containing the variable data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.variable.Variable.var_name">
+<code class="descname">var_name</code><a class="headerlink" href="#cwt.variable.Variable.var_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A String name of the variable.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.variable.Variable.domains">
+<code class="descname">domains</code><a class="headerlink" href="#cwt.variable.Variable.domains" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of Domain objects to constrain the variable data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.variable.Variable.mime_type">
+<code class="descname">mime_type</code><a class="headerlink" href="#cwt.variable.Variable.mime_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A String name of the URI mime-type.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cwt.variable.Variable.name">
+<code class="descname">name</code><a class="headerlink" href="#cwt.variable.Variable.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Custom name of the Variable.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cwt.variable.Variable.from_dict">
+<em class="property">classmethod </em><code class="descname">from_dict</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.variable.Variable.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create variable from dict representation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.variable.Variable.parameterize">
+<code class="descname">parameterize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.variable.Variable.parameterize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameterize variable for GET request.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.variable.Variable.resolve_domains">
+<code class="descname">resolve_domains</code><span class="sig-paren">(</span><em>domains</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.variable.Variable.resolve_domains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolves the domain identifiers to objects.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="cwt-llnl-client">
+<h2>cwt.llnl_client<a class="headerlink" href="#cwt-llnl-client" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.llnl_client.LLNLClient" title="cwt.llnl_client.LLNLClient"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llnl_client.LLNLClient</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>LLNLClient.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cwt.llnl_client.LLNLKeyCloakAuthenticator" title="cwt.llnl_client.LLNLKeyCloakAuthenticator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llnl_client.LLNLKeyCloakAuthenticator</span></code></a>([…])</td>
+<td>LLNL KeyCloak authenticator.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#cwt.llnl_client.JobWrapper" title="cwt.llnl_client.JobWrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llnl_client.JobWrapper</span></code></a>(data[,&nbsp;headers])</td>
+<td>Represents a job.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#cwt.llnl_client.JobListWrapper" title="cwt.llnl_client.JobListWrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llnl_client.JobListWrapper</span></code></a>(url,&nbsp;data[,&nbsp;headers])</td>
+<td>Represents a list of jobs.</td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-cwt.llnl_client"></span><dl class="class">
+<dt id="cwt.llnl_client.JobListWrapper">
+<em class="property">class </em><code class="descclassname">cwt.llnl_client.</code><code class="descname">JobListWrapper</code><span class="sig-paren">(</span><em>url</em>, <em>data</em>, <em>headers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.llnl_client.JobListWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a list of jobs.</p>
+<dl class="attribute">
+<dt id="cwt.llnl_client.JobListWrapper.current">
+<code class="descname">current</code><a class="headerlink" href="#cwt.llnl_client.JobListWrapper.current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns current page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.llnl_client.JobListWrapper.next">
+<code class="descname">next</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.llnl_client.JobListWrapper.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the next page of results</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cwt.llnl_client.JobListWrapper.previous">
+<code class="descname">previous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cwt.llnl_client.JobListWrapper.previous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the previous page of results</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cwt.llnl_client.JobWrapper">
+<em class="property">class </em><code class="descclassname">cwt.llnl_client.</code><code class="descname">JobWrapper</code><span class="sig-paren">(</span><em>data</em>, <em>headers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.llnl_client.JobWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a job.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cwt.llnl_client.LLNLClient">
+<em class="property">class </em><code class="descclassname">cwt.llnl_client.</code><code class="descname">LLNLClient</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.llnl_client.LLNLClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>LLNLClient.</p>
+<p>This client is a subclass of WPSClient providing methods specific
+to the LLNL WPS implementation.</p>
+<dl class="method">
+<dt id="cwt.llnl_client.LLNLClient.jobs">
+<code class="descname">jobs</code><span class="sig-paren">(</span><em>limit=10</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.llnl_client.LLNLClient.jobs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves listing of jobs.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cwt.llnl_client.LLNLKeyCloakAuthenticator">
+<em class="property">class </em><code class="descclassname">cwt.llnl_client.</code><code class="descname">LLNLKeyCloakAuthenticator</code><span class="sig-paren">(</span><em>base_url=None</em>, <em>keycloak_url=None</em>, <em>realm=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#cwt.llnl_client.LLNLKeyCloakAuthenticator" title="Permalink to this definition">¶</a></dt>
+<dd><p>LLNL KeyCloak authenticator.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="cwt-wps-client">
+<h2>cwt.wps_client<a class="headerlink" href="#cwt-wps-client" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">wps_client.WPSClient</span></code>(url,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-cwt.wps_client"></span><p>A WPS Client</p>
+<dl class="class">
+<dt id="cwt.wps_client.ProcessCollection">
+<em class="property">class </em><code class="descclassname">cwt.wps_client.</code><code class="descname">ProcessCollection</code><a class="headerlink" href="#cwt.wps_client.ProcessCollection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">esgf-compute-api</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authentication.html">Authentication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cwt-auth">cwt.auth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cwt-dimension">cwt.dimension</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cwt-domain">cwt.domain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cwt-errors">cwt.errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cwt-process">cwt.process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cwt-variable">cwt.variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cwt-llnl-client">cwt.llnl_client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cwt-wps-client">cwt.wps_client</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="examples.html" title="previous chapter">Examples</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Jason Boutte.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

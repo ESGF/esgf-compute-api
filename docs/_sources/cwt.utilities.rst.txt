@@ -1,0 +1,7 @@
+cwt.utilities module
+====================
+
+.. automodule:: cwt.utilities
+   :members:
+   :undoc-members:
+   :show-inheritance:

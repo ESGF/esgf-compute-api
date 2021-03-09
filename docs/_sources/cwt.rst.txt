@@ -1,0 +1,8 @@
+===
+cwt
+===
+
+.. toctree::
+   :maxdepth: 4
+
+   wps_client

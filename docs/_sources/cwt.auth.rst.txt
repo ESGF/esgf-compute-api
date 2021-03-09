@@ -1,0 +1,7 @@
+cwt.auth module
+===============
+
+.. automodule:: cwt.auth
+   :members:
+   :undoc-members:
+   :show-inheritance:

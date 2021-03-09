@@ -68,7 +68,6 @@ class WPSClient(object):
             version: A string version of the WPS server.
             log: A boolean flag to enable logging.
             log_level: A string log level (default: INFO).
-            log_file: A string path for a log file.
             verify: A bool to enable/disable verifying a server's TLS certificate.
             cert: A str path to an SSL _client cert or a tuple as ('cert', 'key').
             headers: A dict that will be passed as HTTP headers.
@@ -91,16 +90,6 @@ class WPSClient(object):
         }
 
         owslib_auth = util.Authentication(**owslib_auth_kwargs)
-
-        if self.auth is None:
-            token = kwargs.get('compute_token', None)
-
-            token = os.environ.get('COMPUTE_TOKEN', token)
-
-            if token is None:
-                self.auth = owslib_auth
-            else:
-                self.auth = auth.TokenAuthenticator(token=token)
 
         self.version = kwargs.get('version', '1.0.0')
 
@@ -127,28 +116,16 @@ class WPSClient(object):
                     self.cert, self.version, self.headers)
 
     def set_logging(self, kwargs):
-        self.log = kwargs.get('log', False)
+        env_log = bool(os.environ.get('WPS_LOG', False))
 
-        self.log_file = None
+        env_log_level = os.environ.get('WPS_LOG_LEVEL', 'info')
+
+        self.log = bool(kwargs.get('log', env_log))
+
+        log_level = kwargs.get('log_level', env_log_level).upper()
 
         if self.log:
-            log_level = kwargs.get('log_level', 'info').upper()
-
-            logging.basicConfig(level=log_level,
-                    format='[%(asctime)s][%(filename)s[%(funcName)s:%(lineno)d]] %(message)s')
-
-            self.log_file = kwargs.get('log_file', None)
-
-            if self.log_file is not None:
-                file_handler = logging.FileHandler(self.log_file)
-
-                file_handler.setFormatter(formatter)
-
-                file_handler.setLevel(log_level)
-
-                root_logger.addHandler(file_handler)
-
-                logger.info('Added file handle %s', self.log_file)
+            logging.basicConfig(level=log_level)
 
     @staticmethod
     def parse_data_inputs(data_inputs):
@@ -345,6 +322,13 @@ class WPSClient(object):
 
         return dict((x, json.dumps(y)) for x, y in data_inputs.items())
 
+    def _patch_authentication(self, headers, params):
+        # Prepare headers and GET params
+        if self.auth is not None and isinstance(self.auth, auth.Authenticator):
+            logger.info("Getting authentication")
+
+            self.auth.prepare(headers, params)
+
     def _execute_post(self, process, data_inputs, headers):
         variable = wps.ComplexDataInput(data_inputs['variable'], mimeType='application/json')
 
@@ -355,6 +339,8 @@ class WPSClient(object):
         data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
 
         self._client.headers.update(headers)
+
+        logger.info("Sending execute request")
 
         process.context = self._client.execute(process.identifier, data_inputs)
 
@@ -422,6 +408,8 @@ class WPSClient(object):
         headers = self.headers.copy()
         method = kwargs.pop('method', 'post').lower()
 
+        logger.info(f"Executing {process.identifier} with {len(process.inputs)}")
+
         if inputs is not None or domain is not None or len(kwargs) > 0:
             warnings.warn('Use of "inputs", "domain" and setting parameters is deprecated.'
                     'Set theses values on their respective process objects.', DeprecationWarning)
@@ -431,9 +419,7 @@ class WPSClient(object):
         elif not isinstance(inputs, (list, tuple)):
             inputs = [inputs, ]
 
-        # Prepare headers and GET params
-        if self.auth is not None and isinstance(self.auth, auth.Authenticator):
-            self.auth.prepare(self.url, headers, params)
+        self._patch_authentication(headers, params)
 
         try:
             if isinstance(process, Process):
