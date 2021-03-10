@@ -1,8 +1,7 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE as builder
 
-RUN conda update -n base -c defaults conda && \
-      conda install -c conda-forge conda-build anaconda-client
+RUN mamba install -y -n base -c conda-forge boa anaconda-client
 
 WORKDIR /build
 
@@ -10,7 +9,7 @@ COPY feedstock/ feedstock/
 COPY cwt/ feedstock/recipe/cwt/
 COPY setup.py feedstock/recipe/setup.py
 
-RUN conda build feedstock/recipe \
+RUN mamba mambabuild feedstock/recipe \
       -m feedstock/.ci_support/linux_64_.yaml \
       -c conda-forge \
       --output-folder channel/ && \

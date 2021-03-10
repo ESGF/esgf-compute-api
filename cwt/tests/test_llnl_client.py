@@ -7,11 +7,14 @@ from cwt import llnl_client
 
 JOB = {
     'id': '1',
-    'process': 'CDAT.workflow',
+    'identifier': 'CDAT.workflow',
     'elapsed': '3.11234',
-    'latest_status': 'ProcessCompleted',
-    'accepted_on': '1990-01-01',
-    'status': [
+    'status': 'ProcessCompleted',
+    'accepted': '1990-01-01',
+    'output': [
+        {"remote": "https://wps.io/data/data.nc", "size": 0.5},
+    ],
+    'status_links': [
         'https://wps.io/status/1',
         'https://wps.io/status/2',
     ],
@@ -88,35 +91,9 @@ def test_job_list_next(mocker):
 
     assert len(job.pages) == 2
 
-def test_job_list_repr_html():
-    job = llnl_client.JobListWrapper('https://wps.io/api/jobs', JOB_LIST)
-
-    data = job._repr_html_()
-
-    assert data == DOC_LIST
-
-def test_job_repr_html():
-    job = llnl_client.JobWrapper(JOB)
-
-    job.status = [MESSAGE_STATUS, OUTPUT_STATUS, EXCEPTION_STATUS]
-
-    data = job._repr_html_()
-
-    assert data == DOC
-
 def test_job_wrapper_format_message():
     job = llnl_client.JobWrapper(JOB)
 
     msg = job._format_message({'created_date': '1990-01-01', 'message': 'Complete', 'percent': '50'})
 
     assert msg == '<td style="text-align: left">1990-01-01 Complete 50</td>'
-
-def test_job_wrapper_get_statuses(mocker):
-    r = mocker.patch('cwt.llnl_client.requests')
-
-    job = llnl_client.JobWrapper(JOB)
-
-    job._get_statuses()
-
-    r.get.assert_called()
-    r.get.return_value.json.assert_called()

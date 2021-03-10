@@ -1,8 +1,10 @@
+.DEFAULT_GOAL := build
+
 CACHE_PATH ?= $(PWD)/cache
 OUTPUT_PATH ?= $(PWD)/output
 TARGET ?= builder
 
-BASE_IMAGE := continuumio/miniconda3:4.8.2
+BASE_IMAGE := condaforge/mambaforge:4.9.2-5
 TARGET := builder
 BUILD_CONTEXT := .
 BUILD_DOCKERFILE := .
@@ -40,17 +42,17 @@ endif
 CONDA := $(shell find /opt/conda/bin ${HOME}/conda/bin -type f -iname 'conda' 2>/dev/null)
 CONDA_BIN := $(patsubst %/conda,%,$(CONDA))
 
-.PHONY: docker-build-docs
-docker-build-docs:
+.PHONY: docs
+docs:
 	docker run -it --rm \
 		-v $(PWD):/src \
 		-w /src \
 		--entrypoint /bin/bash \
 		$(BASE_IMAGE) \
-		-c "apt update && apt install make && make build-docs"
+		-c "apt update && apt install make && make buildkit-docs"
 
-.PHONY: build-docs
-build-docs:
+.PHONY: buildkit-docs
+buildkit-docs:
 	$(CONDA) install -y -c conda-forge python m2r2 "sphinx<=3.2" recommonmark oauthlib owslib
 
 	pip install -e .
@@ -59,8 +61,8 @@ build-docs:
 
 	@cp -a docsrc/build/html/. docs/
 
-.PHONY: docker-build
-docker-build:
+.PHONY: build
+build:
 	docker run \
 		-it --rm \
 		--privileged \
@@ -69,10 +71,10 @@ docker-build:
 		-v $(OUTPUT_PATH):$(OUTPUT_PATH) \
 		--entrypoint=/bin/sh \
 		moby/buildkit:master \
-		-c "apk add make && make build"
+		-c "apk add make && make buildkit-build"
 
 	$(POST_CMD)
 
-.PHONY: build
-build:
+.PHONY: buildkit-build
+buildkit-build:
 	$(BUILDKIT_ARGS)
