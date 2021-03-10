@@ -4,18 +4,18 @@ Domain Module.
 
 import warnings
 
-from cwt.errors import MissingRequiredKeyError
-from cwt.errors import CWTError
 from cwt.dimension import Dimension
-from cwt.dimension import TIMESTAMPS
 from cwt.dimension import INDICES
+from cwt.dimension import TIMESTAMPS
 from cwt.dimension import VALUES
+from cwt.errors import CWTError
+from cwt.errors import MissingRequiredKeyError
 from cwt.mask import Mask
 from cwt.parameter import Parameter
 
 
 class Domain(Parameter):
-    """ Domain.
+    """Domain.
 
     A domain consist of one or more dimensions. A mask can be associated with
     a domain, further construing the domain being represented.
@@ -47,7 +47,7 @@ class Domain(Parameter):
 
         for x in args:
             if not isinstance(x, Dimension):
-                raise CWTError('Argument {!r} must be type `Dimension`', x)
+                raise CWTError("Argument {!r} must be type `Dimension`", x)
 
             self.dimensions[x.name] = x
 
@@ -57,10 +57,10 @@ class Domain(Parameter):
     @classmethod
     def from_dict(cls, data):
         """ Creates domain from dict reperesentation. """
-        blacklist = ['id', 'mask']
+        blacklist = ["id", "mask"]
 
         try:
-            name = data['id']
+            name = data["id"]
         except KeyError as e:
             raise MissingRequiredKeyError(e)
 
@@ -71,7 +71,7 @@ class Domain(Parameter):
                 dimensions.append(Dimension.from_dict(value, key))
 
         try:
-            mask_data = Mask.from_dict(data['mask'])
+            mask_data = Mask.from_dict(data["mask"])
         except BaseException:
             mask_data = None
 
@@ -79,7 +79,7 @@ class Domain(Parameter):
 
     def add_dimension(self, name, value):
         if name in self.dimensions:
-            raise CWTError('Dimensions {!r} already exists', name)
+            raise CWTError("Dimensions {!r} already exists", name)
 
         if isinstance(value, slice):
             args = [name, value.start, value.stop, INDICES, value.step]
@@ -87,7 +87,8 @@ class Domain(Parameter):
             if len(value) < 2:
                 raise CWTError(
                     'Must provide a minimum of two values (start, stop) for dimension "{dim}"',
-                    dim=name)
+                    dim=name,
+                )
 
             if len(value) > 2:
                 step = value[3]
@@ -99,13 +100,14 @@ class Domain(Parameter):
             elif all(isinstance(x, str) for x in value[:2]):
                 crs = TIMESTAMPS
             else:
-                raise CWTError('Could not determin dimension crs')
+                raise CWTError("Could not determin dimension crs")
 
             args = [name, value[0], value[1], crs, step]
         else:
             raise CWTError(
                 'Dimension\'s value cannot be of type "{type}"',
-                type=type(value))
+                type=type(value),
+            )
 
         self.dimensions[name] = Dimension(*args)
 
@@ -118,24 +120,28 @@ class Domain(Parameter):
 
     def to_dict(self):
         """ Returns a dictionary representation."""
-        data = {
-            'id': self.name
-        }
+        data = {"id": self.name}
 
         for name, value in list(self.dimensions.items()):
             data[name] = value.to_dict()
 
         if self.mask is not None:
-            data['mask'] = self.mask.to_dict()
+            data["mask"] = self.mask.to_dict()
 
         return data
 
     def parameterize(self):
         """ Returns parameter for GET request. """
-        warnings.warn('parameterize is deprecated, use to_dict instead',
-                      DeprecationWarning)
+        warnings.warn(
+            "parameterize is deprecated, use to_dict instead",
+            DeprecationWarning,
+        )
 
         return self.to_dict()
 
     def __repr__(self):
-        return 'Domain({!s}, mask={!r}, name={!r})'.format(', '.join([repr(x) for x in self.dimensions.values()]), self.mask, self.name)
+        return "Domain({!s}, mask={!r}, name={!r})".format(
+            ", ".join([repr(x) for x in self.dimensions.values()]),
+            self.mask,
+            self.name,
+        )

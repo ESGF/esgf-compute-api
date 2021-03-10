@@ -12,11 +12,11 @@ class HelloWorld(cwt.Parameter):
 
     def __init__(self):
         """ Testimpl init. """
-        super(HelloWorld, self).__init__('test')
+        super(HelloWorld, self).__init__("test")
 
     def parameterize(self):
         """ Overridden parameterize method. """
-        return 'param'
+        return "param"
 
 
 class TestParameter(unittest.TestCase):
@@ -25,16 +25,16 @@ class TestParameter(unittest.TestCase):
     def test_from_dict(self):
         """ Test from dict. """
         with self.assertRaises(NotImplementedError):
-            cwt.Parameter.from_dict('test')
+            cwt.Parameter.from_dict("test")
 
     def test_parameterize(self):
         """ Testing overriding parameterize method. """
 
         with self.assertRaises(NotImplementedError):
-            param = cwt.Parameter('test')
+            param = cwt.Parameter("test")
 
             param.parameterize()
 
         over_param = HelloWorld()
 
-        self.assertEqual(over_param.parameterize(), 'param')
+        self.assertEqual(over_param.parameterize(), "param")

@@ -4,39 +4,41 @@ Process Module.
 from __future__ import print_function
 
 from builtins import object
+import datetime
 import json
 import logging
 import time
-import datetime
 import warnings
-from owslib import wps
 
 from cwt import utilities
 from cwt.errors import CWTError
 from cwt.errors import MissingRequiredKeyError
-from cwt.errors import WPSTimeoutError
 from cwt.errors import WPSServerError
+from cwt.errors import WPSTimeoutError
+from cwt.gridder import Gridder
 from cwt.named_parameter import NamedParameter
 from cwt.parameter import Parameter
 from cwt.variable import Variable
-from cwt.gridder import Gridder
+from owslib import wps
 
-logger = logging.getLogger('cwt.process')
+logger = logging.getLogger("cwt.process")
 
 
 def input_output_to_dict(value):
     data = value.__dict__.copy()
 
-    data['metadata'] = [x.__dict__ for x in data['metadata']]
+    data["metadata"] = [x.__dict__ for x in data["metadata"]]
 
     # Included from ComplexData
     try:
-        data['defaultValue'] = data['defaultValue'].__dict__
+        data["defaultValue"] = data["defaultValue"].__dict__
     except KeyError:
         pass
 
     try:
-        data['supportedValues'] = [x.__dict__ for x in data['supportedValues']]
+        data["supportedValues"] = [
+            x.__dict__ for x in data["supportedValues"]
+        ]
     except KeyError:
         pass
 
@@ -67,14 +69,18 @@ class StatusTracker(object):
 
             logger.info(message)
 
+
 def ensure_list(x):
     if not isinstance(x, (list, tuple)):
-        return [x,]
+        return [
+            x,
+        ]
 
     return x
 
+
 class Process(Parameter):
-    """ A WPS Process
+    """A WPS Process
 
     Wraps a WPS Process.
 
@@ -84,19 +90,19 @@ class Process(Parameter):
     """
 
     def __init__(self, **kwargs):
-        super(Process, self).__init__(kwargs.get('name', None))
+        super(Process, self).__init__(kwargs.get("name", None))
 
-        self._identifier = kwargs.get('identifier', None)
+        self._identifier = kwargs.get("identifier", None)
 
-        self._client = kwargs.get('client', None)
+        self._client = kwargs.get("client", None)
 
-        self.process = kwargs.get('process', None)
+        self.process = kwargs.get("process", None)
 
-        self.inputs = ensure_list(kwargs.get('inputs', []))
+        self.inputs = ensure_list(kwargs.get("inputs", []))
 
-        self.parameters = kwargs.get('parameters', {})
+        self.parameters = kwargs.get("parameters", {})
 
-        self.domain = kwargs.get('domain', None)
+        self.domain = kwargs.get("domain", None)
 
         self.context = None
 
@@ -105,43 +111,59 @@ class Process(Parameter):
         self.status_tracker = None
 
     def _repr_html_(self):
-        header = '<div><h1>{} ({})</h1></div><hr/>'.format(self.title, self.identifier)
+        header = "<div><h1>{} ({})</h1></div><hr/>".format(
+            self.title, self.identifier
+        )
 
-        inputs = '\n'.join(['<li>{!r}</li>'.format(x) for x in self.inputs])
+        inputs = "\n".join(["<li>{!r}</li>".format(x) for x in self.inputs])
 
         if self.domain is not None:
-            domain = '<li>{!r}</li>'.format(self.domain)
+            domain = "<li>{!r}</li>".format(self.domain)
         else:
-            domain = ''
+            domain = ""
 
-        body = ('<div>'
-                '<h3>Abstract</h3>'
-                '<pre>{}</pre>'
-                '<h3>Inputs</h3>'
-                '<ul>{}</ul>'
-                '<h3>Domain</h3>'
-                '<ul>{}</ul>'
-                '</div>').format(self.abstract, inputs, domain)
+        body = (
+            "<div>"
+            "<h3>Abstract</h3>"
+            "<pre>{}</pre>"
+            "<h3>Inputs</h3>"
+            "<ul>{}</ul>"
+            "<h3>Domain</h3>"
+            "<ul>{}</ul>"
+            "</div>"
+        ).format(self.abstract, inputs, domain)
 
-        return '{}{}'.format(header, body)
+        return "{}{}".format(header, body)
 
     def __repr__(self):
-        fmt = ('Process('
-               'name={}, '
-               'identifier={}, '
-               'inputs={}, '
-               'parameters={}, '
-               'domain={}, '
-               'title={}, '
-               'process_outputs={}, '
-               'data_inputs={}, '
-               'status_supported={}, '
-               'store_supported={}, '
-               'process_version={})')
+        fmt = (
+            "Process("
+            "name={}, "
+            "identifier={}, "
+            "inputs={}, "
+            "parameters={}, "
+            "domain={}, "
+            "title={}, "
+            "process_outputs={}, "
+            "data_inputs={}, "
+            "status_supported={}, "
+            "store_supported={}, "
+            "process_version={})"
+        )
 
-        return fmt.format(self.name, self.identifier, self.inputs, self.parameters, self.domain,
-                          self.title, self.process_outputs, self.data_inputs, self.status_supported,
-                          self.store_supported, self.process_version)
+        return fmt.format(
+            self.name,
+            self.identifier,
+            self.inputs,
+            self.parameters,
+            self.domain,
+            self.title,
+            self.process_outputs,
+            self.data_inputs,
+            self.status_supported,
+            self.store_supported,
+            self.process_version,
+        )
 
     @classmethod
     def from_owslib(cls, client, process):
@@ -155,25 +177,26 @@ class Process(Parameter):
         obj = cls()
 
         try:
-            obj._identifier = data['name']
+            obj._identifier = data["name"]
 
-            obj.name = data['result']
+            obj.name = data["result"]
 
-            obj.inputs = data['input']
+            obj.inputs = data["input"]
         except KeyError as e:
             raise MissingRequiredKeyError(e)
 
-        obj.domain = data.get('domain', None)
+        obj.domain = data.get("domain", None)
 
-        ignore = ('name', 'input', 'result', 'domain')
+        ignore = ("name", "input", "result", "domain")
 
         for name, value in list(data.items()):
             if name not in ignore:
-                if name == 'gridder':
+                if name == "gridder":
                     obj.parameters[name] = Gridder.from_dict(value)
                 else:
                     obj.parameters[name] = NamedParameter.from_string(
-                        name, value)
+                        name, value
+                    )
 
         return obj
 
@@ -183,7 +206,6 @@ class Process(Parameter):
             return self.process.identifier
         except AttributeError:
             return self._identifier
-
 
     @property
     def title(self):
@@ -195,7 +217,9 @@ class Process(Parameter):
     @property
     def process_outputs(self):
         try:
-            return [input_output_to_dict(x) for x in self.process.processOutputs]
+            return [
+                input_output_to_dict(x) for x in self.process.processOutputs
+            ]
         except AttributeError:
             return None
 
@@ -243,7 +267,7 @@ class Process(Parameter):
 
     @property
     def processing(self):
-        """ Checks if the process is still working.
+        """Checks if the process is still working.
 
         This will update the wrapper with the latest status and return
         True if the process is waiting or running.
@@ -259,9 +283,13 @@ class Process(Parameter):
 
                 wpsns = wps.getNamespace(response)
 
-                status_element = response.find(wps.nspath('Status/*', ns=wpsns))
+                status_element = response.find(
+                    wps.nspath("Status/*", ns=wpsns)
+                )
 
-                self.context.percentCompleted = float(status_element.attrib.get('percentCompleted', 0.0))
+                self.context.percentCompleted = float(
+                    status_element.attrib.get("percentCompleted", 0.0)
+                )
 
             self.context.parseResponse = _new_parse_response
 
@@ -278,45 +306,47 @@ class Process(Parameter):
 
     @property
     def accepted(self):
-        return self.check_context_status('ProcessAccepted')
+        return self.check_context_status("ProcessAccepted")
 
     @property
     def started(self):
-        return self.check_context_status('ProcessStarted')
+        return self.check_context_status("ProcessStarted")
 
     @property
     def paused(self):
-        return self.check_context_status('ProcessPaused')
+        return self.check_context_status("ProcessPaused")
 
     @property
     def failed(self):
-        return self.check_context_status('ProcessFailed')
+        return self.check_context_status("ProcessFailed")
 
     @property
     def succeeded(self):
-        return self.check_context_status('ProcessSucceeded')
+        return self.check_context_status("ProcessSucceeded")
 
     @property
     def errored(self):
-        return self.check_context_status('Exception')
+        return self.check_context_status("Exception")
 
     @property
     def output(self):
         """ Return the output of the process if done. """
         if not self.succeeded:
-            raise CWTError('No output available process has not succeeded')
+            raise CWTError("No output available process has not succeeded")
 
-        logger.debug('Process output %r', self.context.processOutputs[0].data[0])
+        logger.debug(
+            "Process output %r", self.context.processOutputs[0].data[0]
+        )
 
         try:
             # CWT only expects a single output in json format
             data = json.loads(self.context.processOutputs[0].data[0])
         except json.JSONDecoderError:
-            raise WPSServerError('Failed to decode process output as JSON')
+            raise WPSServerError("Failed to decode process output as JSON")
 
-        if isinstance(data, dict) and 'uri' in data:
+        if isinstance(data, dict) and "uri" in data:
             output_data = Variable.from_dict(data)
-        elif isinstance(data, (tuple, list)) and 'uri' in data[0]:
+        elif isinstance(data, (tuple, list)) and "uri" in data[0]:
             output_data = [Variable.from_dict(x) for x in data]
         else:
             output_data = data
@@ -328,23 +358,27 @@ class Process(Parameter):
         msg = None
 
         if self.accepted:
-            msg = 'ProcessAccepted {!s}'.format(self.context.statusMessage)
+            msg = "ProcessAccepted {!s}".format(self.context.statusMessage)
         elif self.started:
-            msg = 'ProcessStarted {!s} {!s}'.format(self.context.statusMessage,
-                                                    self.context.percentCompleted)
+            msg = "ProcessStarted {!s} {!s}".format(
+                self.context.statusMessage, self.context.percentCompleted
+            )
         elif self.paused:
-            msg = 'ProcessPaused {!s} {!s}'.format(self.context.statusMessage,
-                                                   self.context.percentCompleted)
+            msg = "ProcessPaused {!s} {!s}".format(
+                self.context.statusMessage, self.context.percentCompleted
+            )
         elif self.failed:
-            msg = 'ProcessFailed {!s}'.format(self.context.statusMessage)
+            msg = "ProcessFailed {!s}".format(self.context.statusMessage)
         elif self.succeeded:
-            msg = 'ProcessSucceeded'
+            msg = "ProcessSucceeded"
         elif self.errored:
-            exception_msg = '->'.join([x['text'] for x in self.exception_dict])
+            exception_msg = "->".join(
+                [x["text"] for x in self.exception_dict]
+            )
 
-            msg = 'Exception {!s}'.format(exception_msg)
+            msg = "Exception {!s}".format(exception_msg)
         else:
-            msg = 'Status unavailable'
+            msg = "Status unavailable"
 
         return msg
 
@@ -355,12 +389,21 @@ class Process(Parameter):
         new_process = self.copy(True)
 
         # Take inputs or override with keyword
-        inputs = inputs or kwargs.pop('inputs', [])
+        inputs = inputs or kwargs.pop("inputs", [])
 
         if not all([isinstance(x, (Process, Variable)) for x in inputs]):
-            invalid = ', '.join([str(type(x)) for x in inputs if not isinstance(x, (Process, Variable))])
+            invalid = ", ".join(
+                [
+                    str(type(x))
+                    for x in inputs
+                    if not isinstance(x, (Process, Variable))
+                ]
+            )
 
-            raise CWTError('Positional arguments can only be Variable or Process. The following are invalid {}', invalid)
+            raise CWTError(
+                "Positional arguments can only be Variable or Process. The following are invalid {}",
+                invalid,
+            )
 
         new_process.add_inputs(*inputs)
 
@@ -395,7 +438,7 @@ class Process(Parameter):
         try:
             return self.context.status == value
         except AttributeError:
-            raise CWTError('Process is missing a context')
+            raise CWTError("Process is missing a context")
 
     def wait(self, timeout=None, sleep=None):
         self.status_tracker = StatusTracker()
@@ -419,20 +462,20 @@ class Process(Parameter):
 
     @property
     def gridder(self):
-        return self.get_parameter('gridder')
+        return self.get_parameter("gridder")
 
     @gridder.setter
     def gridder(self, value):
         if not isinstance(value, Gridder):
-            raise CWTError('Value must be a cwt.Gridder instance')
+            raise CWTError("Value must be a cwt.Gridder instance")
 
-        self.parameters['gridder'] = value
+        self.parameters["gridder"] = value
 
     def set_domain(self, domain):
         self.domain = domain
 
     def get_parameter(self, name, required=False):
-        """ Retrieves a parameter
+        """Retrieves a parameter
 
         Args:
             name: A string name of the parameter.
@@ -445,12 +488,12 @@ class Process(Parameter):
             Exception: The parameter is required and not present.
         """
         if name not in self.parameters and required:
-            raise CWTError('Parameter {} is required but not present', name)
+            raise CWTError("Parameter {} is required but not present", name)
 
         return self.parameters.get(name, None)
 
     def add_parameters(self, *args, **kwargs):
-        """ Add a parameter.
+        """Add a parameter.
 
         kwargs can contain two formats.
 
@@ -463,7 +506,9 @@ class Process(Parameter):
         for a in args:
             if not isinstance(a, NamedParameter):
                 raise CWTError(
-                    'Invalid parameter type "{}", should be a NamedParameter', type(a))
+                    'Invalid parameter type "{}", should be a NamedParameter',
+                    type(a),
+                )
 
             self.parameters[a.name] = a
 
@@ -474,7 +519,7 @@ class Process(Parameter):
             self.parameters[name] = NamedParameter(name, *value)
 
     def add_inputs(self, *args):
-        """ Set the inputs of the Process.
+        """Set the inputs of the Process.
 
         Args:
             args: A list of Process/Variable objects.
@@ -487,7 +532,7 @@ class Process(Parameter):
     def to_document(self):
         return utilities.process_to_document(self)
 
-    def visualize(self, filename='compute', format='png'):
+    def visualize(self, filename="compute", format="png"):
         processes, _ = self.collect_input_processes()
 
         dot = utilities._build_graph(processes)
@@ -497,7 +542,7 @@ class Process(Parameter):
         return dot
 
     def collect_input_processes(self):
-        """ Aggregates the process trees inputs.
+        """Aggregates the process trees inputs.
 
         A DFS to collect the trees inputs into two lists, Operations and Variables.
 
@@ -506,12 +551,14 @@ class Process(Parameter):
         """
         processes = {}
         inputs = {}
-        stack = [self, ]
+        stack = [
+            self,
+        ]
 
         while stack:
             item = stack.pop()
 
-            logger.info('Processing %r', item)
+            logger.info("Processing %r", item)
 
             for x in item.inputs:
                 if isinstance(x, Process):
@@ -526,16 +573,13 @@ class Process(Parameter):
 
     def to_dict(self):
         """ Returns a dictionary representation."""
-        data = {
-            'name': self.identifier,
-            'result': self.name
-        }
+        data = {"name": self.identifier, "result": self.name}
 
         if self.domain is not None:
             try:
-                data['domain'] = self.domain.name
+                data["domain"] = self.domain.name
             except AttributeError:
-                data['domain'] = self.domain
+                data["domain"] = self.domain
 
         inputs = []
 
@@ -545,17 +589,19 @@ class Process(Parameter):
             except AttributeError:
                 inputs.append(i)
 
-        data['input'] = inputs
+        data["input"] = inputs
 
-        gridder = self.parameters.get('gridder', None)
+        gridder = self.parameters.get("gridder", None)
 
         if gridder is not None:
-            data.update({
-                'gridder': gridder.to_dict(),
-            })
+            data.update(
+                {
+                    "gridder": gridder.to_dict(),
+                }
+            )
 
         for name, value in list(self.parameters.items()):
-            if name in ('gridder',):
+            if name in ("gridder",):
                 continue
 
             data.update(value.to_dict())
@@ -564,7 +610,9 @@ class Process(Parameter):
 
     def parameterize(self):
         """ Create a dictionary representation of the Process. """
-        warnings.warn('parameterize is deprecated, use to_dict instead',
-                      DeprecationWarning)
+        warnings.warn(
+            "parameterize is deprecated, use to_dict instead",
+            DeprecationWarning,
+        )
 
         return self.to_dict()

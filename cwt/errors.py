@@ -8,15 +8,18 @@ class CWTError(Exception):
 
 class MissingRequiredKeyError(CWTError):
     def __init__(self, key):
-        fmt = 'Missing key {!r}'
+        fmt = "Missing key {!r}"
 
         super(MissingRequiredKeyError, self).__init__(fmt, key)
+
 
 class WPSAuthError(CWTError):
     pass
 
+
 class JobMissingError(CWTError):
     pass
+
 
 class WPSClientError(CWTError):
     def __init__(self, fmt, *args, **kwargs):
@@ -30,6 +33,6 @@ class WPSServerError(CWTError):
 
 class WPSTimeoutError(CWTError):
     def __init__(self, elapsed):
-        fmt = 'Timed out after {!r} seconds'
+        fmt = "Timed out after {!r} seconds"
 
         super(WPSTimeoutError, self).__init__(fmt, elapsed)

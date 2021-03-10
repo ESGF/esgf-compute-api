@@ -2,15 +2,15 @@ import argparse
 import hashlib
 import json
 
+import cwt
 import owslib
 from owslib import wps
 from owslib.etree import etree
 from owslib.namespaces import Namespaces
 
-import cwt
 
 def prepare_data_inputs(process, inputs, domain, **kwargs):
-    """ Preparse a process inputs for the data_inputs string.
+    """Preparse a process inputs for the data_inputs string.
 
     Args:
         process: A object of type Process to be executed.
@@ -26,6 +26,7 @@ def prepare_data_inputs(process, inputs, domain, **kwargs):
 
     return _flatten_data_inputs(data_inputs)
 
+
 def _prepare_data_inputs(process, inputs, domain, **kwargs):
     temp_process = process.copy()
 
@@ -38,12 +39,14 @@ def _prepare_data_inputs(process, inputs, domain, **kwargs):
 
     if inputs is not None:
         if not isinstance(inputs, (list, tuple)):
-            inputs = [inputs, ]
+            inputs = [
+                inputs,
+            ]
 
         temp_process.inputs.extend(inputs)
 
-    if 'gridder' in kwargs:
-        temp_process.gridder = kwargs.pop('gridder')
+    if "gridder" in kwargs:
+        temp_process.gridder = kwargs.pop("gridder")
 
     temp_process.add_parameters(**kwargs)
 
@@ -55,34 +58,46 @@ def _prepare_data_inputs(process, inputs, domain, **kwargs):
             domains[item.domain.name] = item.domain
 
     return {
-        'variable': list(variable.values()),
-        'domain': list(domains.values()),
-        'operation': list(operation.values()),
+        "variable": list(variable.values()),
+        "domain": list(domains.values()),
+        "operation": list(operation.values()),
     }
+
 
 def patch_ns(path, ns):
     new_path = []
 
-    for x in path.split('/'):
-        p = x.split(':')
+    for x in path.split("/"):
+        p = x.split(":")
 
         if len(p) > 1:
-            new_path.append('{{{0}}}{1}'.format(ns.get_namespace(p[0]), p[1]))
+            new_path.append("{{{0}}}{1}".format(ns.get_namespace(p[0]), p[1]))
         else:
             new_path.append(p[0])
 
-    return '/'.join(new_path)
+    return "/".join(new_path)
+
 
 def data_inputs_to_document(identifier, data_inputs):
     data_inputs = dict((x, json.dumps(y)) for x, y in data_inputs.items())
 
-    variable = wps.ComplexDataInput(data_inputs['variable'], mimeType='application/json')
+    variable = wps.ComplexDataInput(
+        data_inputs["variable"], mimeType="application/json"
+    )
 
-    domain = wps.ComplexDataInput(data_inputs['domain'], mimeType='application/json')
+    domain = wps.ComplexDataInput(
+        data_inputs["domain"], mimeType="application/json"
+    )
 
-    operation = wps.ComplexDataInput(data_inputs['operation'], mimeType='application/json')
+    operation = wps.ComplexDataInput(
+        data_inputs["operation"], mimeType="application/json"
+    )
 
-    data_inputs = [('variable', variable), ('domain', domain), ('operation', operation)]
+    data_inputs = [
+        ("variable", variable),
+        ("domain", domain),
+        ("operation", operation),
+    ]
 
     execution = owslib.wps.WPSExecution()
 
@@ -90,75 +105,95 @@ def data_inputs_to_document(identifier, data_inputs):
 
     return etree.tostring(requestElement).decode()
 
+
 def _document_to_data_inputs(doc):
     ns = Namespaces()
 
     doc = etree.fromstring(doc)
 
-    identifier= doc.find(patch_ns('./ows110:Identifier', ns))
+    identifier = doc.find(patch_ns("./ows110:Identifier", ns))
 
     data_inputs = {}
 
-    for x in doc.findall(patch_ns('./wps100:DataInputs/wps100:Input', ns)):
-        input_identifier = x.find(patch_ns('./ows110:Identifier', ns)).text
+    for x in doc.findall(patch_ns("./wps100:DataInputs/wps100:Input", ns)):
+        input_identifier = x.find(patch_ns("./ows110:Identifier", ns)).text
 
-        value = x.find(patch_ns('./wps100:Data/wps100:ComplexData', ns))
+        value = x.find(patch_ns("./wps100:Data/wps100:ComplexData", ns))
 
-        if input_identifier == 'variable':
-            data_inputs[input_identifier] = [cwt.Variable.from_dict(x) for x in json.loads(value.text)]
-        elif input_identifier == 'domain':
-            data_inputs[input_identifier] = [cwt.Domain.from_dict(x) for x in json.loads(value.text)]
-        elif input_identifier == 'operation':
-            data_inputs[input_identifier] = [cwt.Process.from_dict(x) for x in json.loads(value.text)]
+        if input_identifier == "variable":
+            data_inputs[input_identifier] = [
+                cwt.Variable.from_dict(x) for x in json.loads(value.text)
+            ]
+        elif input_identifier == "domain":
+            data_inputs[input_identifier] = [
+                cwt.Domain.from_dict(x) for x in json.loads(value.text)
+            ]
+        elif input_identifier == "operation":
+            data_inputs[input_identifier] = [
+                cwt.Process.from_dict(x) for x in json.loads(value.text)
+            ]
         else:
-            raise Exception('Unsupported input {0}'.format(input_identifier))
+            raise Exception("Unsupported input {0}".format(input_identifier))
 
     return identifier.text, data_inputs
+
 
 def _flatten_data_inputs(data_inputs):
     output = {}
 
-    output['variable'] = [x.to_dict() for x in data_inputs['variable']]
+    output["variable"] = [x.to_dict() for x in data_inputs["variable"]]
 
-    output['domain'] = [x.to_dict() for x in data_inputs['domain']]
+    output["domain"] = [x.to_dict() for x in data_inputs["domain"]]
 
-    output['operation'] = [x.to_dict() for x in data_inputs['operation']]
+    output["operation"] = [x.to_dict() for x in data_inputs["operation"]]
 
     return output
+
 
 def document_to_data_inputs(document):
     _, data_inputs = _document_to_data_inputs(document)
 
     return _flatten_data_inputs(data_inputs)
 
+
 def process_to_data_inputs(process, inputs=None, domain=None, **kwargs):
     data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
 
     return _flatten_data_inputs(data_inputs)
 
+
 def process_to_document(process, inputs=None, domain=None, **kwargs):
     data_inputs = _prepare_data_inputs(process, inputs, domain, **kwargs)
 
-    return data_inputs_to_document(process.identifier, _flatten_data_inputs(data_inputs))
+    return data_inputs_to_document(
+        process.identifier, _flatten_data_inputs(data_inputs)
+    )
+
 
 def command_document_to_data_inputs():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('document', type=str)
+    parser.add_argument("document", type=str)
 
     args = vars(parser.parse_args())
 
-    print(json.dumps(document_to_data_inputs(args['document'])))
+    print(json.dumps(document_to_data_inputs(args["document"])))
+
 
 def command_data_inputs_to_document():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('identifier', type=str)
-    parser.add_argument('data-inputs', type=str)
+    parser.add_argument("identifier", type=str)
+    parser.add_argument("data-inputs", type=str)
 
     args = vars(parser.parse_args())
 
-    print(data_inputs_to_document(args['identifier'], json.loads(args['data-inputs'])))
+    print(
+        data_inputs_to_document(
+            args["identifier"], json.loads(args["data-inputs"])
+        )
+    )
+
 
 def _load_input(input):
     try:
@@ -169,32 +204,39 @@ def _load_input(input):
 
     return data_inputs
 
+
 def _load_data_inputs(data_inputs):
-    variable = [cwt.Variable.from_dict(x) for x in data_inputs['variable']]
+    variable = [cwt.Variable.from_dict(x) for x in data_inputs["variable"]]
     variable = dict((x.name, x) for x in variable)
 
-    domain = [cwt.Domain.from_dict(x) for x in data_inputs['domain']]
+    domain = [cwt.Domain.from_dict(x) for x in data_inputs["domain"]]
     domain = dict((x.name, x) for x in domain)
 
-    operation = [cwt.Process.from_dict(x) for x in data_inputs['operation']]
+    operation = [cwt.Process.from_dict(x) for x in data_inputs["operation"]]
     operation = dict((x.name, x) for x in operation)
 
     for name, x in operation.items():
         x.domain = domain.get(x.domain, None)
 
-        x.inputs = [variable[y] if y in variable else operation[y] for y in x.inputs]
+        x.inputs = [
+            variable[y] if y in variable else operation[y] for y in x.inputs
+        ]
 
     return variable, domain, operation
+
 
 def _build_init(data, vars):
     lines = []
 
     for x in data.values():
-        name = '{}_{}'.format(x.__class__.__name__.lower(), hashlib.sha256(x.name.encode()).hexdigest()[:8])
+        name = "{}_{}".format(
+            x.__class__.__name__.lower(),
+            hashlib.sha256(x.name.encode()).hexdigest()[:8],
+        )
 
         vars[x.name] = name
 
-        lines.append('{} = {}'.format(name, repr(x)))
+        lines.append("{} = {}".format(name, repr(x)))
 
     return lines
 
@@ -205,28 +247,32 @@ def _build_code(data_inputs, **kwargs):
     sections = []
 
     imports = [
-        'import os',
-        'from cwt import Domain',
-        'from cwt import Dimension',
-        'from cwt import Variable',
-        'from cwt import CRS',
+        "import os",
+        "from cwt import Domain",
+        "from cwt import Dimension",
+        "from cwt import Variable",
+        "from cwt import CRS",
     ]
 
-    if kwargs['llnl_client']:
-        imports.append('from cwt.llnl_client import LLNLClient')
+    if kwargs["llnl_client"]:
+        imports.append("from cwt.llnl_client import LLNLClient")
     else:
-        imports.append('from cwt.wps_client import WPSClient')
+        imports.append("from cwt.wps_client import WPSClient")
 
     sections.append(imports)
 
-    if kwargs['llnl_client']:
-        sections.append([
-            'client = LLNLClient({!r})'.format(kwargs['wps_url']),
-        ])
+    if kwargs["llnl_client"]:
+        sections.append(
+            [
+                "client = LLNLClient({!r})".format(kwargs["wps_url"]),
+            ]
+        )
     else:
-        sections.append([
-            'client = WPSClient({!r})'.format(kwargs['wps_url']),
-        ])
+        sections.append(
+            [
+                "client = WPSClient({!r})".format(kwargs["wps_url"]),
+            ]
+        )
 
     vars = {}
 
@@ -234,11 +280,36 @@ def _build_code(data_inputs, **kwargs):
 
     sections.append(_build_init(domain, vars))
 
-    in_deg = dict((x.name, len([x for x in x.inputs if x.name in operation])) for x in operation.values())
+    in_deg = dict(
+        (x.name, len([x for x in x.inputs if x.name in operation]))
+        for x in operation.values()
+    )
 
-    out_deg = dict((x.name, len([y for y in operation.values() if any(x.name == z.name for z in y.inputs)])) for x in operation.values())
+    out_deg = dict(
+        (
+            x.name,
+            len(
+                [
+                    y
+                    for y in operation.values()
+                    if any(x.name == z.name for z in y.inputs)
+                ]
+            ),
+        )
+        for x in operation.values()
+    )
 
-    neighbors = dict((x, [y for y in operation.values() if x in [z.name for z in y.inputs]]) for x in in_deg.keys())
+    neighbors = dict(
+        (
+            x,
+            [
+                y
+                for y in operation.values()
+                if x in [z.name for z in y.inputs]
+            ],
+        )
+        for x in in_deg.keys()
+    )
 
     queue = [operation[x] for x, y in in_deg.items() if y == 0]
 
@@ -247,17 +318,26 @@ def _build_code(data_inputs, **kwargs):
     while len(queue) > 0:
         current = queue.pop(0)
 
-        name = '{}_{}'.format(current.__class__.__name__.lower(), hashlib.sha256(current.name.encode()).hexdigest()[:8])
+        name = "{}_{}".format(
+            current.__class__.__name__.lower(),
+            hashlib.sha256(current.name.encode()).hexdigest()[:8],
+        )
 
         vars[current.name] = name
 
-        inputs = ', '.join([vars[x.name] for x in current.inputs])
+        inputs = ", ".join([vars[x.name] for x in current.inputs])
 
-        domain = ', domain={}'.format(vars[current.domain.name]) if current.domain is not None else ''
+        domain = (
+            ", domain={}".format(vars[current.domain.name])
+            if current.domain is not None
+            else ""
+        )
 
-        params = ['{}={}'.format(x, y.values) for x, y in current.parameters.items()]
+        params = [
+            "{}={}".format(x, y.values) for x, y in current.parameters.items()
+        ]
 
-        params = ', {}'.format(', '.join(params)) if len(params) > 0 else ''
+        params = ", {}".format(", ".join(params)) if len(params) > 0 else ""
 
         for x in neighbors[current.name]:
             in_deg[x.name] -= 1
@@ -265,109 +345,139 @@ def _build_code(data_inputs, **kwargs):
             if in_deg[x.name] == 0:
                 queue.append(x)
 
-        processes.append('{} = client.{}({}{}{}){}'.format(name, current.identifier, inputs, domain, params, '\n' if len(queue) > 0 else ''))
+        processes.append(
+            "{} = client.{}({}{}{}){}".format(
+                name,
+                current.identifier,
+                inputs,
+                domain,
+                params,
+                "\n" if len(queue) > 0 else "",
+            )
+        )
 
     sections.append(processes)
 
     outputs = [vars[x] for x, y in out_deg.items() if y == 0]
 
-    outputs_str = ', '.join(outputs)
+    outputs_str = ", ".join(outputs)
 
-    sections.append([
-        'client.execute({})\n'.format(outputs_str),
-        '{}.wait()'.format(outputs[0]),
-    ])
+    sections.append(
+        [
+            "client.execute({})\n".format(outputs_str),
+            "{}.wait()".format(outputs[0]),
+        ]
+    )
 
     return sections
+
 
 def _write_script(data_inputs, output_path, **kwargs):
     sections = _build_code(data_inputs, **kwargs)
 
     if output_path is None:
-        output_path = 'compute.py'
+        output_path = "compute.py"
 
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         for x in sections:
             f.writelines(x)
 
-            f.write('\n')
+            f.write("\n")
+
 
 def _write_notebook(data_inputs, output_path, **kwargs):
     try:
         import nbformat as nbf
     except Exception:
-        raise cwt.CWTError('Exporting a notebook requires "nbformat" package to be installed')
+        raise cwt.CWTError(
+            'Exporting a notebook requires "nbformat" package to be installed'
+        )
 
     if output_path is None:
-        output_path = 'compute.ipynb'
+        output_path = "compute.ipynb"
 
     sections = _build_code(data_inputs, **kwargs)
 
     nb = nbf.v4.new_notebook()
 
     for s in sections:
-        nb['cells'].append(nbf.v4.new_code_cell('\n'.join(s)))
+        nb["cells"].append(nbf.v4.new_code_cell("\n".join(s)))
 
     nbf.write(nb, output_path)
+
 
 def _build_graph(operation):
     try:
         import graphviz
     except Exception:
-        raise cwt.CWTError('Exporting a graph requires "python-graphviz" package to be installed')
+        raise cwt.CWTError(
+            'Exporting a graph requires "python-graphviz" package to be installed'
+        )
 
     g = graphviz.Digraph()
 
     for o in operation.values():
         for index, i in enumerate(o.inputs):
             if isinstance(i, cwt.Process):
-                iid = '{}-{}'.format(i.identifier, i.name)
+                iid = "{}-{}".format(i.identifier, i.name)
             elif isinstance(i, cwt.Variable):
-                iid = 'Input{}-{}'.format(index, i.name)
+                iid = "Input{}-{}".format(index, i.name)
 
-                g.attr('node', shape='rectangle')
+                g.attr("node", shape="rectangle")
 
                 g.node(iid)
 
-                g.attr('node', shape='ellipse')
+                g.attr("node", shape="ellipse")
 
-            oid = '{}-{}'.format(o.identifier, o.name)
+            oid = "{}-{}".format(o.identifier, o.name)
 
             g.edge(iid, oid)
 
     return g
 
+
 def _write_graph(data_inputs, output_path, **kwargs):
     if output_path is None:
-        output_path = 'compute'
+        output_path = "compute"
 
     variable, _, operation = _load_data_inputs(data_inputs)
 
     dot = _build_graph(operation)
 
-    dot.render(output_path, format='png', cleanup=True)
+    dot.render(output_path, format="png", cleanup=True)
+
 
 def command_convert():
     parser = argparse.ArgumentParser()
 
-    output_choices = ('script', 'notebook', 'graph')
+    output_choices = ("script", "notebook", "graph")
 
-    parser.add_argument('output', help='Conversion output.', choices=output_choices)
-    parser.add_argument('input', help='Input can be WPS document or data_inputs.')
-    parser.add_argument('--wps-url', help='Url for the WPS server.', default='https://aims2.llnl.gov/wps')
-    parser.add_argument('--llnl-client', action='store_true', help='Uses LLNL Client.')
-    parser.add_argument('--output-path', help='Output path for file.')
+    parser.add_argument(
+        "output", help="Conversion output.", choices=output_choices
+    )
+    parser.add_argument(
+        "input", help="Input can be WPS document or data_inputs."
+    )
+    parser.add_argument(
+        "--wps-url",
+        help="Url for the WPS server.",
+        default="https://aims2.llnl.gov/wps",
+    )
+    parser.add_argument(
+        "--llnl-client", action="store_true", help="Uses LLNL Client."
+    )
+    parser.add_argument("--output-path", help="Output path for file.")
 
     kwargs = vars(parser.parse_args())
 
     try:
-        data_inputs = _load_input(kwargs['input'])
+        data_inputs = _load_input(kwargs["input"])
     except Exception:
-        raise cwt.CWTError('Failed to load input')
+        raise cwt.CWTError("Failed to load input")
 
-    if kwargs['output'] == 'script':
+    if kwargs["output"] == "script":
         _write_script(data_inputs, **kwargs)
-    elif kwargs['output'] == 'notebook':
+    elif kwargs["output"] == "notebook":
         _write_notebook(data_inputs, **kwargs)
-    elif kwargs['output'] == 'graph':
+    elif kwargs["output"] == "graph":
         _write_graph(data_inputs, **kwargs)

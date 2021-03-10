@@ -1,26 +1,26 @@
-import sys
-import re
-import hashlib
 import base64
+import datetime
+import hashlib
+from http import server
 import json
+import logging
 import os
 import random
-import datetime
-from http import server
-import logging
-
-import requests
-from oauthlib import oauth2
+import re
+import sys
 
 from cwt import errors
+from oauthlib import oauth2
+import requests
 
 logger = logging.getLogger("cwt.auth")
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
 
+
 class Authenticator(object):
-    """Base authenticator.
-    """
+    """Base authenticator."""
+
     def __init__(self, key=None, config_path=None, store=True):
         """Authenticator __init__.
 
@@ -40,7 +40,7 @@ class Authenticator(object):
         """
         logger.info("Writing credential store")
 
-        with open(self.config_path, 'w') as fp:
+        with open(self.config_path, "w") as fp:
             fp.write(json.dumps(data))
 
     def read(self):
@@ -97,9 +97,9 @@ class Authenticator(object):
 
         del data
 
+
 class BearerTokenAuthenticator(Authenticator):
-    """Bearer token authenticator.
-    """
+    """Bearer token authenticator."""
 
     def __init__(self, token=None, **kwargs):
         self._token = token
@@ -113,21 +113,34 @@ class BearerTokenAuthenticator(Authenticator):
 
         return store
 
+
 class ResponseListener(server.BaseHTTPRequestHandler):
-    """Callback server for authorization request.
-    """
+    """Callback server for authorization request."""
+
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
-        self.wfile.write(b"<html><head><title>Success</title></head><body>You can now close the tab/window</body></html>")
+        self.wfile.write(
+            b"<html><head><title>Success</title></head><body>You can now close the tab/window</body></html>"
+        )
 
         ResponseListener.uri = self.path
 
+
 class KeyCloakAuthenticator(Authenticator):
-    """KeyCloak authenticator.
-    """
-    def __init__(self, url, realm, client_id=None, client_secret=None, pkce=False, redirect_port=None, **kwargs):
+    """KeyCloak authenticator."""
+
+    def __init__(
+        self,
+        url,
+        realm,
+        client_id=None,
+        client_secret=None,
+        pkce=False,
+        redirect_port=None,
+        **kwargs,
+    ):
         """KeyCloakAuthenticator __init__.
 
         Args:
@@ -155,7 +168,9 @@ class KeyCloakAuthenticator(Authenticator):
             A dict containing the well known document.
         """
         if self._well_known is None:
-            response = requests.get(f"{self._url}/realms/{self._realm}/.well-known/openid-configuration")
+            response = requests.get(
+                f"{self._url}/realms/{self._realm}/.well-known/openid-configuration"
+            )
 
             response.raise_for_status()
 
@@ -205,7 +220,7 @@ class KeyCloakAuthenticator(Authenticator):
         Returns:
             A dict containing the authorization response.
         """
-        state = ''.join([str(random.randint(0, 9)) for i in range(16)])
+        state = "".join([str(random.randint(0, 9)) for i in range(16)])
 
         logger.info(f"Getting authorization code using state {state}")
 
@@ -213,23 +228,28 @@ class KeyCloakAuthenticator(Authenticator):
             url,
             redirect_uri=f"http://127.0.0.1:{self._redirect_port}",
             state=state,
-            **kwargs)
+            **kwargs,
+        )
 
         print(f"Open following url in a browser")
         print("")
         print(f"{auth_url}")
 
         try:
-            listen = server.HTTPServer(("", self._redirect_port), ResponseListener)
+            listen = server.HTTPServer(
+                ("", self._redirect_port), ResponseListener
+            )
         except PermissionError:
-            print(f"""
+            print(
+                f"""
 Failed to bind redirect port {self._redirect_port}.
 
 Try changing the redirect port.
 <<< auth = LLNLKeyCloakAuthenticator(..., redirect_port=9000)
 
 Or use client credentials method.
-            """)
+            """
+            )
 
             sys.exit(1)
         finally:
@@ -237,8 +257,8 @@ Or use client credentials method.
             listen.server_close()
 
         auth_response = client.parse_request_uri_response(
-            ResponseListener.uri,
-            state=state)
+            ResponseListener.uri, state=state
+        )
 
         logger.info("Got authorization response")
 
@@ -261,7 +281,8 @@ Or use client credentials method.
         request = client.prepare_request_body(
             code,
             redirect_uri=f"http://127.0.0.1:{self._redirect_port}",
-            **kwargs)
+            **kwargs,
+        )
 
         headers = {"Content-type": "application/x-www-form-urlencoded"}
 
@@ -300,7 +321,8 @@ Or use client credentials method.
             client,
             known["authorization_endpoint"],
             code_challenge=challenge,
-            code_challenge_method="S256")
+            code_challenge_method="S256",
+        )
 
         logger.info("Got Authorization response")
 
@@ -324,11 +346,14 @@ Or use client credentials method.
             client,
             auth_token["code"],
             known["token_endpoint"],
-            code_verifier=verifier)
+            code_verifier=verifier,
+        )
 
         return token_response
 
-    def _refresh_token(self, known, client, refresh_token, client_secret=None):
+    def _refresh_token(
+        self, known, client, refresh_token, client_secret=None
+    ):
         """Refresh access token.
 
         Args:
@@ -350,9 +375,8 @@ Or use client credentials method.
             kwargs["client_secret"] = client_secret
 
         url, headers, body = client.prepare_refresh_token_request(
-            known["token_endpoint"],
-            refresh_token=refresh_token,
-            **kwargs)
+            known["token_endpoint"], refresh_token=refresh_token, **kwargs
+        )
 
         response = requests.post(url, data=body, headers=headers)
 
@@ -372,7 +396,9 @@ Or use client credentials method.
         if "refresh_expires_in" in store:
             aquired = datetime.datetime.fromisoformat(store["acquired"])
 
-            refresh_expires_in = aquired + datetime.timedelta(seconds=store["refresh_expires_in"])
+            refresh_expires_in = aquired + datetime.timedelta(
+                seconds=store["refresh_expires_in"]
+            )
 
         now = datetime.datetime.now()
 
@@ -387,17 +413,16 @@ Or use client credentials method.
         logger.info("Getting client credentials")
 
         request_body = client.prepare_request_body(
-            include_client_id=True,
-            client_secret=client_secret)
+            include_client_id=True, client_secret=client_secret
+        )
 
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
         }
 
         response = requests.post(
-            known["token_endpoint"],
-            headers = headers,
-            data = request_body)
+            known["token_endpoint"], headers=headers, data=request_body
+        )
 
         data = response.json()
 
@@ -429,7 +454,9 @@ Or use client credentials method.
             if self._check_refresh_expired(store):
                 store = self._get_access_token(known, client)
             else:
-                store = self._refresh_token(known, client, store["refresh_token"])
+                store = self._refresh_token(
+                    known, client, store["refresh_token"]
+                )
         else:
             logger.info(f"Using client credentials flow")
 
@@ -439,14 +466,18 @@ Or use client credentials method.
 
             client = oauth2.BackendApplicationClient(client_id)
 
-            store = self._get_client_credentials_token(known, client, client_secret)
+            store = self._get_client_credentials_token(
+                known, client, client_secret
+            )
 
             store["client_id"] = client_id
 
             store["client_secret"] = client_secret
 
-        headers.update({
-            "Authorization": f"Bearer {store['access_token']}",
-        })
+        headers.update(
+            {
+                "Authorization": f"Bearer {store['access_token']}",
+            }
+        )
 
         return store

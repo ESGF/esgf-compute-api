@@ -1,9 +1,8 @@
-import pytest
-import tempfile
-import json
 import os
 
 from cwt import auth
+import pytest
+
 
 @pytest.fixture(scope="function")
 def temp_file():
@@ -15,6 +14,7 @@ def temp_file():
     finally:
         if os.path.exists("cwt.txt"):
             os.remove("cwt.txt")
+
 
 def test_custom_authenticator(mocker, temp_file):
     class CustomAuth(auth.Authenticator):
@@ -41,7 +41,7 @@ def test_custom_authenticator(mocker, temp_file):
 
     data = client.read()
 
-    assert data == {"default": {"test": { "data": "test"}}}
+    assert data == {"default": {"test": {"data": "test"}}}
 
 
 def test_authenticator(mocker, temp_file):

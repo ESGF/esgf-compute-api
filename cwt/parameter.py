@@ -2,13 +2,13 @@
 Parameter module.
 """
 
-from builtins import str
 from builtins import object
+from builtins import str
 from uuid import uuid4 as uuid
 
 
 class Parameter(object):
-    """ Parameter.
+    """Parameter.
 
     Base class for parameters. Also used as a shell when re-creating objects
     after being passed to a WPS server.

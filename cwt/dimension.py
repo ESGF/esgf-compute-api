@@ -2,8 +2,8 @@
 Dimension module.
 """
 
-from builtins import str
 from builtins import object
+from builtins import str
 import warnings
 
 from cwt.errors import CWTError
@@ -14,7 +14,7 @@ from cwt.parameter import Parameter
 
 
 class CRS(object):
-    """ Coordinate Reference System (CRS).
+    """Coordinate Reference System (CRS).
 
     Provides information about the CRS of a dimensions values.
 
@@ -29,7 +29,7 @@ class CRS(object):
     def to_dict(self):
         """ Returns a dictionary representation."""
         return {
-            'crs': self.name,
+            "crs": self.name,
         }
 
     def __eq__(self, other):
@@ -42,12 +42,12 @@ class CRS(object):
         return self.name
 
     def __repr__(self):
-        return 'CRS(name={!r})'.format(self.name)
+        return "CRS(name={!r})".format(self.name)
 
 
-VALUES = CRS('values')
-INDICES = CRS('indices')
-TIMESTAMPS = CRS('timestamps')
+VALUES = CRS("values")
+INDICES = CRS("indices")
+TIMESTAMPS = CRS("timestamps")
 
 
 def int_or_float(value):
@@ -59,7 +59,9 @@ def int_or_float(value):
             try:
                 value = float(value)
             except ValueError:
-                raise CWTError('Could not convert {!r} to either int or float', value)
+                raise CWTError(
+                    "Could not convert {!r} to either int or float", value
+                )
 
     return value
 
@@ -73,17 +75,20 @@ def get_crs_value(crs, value):
         elif crs == TIMESTAMPS:
             value = value
         else:
-            raise CWTError('Unknown CRS value "{!s}", available: {!s}',
-                           crs, ', '.join([str(x) for x in [VALUES, INDICES, TIMESTAMPS]]))
+            raise CWTError(
+                'Unknown CRS value "{!s}", available: {!s}',
+                crs,
+                ", ".join([str(x) for x in [VALUES, INDICES, TIMESTAMPS]]),
+            )
     # Could be raised from int() conversion
     except ValueError:
-        raise CWTError('Failed to parse %r from %r', crs, value)
+        raise CWTError("Failed to parse %r from %r", crs, value)
 
     return value
 
 
 class Dimension(Parameter):
-    """ Dimension.
+    """Dimension.
 
     Describes a dimension of a plane. This dimension can be constrained
     between two points and the length between each step can be specified or
@@ -129,16 +134,16 @@ class Dimension(Parameter):
     def from_dict(cls, data, name):
         """ Create dimension from dict representation. """
         try:
-            crs = CRS(data['crs'])
+            crs = CRS(data["crs"])
 
-            start = get_crs_value(crs, data['start'])
+            start = get_crs_value(crs, data["start"])
 
-            end = get_crs_value(crs, data['end'])
+            end = get_crs_value(crs, data["end"])
         except KeyError as e:
             raise MissingRequiredKeyError(e)
 
         try:
-            step = int_or_float(data['step'])
+            step = int_or_float(data["step"])
         except KeyError:
             step = 1
 
@@ -156,9 +161,9 @@ class Dimension(Parameter):
 
     def to_dict(self):
         data = {
-            'start': self.start,
-            'end': self.end,
-            'step': self.step,
+            "start": self.start,
+            "end": self.end,
+            "step": self.step,
         }
 
         data.update(self.crs.to_dict())
@@ -167,11 +172,14 @@ class Dimension(Parameter):
 
     def parameterize(self):
         """ Parameterizes object for get queries. """
-        warnings.warn('parameterize is deprecated, use to_dict instead',
-                      DeprecationWarning)
+        warnings.warn(
+            "parameterize is deprecated, use to_dict instead",
+            DeprecationWarning,
+        )
 
         return self.to_dict()
 
     def __repr__(self):
-        return 'Dimension(name={!r}, start={!r}, end={!r}, step={!r}, crs={!r})'.format(
-            self.name, self.start, self.end, self.step, self.crs)
+        return "Dimension(name={!r}, start={!r}, end={!r}, step={!r}, crs={!r})".format(
+            self.name, self.start, self.end, self.step, self.crs
+        )

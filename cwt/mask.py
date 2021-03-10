@@ -2,18 +2,18 @@
 Mask Module.
 """
 
-from builtins import str
 from builtins import object
+from builtins import str
+from uuid import uuid4 as uuid
 import warnings
 
 from cwt.errors import MissingRequiredKeyError
-from uuid import uuid4 as uuid
 
 # pylint: disable=too-few-public-methods
 
 
 class Mask(object):
-    """ Mask.
+    """Mask.
 
     Describes a mask to be applied to a give domain.
 
@@ -57,19 +57,19 @@ class Mask(object):
     def from_dict(cls, data):
         """ Create mask from dict representation. """
         try:
-            uri = data['uri']
+            uri = data["uri"]
         except KeyError as e:
             raise MissingRequiredKeyError(e)
 
         try:
-            var_name, name = data['id'].split('|')
+            var_name, name = data["id"].split("|")
         except KeyError as e:
             raise MissingRequiredKeyError(e)
         except ValueError:
-            var_name = data['id']
+            var_name = data["id"]
 
         try:
-            operation = data['operation']
+            operation = data["operation"]
         except KeyError as e:
             raise MissingRequiredKeyError(e)
 
@@ -79,20 +79,23 @@ class Mask(object):
         param_id = self.var_name
 
         if self.name:
-            param_id += '|' + self.name
+            param_id += "|" + self.name
 
         return {
-            'uri': self.uri,
-            'id': param_id,
-            'operation': self.operation,
+            "uri": self.uri,
+            "id": param_id,
+            "operation": self.operation,
         }
 
     def parameterize(self):
         """ Create a parameter from mask. """
-        warnings.warn('parameterize is deprecated, use to_dict instead',
-                      DeprecationWarning)
+        warnings.warn(
+            "parameterize is deprecated, use to_dict instead",
+            DeprecationWarning,
+        )
         return self.to_dict()
 
     def __repr__(self):
-        return 'Mask(uri=%r, var_name=%r, operation=%r, name=%r)'.format(
-            self._uri, self._var_name, self._operation, self._name)
+        return "Mask(uri=%r, var_name=%r, operation=%r, name=%r)".format(
+            self._uri, self._var_name, self._operation, self._name
+        )

@@ -8,7 +8,7 @@ from cwt.parameter import Parameter
 
 
 class NamedParameter(Parameter):
-    """ Named Parameter.
+    """Named Parameter.
 
     Describes a parameter to be passed to an Operation.
 
@@ -34,22 +34,25 @@ class NamedParameter(Parameter):
     @classmethod
     def from_string(cls, name, data):
         """ Creates NamedParameter from string value. """
-        return cls(name, *data.split('|'))
+        return cls(name, *data.split("|"))
 
     def __eq__(self, other):
         return self.name == other.name and self.values == other.values
 
     def __repr__(self):
-        return 'NamedParameter(name={!r}, values={!r})'.format(
-            self.name, self.values)
+        return "NamedParameter(name={!r}, values={!r})".format(
+            self.name, self.values
+        )
 
     def to_dict(self):
         """ Returns dict representation."""
-        return {self.name: '|'.join([str(x) for x in self.values])}
+        return {self.name: "|".join([str(x) for x in self.values])}
 
     def parameterize(self):
         """ Parameterizes NamedParameter for GET request. """
-        warnings.warn('parameterize is deprecated, use to_dict instead',
-                      DeprecationWarning)
+        warnings.warn(
+            "parameterize is deprecated, use to_dict instead",
+            DeprecationWarning,
+        )
 
         return self.to_dict()

@@ -4,12 +4,12 @@ Gridder Module.
 
 import warnings
 
-from cwt.parameter import Parameter
 from cwt.errors import MissingRequiredKeyError
+from cwt.parameter import Parameter
 
 
 class Gridder(Parameter):
-    """ Gridder.
+    """Gridder.
 
     Describes the regridder and target grid for an operation.
 
@@ -33,9 +33,9 @@ class Gridder(Parameter):
         grid: A String, Domain or Variable of the target grid.
     """
 
-    def __init__(self, tool='regrid2', method='linear', grid='T85'):
+    def __init__(self, tool="regrid2", method="linear", grid="T85"):
         """ Gridder Init. """
-        super(Gridder, self).__init__('gridder')
+        super(Gridder, self).__init__("gridder")
 
         self.tool = tool
         self.method = method
@@ -44,11 +44,11 @@ class Gridder(Parameter):
     @classmethod
     def from_dict(cls, data):
         try:
-            tool = data['tool']
+            tool = data["tool"]
 
-            method = data['method']
+            method = data["method"]
 
-            grid = data['grid']
+            grid = data["grid"]
         except KeyError as e:
             raise MissingRequiredKeyError(e)
 
@@ -61,17 +61,21 @@ class Gridder(Parameter):
             grid = self.grid
 
         return {
-            'tool': self.tool,
-            'method': self.method,
-            'grid': grid,
+            "tool": self.tool,
+            "method": self.method,
+            "grid": grid,
         }
 
     def parameterize(self):
         """ Parameterizes a gridder. """
-        warnings.warn('parameterize is deprecated, use to_dict instead',
-                      DeprecationWarning)
+        warnings.warn(
+            "parameterize is deprecated, use to_dict instead",
+            DeprecationWarning,
+        )
 
         return self.to_dict()
 
     def __repr__(self):
-        return 'Gridder(tool={!r}, method={!r}, grid={!r})'.format(self.tool, self.method, self.grid)
+        return "Gridder(tool={!r}, method={!r}, grid={!r})".format(
+            self.tool, self.method, self.grid
+        )

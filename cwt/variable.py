@@ -5,12 +5,13 @@ Variable module.
 from builtins import str
 import warnings
 
+from cwt.errors import CWTError
+from cwt.errors import MissingRequiredKeyError
 from cwt.parameter import Parameter
-from cwt.errors import MissingRequiredKeyError, CWTError
 
 
 class Variable(Parameter):
-    """ Variable.
+    """Variable.
 
     Describes a variable to be used by an Operation.
 
@@ -26,39 +27,41 @@ class Variable(Parameter):
 
     def __init__(self, uri, var_name, **kwargs):
         """ Variable init. """
-        super(Variable, self).__init__(kwargs.get('name', None))
+        super(Variable, self).__init__(kwargs.get("name", None))
 
         self.uri = uri
         self.var_name = var_name
-        self.domain = kwargs.get('domain', None)
-        self.mime_type = kwargs.get('mime_type', None)
+        self.domain = kwargs.get("domain", None)
+        self.mime_type = kwargs.get("mime_type", None)
 
     @classmethod
     def from_dict(cls, data):
         """ Create variable from dict representation. """
         try:
-            uri = data['uri']
+            uri = data["uri"]
         except KeyError as e:
             raise MissingRequiredKeyError(e)
 
         try:
-            var_name, name = data['id'].split('|')
+            var_name, name = data["id"].split("|")
         except KeyError as e:
             raise MissingRequiredKeyError(e)
         except ValueError:
             raise CWTError(
-                'Could not split variable name and identifier from {!r}',
-                data['id'])
+                "Could not split variable name and identifier from {!r}",
+                data["id"],
+            )
 
-        domain = data.get('domain', None)
+        domain = data.get("domain", None)
 
         try:
-            mime_type = data['mime_type']
+            mime_type = data["mime_type"]
         except KeyError:
             mime_type = None
 
-        return cls(uri, var_name, domain=domain,
-                   name=name, mime_type=mime_type)
+        return cls(
+            uri, var_name, domain=domain, name=name, mime_type=mime_type
+        )
 
     def resolve_domains(self, domains):
         """ Resolves the domain identifiers to objects. """
@@ -70,7 +73,7 @@ class Variable(Parameter):
 
         for d in self.domains:
             if d not in domains:
-                raise Exception('Could not find domain {}'.format(d))
+                raise Exception("Could not find domain {}".format(d))
 
             new_domains.append(domains[d])
 
@@ -78,32 +81,37 @@ class Variable(Parameter):
 
     def to_dict(self):
         data = {
-            'uri': self.uri,
-            'id': self.var_name,
+            "uri": self.uri,
+            "id": self.var_name,
         }
 
         if self.domain:
             try:
-                data['domain'] = self.domain.name
+                data["domain"] = self.domain.name
             except AttributeError:
-                data['domain'] = self.domain
+                data["domain"] = self.domain
 
         if self.var_name:
-            data['id'] += '|' + str(self.name)
+            data["id"] += "|" + str(self.name)
 
         if self.mime_type:
-            data['mime_type'] = self.mime_type
+            data["mime_type"] = self.mime_type
 
         return data
 
     def parameterize(self):
         """ Parameterize variable for GET request. """
-        warnings.warn('parameterize is deprecated, use to_dict instead',
-                      DeprecationWarning)
+        warnings.warn(
+            "parameterize is deprecated, use to_dict instead",
+            DeprecationWarning,
+        )
 
         return self.to_dict()
 
     def __repr__(self):
-        return ('Variable(name={!r}, uri={!r}, var_name={!r}, domain={!r}, '
-                'mime_type={!r})').format(self.name, self.uri, self.var_name,
-                                          self.domain, self.mime_type)
+        return (
+            "Variable(name={!r}, uri={!r}, var_name={!r}, domain={!r}, "
+            "mime_type={!r})"
+        ).format(
+            self.name, self.uri, self.var_name, self.domain, self.mime_type
+        )

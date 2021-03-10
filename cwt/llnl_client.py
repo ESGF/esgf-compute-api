@@ -1,32 +1,31 @@
-import json
 import logging
-import requests
-import os
 from urllib import parse
 
 import cwt
 from cwt import auth
 from cwt import errors
+import requests
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_JOB_PATH = '/wps/api/job/'
-DEFAULT_JOB_DETAIL_PATH = '/wps/api/job/{}/'
+DEFAULT_JOB_PATH = "/wps/api/job/"
+DEFAULT_JOB_DETAIL_PATH = "/wps/api/job/{}/"
+
 
 def fix_url(x):
-    if 'wpsapi' in x:
+    if "wpsapi" in x:
         # Fix for weird issue in urls from django rest framework
-        x = x.replace('wpsapi', 'wps/api')
-    x = x[:-1] if x.endswith('/') else x
+        x = x.replace("wpsapi", "wps/api")
+    x = x[:-1] if x.endswith("/") else x
 
     return x
 
+
 class JobWrapper(object):
-    """ Represents a job.
-    """
+    """Represents a job."""
 
     def __init__(self, data, headers=None):
-        """ JobWrapper init
+        """JobWrapper init
 
         Args:
             data (dict): JSON from jobs api.
@@ -54,7 +53,7 @@ class JobWrapper(object):
     def _get_statuses(self):
         status = []
 
-        for x in self.data['status_links']:
+        for x in self.data["status_links"]:
             x = fix_url(x)
             x = "{}.json".format(x)
             response = requests.get(x, headers=self.headers)
@@ -66,7 +65,9 @@ class JobWrapper(object):
         return status
 
     def _format_message(self, data):
-        return '<td style="text-align: left">{created_date} {message} {percent}</td>'.format(**data)
+        return '<td style="text-align: left">{created_date} {message} {percent}</td>'.format(
+            **data
+        )
 
     def _repr_html_(self):
         if self.status is None:
@@ -76,60 +77,71 @@ class JobWrapper(object):
 
         for s in self.status:
             data = [
-                '<td>{}</td>'.format(s['status']),
-                '<td>{}</td>'.format(s['created_date']),
+                "<td>{}</td>".format(s["status"]),
+                "<td>{}</td>".format(s["created_date"]),
             ]
 
-            if 'message' in s and len(s['message']) > 0:
-                messages = s['message']
+            if "message" in s and len(s["message"]) > 0:
+                messages = s["message"]
 
                 data.append(self._format_message(messages[0]))
 
-                row_data.append('<tr>{}</tr>'.format(''.join(data)))
+                row_data.append("<tr>{}</tr>".format("".join(data)))
 
-                padding = '<td></td><td></td>'
+                padding = "<td></td><td></td>"
 
                 for x in messages[1:]:
-                    row_data.append('<tr>{0}{1}</tr>'.format(padding, self._format_message(x)))
+                    row_data.append(
+                        "<tr>{0}{1}</tr>".format(
+                            padding, self._format_message(x)
+                        )
+                    )
             else:
-                if 'exception' in s and s['exception'] is not None:
-                    data.append('<td style="text-align: left">{}</td>'.format(s['exception']))
+                if "exception" in s and s["exception"] is not None:
+                    data.append(
+                        '<td style="text-align: left">{}</td>'.format(
+                            s["exception"]
+                        )
+                    )
                 else:
-                    data.append('<td></td>')
+                    data.append("<td></td>")
 
-                row_data.append('<tr>{}</tr>'.format(''.join(data)))
+                row_data.append("<tr>{}</tr>".format("".join(data)))
 
-        rows = ''.join(row_data)
+        rows = "".join(row_data)
 
-        header = '<tr><th>Status</th><th>Created</th><th>Messages</th></tr>'
+        header = "<tr><th>Status</th><th>Created</th><th>Messages</th></tr>"
 
-        table = '<table>{header}{rows}</table>'.format(header=header, rows=rows)
+        table = "<table>{header}{rows}</table>".format(
+            header=header, rows=rows
+        )
 
         output_rows = []
 
         for x in self.data["output"]:
             url = x["remote"]
             filename = parse.urlparse(url).path.split("/")[-1]
-            text = ("<tr><td><a href='{}' target='_blank'>{}</a></td><td>{}"
-                    "</td></tr>").format(url, filename, x["size"])
+            text = (
+                "<tr><td><a href='{}' target='_blank'>{}</a></td><td>{}"
+                "</td></tr>"
+            ).format(url, filename, x["size"])
 
             output_rows.append(text)
 
         output_table_headers = "<tr><th>File</th><th>Size (MB)</th></tr>"
 
         output_table = "<table>{}{}</table>".format(
-            output_table_headers,
-            "".join(output_rows)
+            output_table_headers, "".join(output_rows)
         )
 
         return "{}{}".format(table, output_table)
 
+
 class JobListWrapper(object):
-    """ Represents a list of jobs.
-    """
+    """Represents a list of jobs."""
 
     def __init__(self, url, data, headers=None):
-        """ JobListWrapper init.
+        """JobListWrapper init.
 
         Args:
             data (dict): JSON output from jobs api.
@@ -147,15 +159,13 @@ class JobListWrapper(object):
 
     @property
     def current(self):
-        """ Returns current page.
-        """
+        """Returns current page."""
         return self.pages[self.url]
 
     def next(self):
-        """ Loads the next page of results
-        """
+        """Loads the next page of results"""
 
-        url = self.current.get('next', None)
+        url = self.current.get("next", None)
 
         if url is None:
             return self
@@ -168,9 +178,8 @@ class JobListWrapper(object):
         return self
 
     def previous(self):
-        """ Returns the previous page of results
-        """
-        url = self.current.get('previous', None)
+        """Returns the previous page of results"""
+        url = self.current.get("previous", None)
 
         if url is None:
             return self
@@ -191,70 +200,81 @@ class JobListWrapper(object):
 
     def _repr_html_(self):
         columns = (
-            ('id', 'ID'),
-            ('identifier', 'Identifier'),
-            ('status', 'Status'),
-            ('accepted', 'Accepted'),
-            ('elapsed', 'Elapsed'),
-            ('output', 'Outputs'),
+            ("id", "ID"),
+            ("identifier", "Identifier"),
+            ("status", "Status"),
+            ("accepted", "Accepted"),
+            ("elapsed", "Elapsed"),
+            ("output", "Outputs"),
         )
 
         row_data = []
 
-        for x in self.current['results']:
+        for x in self.current["results"]:
             data = []
 
             for id, _ in columns:
-                if id == 'output':
-                    data.append('<td>{} files, total size {} MB</td>'.format(
-                        len(x[id]),
-                        sum([float(y["size"]) for y in x[id]])
-                    ))
+                if id == "output":
+                    data.append(
+                        "<td>{} files, total size {} MB</td>".format(
+                            len(x[id]), sum([float(y["size"]) for y in x[id]])
+                        )
+                    )
                 else:
-                    data.append('<td>{}</td>'.format(x[id]))
+                    data.append("<td>{}</td>".format(x[id]))
 
-            data = ''.join(data)
+            data = "".join(data)
 
-            row_data.append('<tr>{}</tr>'.format(data))
+            row_data.append("<tr>{}</tr>".format(data))
 
-        rows = ''.join(row_data)
+        rows = "".join(row_data)
 
-        table_header = ''.join(['<th>{}</th>'.format(name) for (_, name) in columns])
+        table_header = "".join(
+            ["<th>{}</th>".format(name) for (_, name) in columns]
+        )
 
-        table = '<table><tr>{}</tr>{}</table>'.format(table_header, rows)
+        table = "<table><tr>{}</tr>{}</table>".format(table_header, rows)
 
         comp = parse.urlparse(self.url)
 
         qs = parse.parse_qs(comp.query)
 
-        offset = qs['offset'][0] if 'offset' in qs else 0
-        limit = qs['limit'][0] if 'limit' in qs else None
+        offset = qs["offset"][0] if "offset" in qs else 0
+        limit = qs["limit"][0] if "limit" in qs else None
 
         if limit is not None:
             offset = int(offset)
 
             limit = int(limit)
 
-            count = self.current['count']
+            count = self.current["count"]
 
-            footer = '<p>Display {} - {} of {} entries</p>'.format(offset, min(offset+limit, count), count)
+            footer = "<p>Display {} - {} of {} entries</p>".format(
+                offset, min(offset + limit, count), count
+            )
         else:
-            footer = ''
+            footer = ""
 
-        return '<div><h2>Jobs</h2></div>{}</div><div>{}</div>'.format(table, footer)
+        return "<div><h2>Jobs</h2></div>{}</div><div>{}</div>".format(
+            table, footer
+        )
 
     def job(self, id):
         job = None
 
-        for x in self.current['results']:
-            if x['id'] == id:
+        for x in self.current["results"]:
+            if x["id"] == id:
                 job = x
 
         if job is None:
             try:
-                job = self._get_url(parse.urljoin(self.url, DEFAULT_JOB_DETAIL_PATH).format(id))
+                job = self._get_url(
+                    parse.urljoin(self.url, DEFAULT_JOB_DETAIL_PATH).format(
+                        id
+                    )
+                )
             except Exception:
-                raise errors.JobMissingError('Could not load job {}', id)
+                raise errors.JobMissingError("Could not load job {}", id)
 
         return JobWrapper(job, self.headers)
 
@@ -263,14 +283,14 @@ class JobListWrapper(object):
 
 
 class LLNLClient(cwt.WPSClient):
-    """ LLNLClient.
+    """LLNLClient.
 
     This client is a subclass of WPSClient providing methods specific
     to the LLNL WPS implementation.
     """
+
     def __init__(self, *args, **kwargs):
-        """ LLNLClient __init__.
-        """
+        """LLNLClient __init__."""
         super().__init__(*args, **kwargs)
 
         self._listing = None
@@ -278,19 +298,18 @@ class LLNLClient(cwt.WPSClient):
     def _job_url(self):
         parts = parse.urlparse(self.url)
 
-        base_url = '{0}://{1}'.format(parts.scheme, parts.netloc)
+        base_url = "{0}://{1}".format(parts.scheme, parts.netloc)
 
         return parse.urljoin(base_url, DEFAULT_JOB_PATH)
 
     def jobs(self, limit=10):
-        """ Retrieves listing of jobs.
-        """
+        """Retrieves listing of jobs."""
         job_url = self._job_url()
 
         headers = self.headers.copy()
 
         params = {
-            'limit': limit or 10,
+            "limit": limit or 10,
         }
 
         self._patch_authentication(headers, params)
@@ -303,17 +322,16 @@ class LLNLClient(cwt.WPSClient):
 
         return self._listing
 
+
 class LLNLKeyCloakAuthenticator(auth.KeyCloakAuthenticator):
-    """LLNL KeyCloak authenticator.
-    """
+    """LLNL KeyCloak authenticator."""
+
     def __init__(self, base_url, keycloak_url, realm, *args, **kwargs):
         self._base_url = base_url.strip("/")
 
         super(LLNLKeyCloakAuthenticator, self).__init__(
-            keycloak_url.strip("/"),
-            realm,
-            *args,
-            **kwargs)
+            keycloak_url.strip("/"), realm, *args, **kwargs
+        )
 
     def register_client(self):
         logger.info("Registering client for client credentials flow")
@@ -323,7 +341,9 @@ class LLNLKeyCloakAuthenticator(auth.KeyCloakAuthenticator):
         response = requests.get(client_reg_url, allow_redirects=False)
 
         if response.status_code != 302:
-            raise errors.WPSAuthError("Error registering client, contact server admin.")
+            raise errors.WPSAuthError(
+                "Error registering client, contact server admin."
+            )
 
         print(f"Open {response.next.url!r} in a browser")
 
@@ -345,6 +365,8 @@ class LLNLKeyCloakAuthenticator(auth.KeyCloakAuthenticator):
 
             store["client_secret"] = client_secret
 
-        store = super(LLNLKeyCloakAuthenticator, self)._pre_prepare(headers, query, store)
+        store = super(LLNLKeyCloakAuthenticator, self)._pre_prepare(
+            headers, query, store
+        )
 
         return store
