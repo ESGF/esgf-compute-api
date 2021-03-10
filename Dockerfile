@@ -1,5 +1,5 @@
 ARG BASE_IMAGE
-FROM $BASE_IMAGE as builder
+FROM $BASE_IMAGE as build
 
 RUN mamba install -y -n base -c conda-forge boa anaconda-client
 
@@ -17,16 +17,16 @@ RUN mamba mambabuild feedstock/recipe \
 
 FROM scratch as testresult
 
-COPY --from=builder /output/coverage.xml .
-COPY --from=builder /output/unittest.xml .
-COPY --from=builder /build/channel/noarch/*.tar.bz2 .
+COPY --from=build /output/coverage.xml .
+COPY --from=build /output/unittest.xml .
+COPY --from=build /build/channel/noarch/*.tar.bz2 .
 
-FROM builder as publish
+FROM build as publish
 
 ARG CONDA_TOKEN
 ENV CONDA_TOKEN $CONDA_TOKEN
 
-COPY --from=builder /build/channel/noarch/*.tar.bz2 .
+COPY --from=build /build/channel/noarch/*.tar.bz2 .
 
 RUN anaconda config --set ssl_verify false && \
       anaconda -t ${CONDA_TOKEN} upload -u cdat --skip-existing *.tar.bz2
