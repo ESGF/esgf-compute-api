@@ -110,10 +110,7 @@ class WPSClient(object):
         self._build_process_collection()
 
     def __repr__(self):
-        return ('WPSClient(url={!r}, log={!r}, log_file={!r}, '
-                'verify={!r}, version={!r}, cert={!r}, headers={!r})').format(
-                    self.url, self.log, self.log_file, self.verify,
-                    self.cert, self.version, self.headers)
+        return 'WPSClient(url={!r}, auth={!r})'.format(self.url, self.auth)
 
     def set_logging(self, kwargs):
         env_log = bool(os.environ.get('WPS_LOG', False))

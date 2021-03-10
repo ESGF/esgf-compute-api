@@ -13,9 +13,13 @@ logger = logging.getLogger(__name__)
 DEFAULT_JOB_PATH = '/wps/api/job/'
 DEFAULT_JOB_DETAIL_PATH = '/wps/api/job/{}/'
 
-DEFAULT_BASE_URL = "https://aims2.llnl.gov"
-DEFAULT_KEYCLOAK_URL = "https://nimbus16.llnl.gov:8443/keycloak"
-DEFAULT_KEYCLOAK_REALM = "Nimbus"
+def fix_url(x):
+    if 'wpsapi' in x:
+        # Fix for weird issue in urls from django rest framework
+        x = x.replace('wpsapi', 'wps/api')
+    x = x[:-1] if x.endswith('/') else x
+
+    return x
 
 class JobWrapper(object):
     """ Represents a job.
@@ -35,15 +39,29 @@ class JobWrapper(object):
         self.headers = headers
         self.status = None
 
+    def delete(self):
+        url = fix_url(self.data["url"])
+
+        if not url.endswith("/"):
+            url = "{}/".format(url)
+
+        response = requests.delete(url, headers=self.headers)
+
+        response.raise_for_status()
+
+        del self
+
     def _get_statuses(self):
         status = []
 
-        for x in self.data['status']:
-            x = x.replace('http://', 'https://')
-
+        for x in self.data['status_links']:
+            x = fix_url(x)
+            x = "{}.json".format(x)
             response = requests.get(x, headers=self.headers)
 
             status.append(response.json())
+
+        status = sorted(status, key=lambda x: x["created_date"])
 
         return status
 
@@ -62,8 +80,8 @@ class JobWrapper(object):
                 '<td>{}</td>'.format(s['created_date']),
             ]
 
-            if 'messages' in s and len(s['messages']) > 0:
-                messages = s['messages']
+            if 'message' in s and len(s['message']) > 0:
+                messages = s['message']
 
                 data.append(self._format_message(messages[0]))
 
@@ -74,16 +92,7 @@ class JobWrapper(object):
                 for x in messages[1:]:
                     row_data.append('<tr>{0}{1}</tr>'.format(padding, self._format_message(x)))
             else:
-                if 'output' in s and s['output'] is not None:
-                    x = json.loads(s['output'])
-
-                    if isinstance(x, list):
-                        outputs = '\n'.join(['<a href="{uri}" target="_blank">{uri}</a>'.format(**y) for y in x])
-                    else:
-                        outputs = '<a href="{uri}" target="_blank">{uri}</a>'.format(**x)
-
-                    data.append('<td style="text-align: left"><pre>{}</pre></td>'.format(outputs))
-                elif 'exception' in s and s['exception'] is not None:
+                if 'exception' in s and s['exception'] is not None:
                     data.append('<td style="text-align: left">{}</td>'.format(s['exception']))
                 else:
                     data.append('<td></td>')
@@ -92,9 +101,28 @@ class JobWrapper(object):
 
         rows = ''.join(row_data)
 
-        header = '<tr><th>Status</th><th>Created</th><th>Output</th></tr>'
+        header = '<tr><th>Status</th><th>Created</th><th>Messages</th></tr>'
 
-        return '<table>{header}{rows}</table>'.format(header=header, rows=rows)
+        table = '<table>{header}{rows}</table>'.format(header=header, rows=rows)
+
+        output_rows = []
+
+        for x in self.data["output"]:
+            url = x["remote"]
+            filename = parse.urlparse(url).path.split("/")[-1]
+            text = ("<tr><td><a href='{}' target='_blank'>{}</a></td><td>{}"
+                    "</td></tr>").format(url, filename, x["size"])
+
+            output_rows.append(text)
+
+        output_table_headers = "<tr><th>File</th><th>Size (MB)</th></tr>"
+
+        output_table = "<table>{}{}</table>".format(
+            output_table_headers,
+            "".join(output_rows)
+        )
+
+        return "{}{}".format(table, output_table)
 
 class JobListWrapper(object):
     """ Represents a list of jobs.
@@ -164,16 +192,28 @@ class JobListWrapper(object):
     def _repr_html_(self):
         columns = (
             ('id', 'ID'),
-            ('process', 'Operation'),
+            ('identifier', 'Identifier'),
+            ('status', 'Status'),
+            ('accepted', 'Accepted'),
             ('elapsed', 'Elapsed'),
-            ('latest_status', 'Status'),
-            ('accepted_on', 'Accepted'),
+            ('output', 'Outputs'),
         )
 
         row_data = []
 
         for x in self.current['results']:
-            data = ''.join(['<td>{}</td>'.format(x[id]) for (id, _) in columns])
+            data = []
+
+            for id, _ in columns:
+                if id == 'output':
+                    data.append('<td>{} files, total size {} MB</td>'.format(
+                        len(x[id]),
+                        sum([float(y["size"]) for y in x[id]])
+                    ))
+                else:
+                    data.append('<td>{}</td>'.format(x[id]))
+
+            data = ''.join(data)
 
             row_data.append('<tr>{}</tr>'.format(data))
 
@@ -266,16 +306,7 @@ class LLNLClient(cwt.WPSClient):
 class LLNLKeyCloakAuthenticator(auth.KeyCloakAuthenticator):
     """LLNL KeyCloak authenticator.
     """
-    def __init__(self, base_url=None, keycloak_url=None, realm=None, *args, **kwargs):
-        if base_url is None:
-            base_url = DEFAULT_BASE_URL
-
-        if keycloak_url is None:
-            keycloak_url = DEFAULT_KEYCLOAK_URL
-
-        if realm is None:
-            realm = DEFAULT_KEYCLOAK_REALM
-
+    def __init__(self, base_url, keycloak_url, realm, *args, **kwargs):
         self._base_url = base_url.strip("/")
 
         super(LLNLKeyCloakAuthenticator, self).__init__(
