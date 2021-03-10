@@ -21,16 +21,30 @@ client.execute(...)
 
 ## LLNLKeyCloakAuthenticator
 
+To use the LLNLKeyCloakAuthenticator you will need the following information:
+
+- Base url for the WPS compute node.
+- Url to the keycloak instance.
+- Realm name being used.
+
 ### Authorization Code with PKCE
 
 This authentication flow requires a KeyCloak public client to be configured for OAuth2 Authorization Code flow with PKCE. Once `execute` is called the user will be presented with a link. Upon opening the link in a browser they'll be redirect to authenticate with keycloak, once successfully authenticated they'll be redirect to a local URL and the job will execute.
 
-*WARNING* This authentication method will only work if performed on a host system where port `8888` by default is open, this port can be changed.
+***WARNING*** This authentication method will only work if performed on a host system where port `8888` by default is open, this port can be changed.
+
+***Note*** The client id is required.
 
 ```python
 from cwt import llnl_client
 
-auth = llnl_client.LLNLKeyCloakAuthenticator(pkce=True)
+auth = llnl_client.LLNLKeyCloakAuthenticator(
+    base_url="https://compute.node",
+    keycloak_url="https://compute.node/auth",
+    realm="compute-cluster",
+    client_id="wps",
+    pkce=True
+)
 
 client = llnl_client.LLNLClient("https://aims2.llnl.gov/wps", auth=auth)
 
@@ -40,7 +54,7 @@ client.execute(...)
 #### Alternative port
 
 ```python
-auth = llnl_client.LLNLKeyCloakAuthenticator(pkce=True, redirect_port=8000)
+auth = llnl_client.LLNLKeyCloakAuthenticator(..., pkce=True, redirect_port=8000)
 ```
 
 ### Client Credentials
@@ -50,7 +64,11 @@ This authentication flow requires a KeyCloak confidential client to be configure
 ```python
 from cwt import llnl_client
 
-auth = llnl_client.LLNLKeyCloakAuthenticator()
+auth = llnl_client.LLNLKeyCloakAuthenticator(
+    base_url="https://compute.node",
+    keycloak_url="https://compute.node/auth",
+    realm="compute-cluster",
+)
 
 client = llnl_client.LLNLClient("https://aims2.llnl.gov/wps", auth=auth)
 
