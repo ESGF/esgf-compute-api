@@ -46,6 +46,10 @@ process.wait()
 print(process.output)
 ```
 
+### Authentication
+
+Descriptions of authentication methods can be found [here](docsrc/source/authentication.md)
+
 ### Example
 
 Jupyter Notebook cotnaining examples can be found [here](examples/)
