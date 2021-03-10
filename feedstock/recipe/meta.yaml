@@ -1,5 +1,5 @@
 {% set name = "esgf-compute-api" %}
-{% set version = "2.3.8" %}
+{% set version = "2.3.9" %}
 {% set build_number = environ.get('GIT_DESCRIBE_NUMBER', '0') %}
 
 package:
